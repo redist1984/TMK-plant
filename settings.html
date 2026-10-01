@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Настройки</title>
+<script>try{var __t=localStorage.getItem('tmk_theme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
+  --line:#CBD5D2; --accent:#0B6E66;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; }
+}
+:root[data-theme="dark"]{ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:16px 16px 40px}
+h1{font-size:20px;margin:6px 0 4px}
+.sub{color:var(--ink2);margin:0 0 18px;max-width:70ch}
+h2{font-size:15px;margin:28px 0 8px;color:var(--ink)}
+.hint{color:var(--ink3);font-size:12.5px;margin:0 0 10px;max-width:60ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:8px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{
+  flex:1 1 auto;min-width:110px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+  border-radius:9px;padding:10px 12px;font:600 13px system-ui,sans-serif;cursor:pointer;
+}
+.seg button.active{background:var(--accent);color:#06201C;border-color:var(--accent)}
+.themes{display:flex;gap:10px;flex-wrap:wrap}
+.themecard{
+  flex:1 1 140px;min-width:120px;border:2px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;
+  background:var(--panel2);
+}
+.themecard.active{border-color:var(--accent)}
+.themecard .swatch{height:38px;border-radius:7px;margin-bottom:8px;display:flex;overflow:hidden;border:1px solid var(--line)}
+.themecard .swatch i{flex:1}
+.themecard .name{font:600 12.5px system-ui,sans-serif;color:var(--ink)}
+.sw-sys{background:linear-gradient(90deg,#EEF2F1 50%,#0F1614 50%)}
+.sw-light i:nth-child(1){background:#EEF2F1}.sw-light i:nth-child(2){background:#0B6E66}.sw-light i:nth-child(3){background:#FFFFFF}
+.sw-dark i:nth-child(1){background:#0F1614}.sw-dark i:nth-child(2){background:#3FC1B3}.sw-dark i:nth-child(3){background:#16201D}
+.brightrow{display:flex;align-items:center;gap:12px}
+.brightrow input[type=range]{flex:1;accent-color:var(--accent)}
+.brightval{min-width:44px;text-align:right;font:700 13px system-ui,sans-serif;color:var(--ink2)}
+.autorow{display:flex;align-items:center;gap:9px;margin-top:10px;color:var(--ink2);font-size:13px}
+.autorow input{width:17px;height:17px;accent-color:var(--accent)}
+.note{background:var(--panel2);border:1px dashed var(--line);border-radius:9px;padding:10px 12px;color:var(--ink3);font-size:12.5px}
+.appinfo{font-size:12px;color:var(--ink3);margin-top:30px}
+</style>
+</head>
+<body>
+
+<div class="eyebrow" id="tEyebrow" style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)">Завод TMK</div>
+<h1 id="tH1">Настройки</h1>
+<p class="sub" id="tSub">Язык интерфейса, тема оформления и яркость экрана.</p>
+
+<h2 id="tH2lang">Язык интерфейса</h2>
+<div class="card">
+  <div class="seg" id="langSeg">
+    <button type="button" data-lang="ru">Русский</button>
+    <button type="button" data-lang="uz">O‘zbek</button>
+  </div>
+</div>
+
+<h2 id="tH2theme">Тема оформления</h2>
+<p class="hint" id="tThemeHint">Как должно выглядеть приложение.</p>
+<div class="card">
+  <div class="themes" id="themeSeg">
+    <div class="themecard" data-theme="system">
+      <div class="swatch sw-sys"></div>
+      <div class="name" id="tThemeSystem">Системная</div>
+    </div>
+    <div class="themecard" data-theme="light">
+      <div class="swatch sw-light"><i></i><i></i><i></i></div>
+      <div class="name" id="tThemeLight">Светлая</div>
+    </div>
+    <div class="themecard" data-theme="dark">
+      <div class="swatch sw-dark"><i></i><i></i><i></i></div>
+      <div class="name" id="tThemeDark">Тёмная</div>
+    </div>
+  </div>
+</div>
+
+<h2 id="tH2bright">Яркость экрана</h2>
+<div class="card" id="brightCard">
+  <div class="brightrow">
+    <input type="range" id="brightRange" min="1" max="100" step="1" value="70">
+    <span class="brightval" id="brightVal">70%</span>
+  </div>
+  <label class="autorow"><input type="checkbox" id="brightAuto"><span id="tBrightAuto">Как в системе (без настройки приложением)</span></label>
+</div>
+<div class="note" id="brightNote" style="display:none"></div>
+
+<div class="appinfo" id="appinfo"></div>
+
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script>
+const UI = {
+  ru: {
+    eyebrow:'Завод TMK',
+    h1:'Настройки',
+    sub:'Язык интерфейса, тема оформления и яркость экрана.',
+    h2lang:'Язык интерфейса',
+    h2theme:'Тема оформления', themeHint:'Как должно выглядеть приложение.',
+    themeSystem:'Системная', themeLight:'Светлая', themeDark:'Тёмная',
+    h2bright:'Яркость экрана',
+    brightAuto:'Как в системе (без настройки приложением)',
+    brightNote:'Яркость экрана можно настроить только внутри приложения на телефоне — в этом окне предпросмотра она недоступна.',
+    appVersion:'Версия приложения: ',
+  },
+  uz: {
+    eyebrow:'TMK zavodi',
+    h1:'Sozlamalar',
+    sub:'Interfeys tili, ko‘rinish mavzusi va ekran yorqinligi.',
+    h2lang:'Interfeys tili',
+    h2theme:'Ko‘rinish mavzusi', themeHint:'Ilova qanday ko‘rinishda bo‘lishi kerak.',
+    themeSystem:'Tizim kabi', themeLight:'Yorug‘', themeDark:'Tungi',
+    h2bright:'Ekran yorqinligi',
+    brightAuto:'Tizimdagidek (ilova tomonidan sozlanmaydi)',
+    brightNote:'Ekran yorqinligini faqat telefondagi ilova ichida sozlash mumkin — ushbu oldindan ko‘rish oynasida bu mavjud emas.',
+    appVersion:'Ilova versiyasi: ',
+  }
+};
+
+function paintUI(lang){
+  const L = UI[lang] || UI.ru;
+  document.getElementById('tEyebrow').textContent = L.eyebrow;
+  document.getElementById('tH1').textContent = L.h1;
+  document.getElementById('tSub').textContent = L.sub;
+  document.getElementById('tH2lang').textContent = L.h2lang;
+  document.getElementById('tH2theme').textContent = L.h2theme;
+  document.getElementById('tThemeHint').textContent = L.themeHint;
+  document.getElementById('tThemeSystem').textContent = L.themeSystem;
+  document.getElementById('tThemeLight').textContent = L.themeLight;
+  document.getElementById('tThemeDark').textContent = L.themeDark;
+  document.getElementById('tH2bright').textContent = L.h2bright;
+  document.getElementById('tBrightAuto').textContent = L.brightAuto;
+  document.getElementById('brightNote').textContent = L.brightNote;
+  document.querySelector('#langSeg button[data-lang="ru"]').textContent = 'Русский';
+  document.querySelector('#langSeg button[data-lang="uz"]').textContent = 'O‘zbek';
+  paintLangActive(lang);
+}
+
+// ---- Язык ----
+function paintLangActive(lang){
+  document.querySelectorAll('#langSeg button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+}
+const tmkLang = TmkLang.initChild(paintUI);
+paintUI(tmkLang.getLang());
+document.querySelectorAll('#langSeg button').forEach(b=>{
+  b.addEventListener('click', ()=>tmkLang.setLang(b.dataset.lang));
+});
+
+// ---- Тема ----
+function paintThemeActive(theme){
+  document.querySelectorAll('#themeSeg .themecard').forEach(c=>{
+    c.classList.toggle('active', c.dataset.theme === theme);
+  });
+}
+const tmkTheme = TmkTheme.initChild(paintThemeActive);
+paintThemeActive(tmkTheme.getTheme());
+document.querySelectorAll('#themeSeg .themecard').forEach(c=>{
+  c.addEventListener('click', ()=>tmkTheme.setTheme(c.dataset.theme));
+});
+
+// ---- Яркость экрана ----
+// Работает только внутри нативного Android-приложения (мост TmkNative);
+// в обычном браузере/PWA-предпросмотре у страницы нет доступа к системной
+// яркости экрана, поэтому там ползунок отключается и показывается пояснение.
+const brightRange = document.getElementById('brightRange');
+const brightVal = document.getElementById('brightVal');
+const brightAuto = document.getElementById('brightAuto');
+const brightCard = document.getElementById('brightCard');
+const brightNote = document.getElementById('brightNote');
+
+function setBrightUI(percent){
+  const auto = !(percent >= 1 && percent <= 100);
+  brightAuto.checked = auto;
+  brightRange.disabled = auto;
+  brightRange.value = auto ? 70 : percent;
+  brightVal.textContent = auto ? '—' : (percent + '%');
+}
+
+if (window.TmkNative && TmkNative.getBrightness && TmkNative.setBrightness) {
+  let initial = -1;
+  try { initial = parseInt(TmkNative.getBrightness(), 10); } catch (e) {}
+  if (!(initial >= 1 && initial <= 100)) initial = -1;
+  setBrightUI(initial);
+
+  brightRange.addEventListener('input', ()=>{
+    brightVal.textContent = brightRange.value + '%';
+  });
+  brightRange.addEventListener('change', ()=>{
+    if (!brightAuto.checked) {
+      try { TmkNative.setBrightness(parseInt(brightRange.value, 10)); } catch (e) {}
+    }
+  });
+  brightAuto.addEventListener('change', ()=>{
+    if (brightAuto.checked) {
+      brightRange.disabled = true;
+      brightVal.textContent = '—';
+      try { TmkNative.setBrightness(-1); } catch (e) {}
+    } else {
+      brightRange.disabled = false;
+      const v = parseInt(brightRange.value, 10) || 70;
+      brightVal.textContent = v + '%';
+      try { TmkNative.setBrightness(v); } catch (e) {}
+    }
+  });
+} else {
+  brightCard.style.display = 'none';
+  brightNote.style.display = 'block';
+}
+
+// ---- Версия приложения (если известна нативному мосту) ----
+try {
+  if (window.TmkNative && TmkNative.getDataInfo) {
+    const info = JSON.parse(TmkNative.getDataInfo());
+    if (info && info.appVersionName) {
+      document.getElementById('appinfo').textContent =
+        (UI[tmkLang.getLang()] || UI.ru).appVersion + info.appVersionName;
+    }
+  }
+} catch (e) {}
+</script>
+</body>
+</html>

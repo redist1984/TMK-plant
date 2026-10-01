@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Документы проекта</title>
+<script>try{var __t=localStorage.getItem('tmk_theme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
+  --line:#CBD5D2; --accent:#0B6E66;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; }
+}
+:root[data-theme="dark"]{ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:16px 16px 40px}
+h1{font-size:20px;margin:6px 0 4px}
+.sub{color:var(--ink2);margin:0 0 18px;max-width:70ch}
+h2{font-size:15px;margin:28px 0 8px;color:var(--ink)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.card a{color:var(--accent);text-decoration:none;font-weight:600}
+.card a:hover{text-decoration:underline}
+.card .meta{color:var(--ink3);font-size:12.5px;margin-top:3px}
+.eyebrow{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+table{border-collapse:collapse;width:100%;font-size:13px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--panel2);font-size:12px;color:var(--ink2)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;font-size:12px}
+footer{margin-top:26px;font-size:12px;color:var(--ink3)}
+.appinfo{font-size:12px;color:var(--ink3);margin:2px 0 14px}
+body{position:relative}
+</style>
+</head>
+<body>
+<div class="eyebrow" id="tEyebrow">Проект 3147 · TMK Chemical LLC</div>
+<h1 id="tH1">Документы и исходные чертежи проекта</h1>
+<div class="appinfo" id="appinfo"></div>
+<p class="sub" id="tSub">Исходные листы (PDF) технологических планов и P&amp;ID, по которым построены схема потоков, 3D-модель и галереи чертежей оборудования. Открываются системным просмотрщиком PDF на устройстве.</p>
+
+<h2 id="tH2a">Планы размещения оборудования и P&amp;ID по отделениям</h2>
+<div id="pdflist"></div>
+
+<h2 id="tH2b">Перечень отделений завода</h2>
+<table id="sectbl"><thead><tr><th id="thCode">Код</th><th id="thSec">Отделение</th><th id="thDoc">Документы-основания</th></tr></thead><tbody></tbody></table>
+
+<footer id="tFooter">Массу и характеристики оборудования, нормы технологического режима и полный перечень позиций см. во вкладке «Схема потоков». Источник данных — технологические схемы 3147-5G111…5R115, перечни оборудования и временный технологический регламент проекта. Часть исходных PDF (например, чертежи в архивах .rar) в это приложение не вошла — см. пояснение в чате.</footer>
+
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script>
+// Known documents get a readable title + drawing number. Any file present
+// in docs_pdf/ that ISN'T in this list (e.g. dropped into the Google Drive
+// sync folder later, without a code change / app update) still shows up,
+// just with its filename as the title — see renderPdfList() below.
+// title: [ru, uz]; doc (drawing number) doesn't need translating.
+const KNOWN = {
+ "docs_pdf/Hg121-05-oborud-plan.pdf": {title:["121 · Склад серы — план размещения оборудования","121 · Oltingugurt ombori — jihozlarni joylashtirish rejasi"],doc:"3147-5Hg121-00-11, лист 05"},
+ "docs_pdf/Hg121-07-hopper.pdf": {title:["121 · Приёмный бункер серы и известковый бункер","121 · Oltingugurt va ohak qabul bunkerlari"],doc:"3147-5Hg121-00-11, лист 07"},
+ "docs_pdf/Hg121-06-conveyor.pdf": {title:["121 · Ленточный питающий конвейер, заказной чертёж","121 · Lentali uzatuvchi konveyer, buyurtma chizmasi"],doc:"3147-5Hg121-00-11, лист 06"},
+ "docs_pdf/G111-07-plan-000.pdf": {title:["111 · Фильтрация серы — план оборудования EL±0.000","111 · Oltingugurtni filtrlash — jihozlar rejasi EL±0.000"],doc:"3147-5G111-07"},
+ "docs_pdf/G111-08-plan-5500.pdf": {title:["111 · Фильтрация серы — план оборудования EL+5.500","111 · Oltingugurtni filtrlash — jihozlar rejasi EL+5.500"],doc:"3147-5G111-08"},
+ "docs_pdf/G112-05-plan.pdf": {title:["112 · Сжигание и конверсия серы — план оборудования","112 · Oltingugurtni yoqish va konversiya — jihozlar rejasi"],doc:"3147-5G112-05"},
+ "docs_pdf/G113-05-plan.pdf": {title:["113 · Сушка и абсорбция — план оборудования","113 · Quritish va absorbsiya — jihozlar rejasi"],doc:"3147-5G113-05"},
+ "docs_pdf/G123-03-pid.pdf": {title:["123 · Склад серной кислоты — технологическая схема (P&ID)","123 · Kislota ombori — texnologik sxema (P&ID)"],doc:"3147-5G123-03"},
+ "docs_pdf/R1141-04-plan.pdf": {title:["114.1 · Станция деаэрации воды — план оборудования","114.1 · Suv deaeratsiya stansiyasi — jihozlar rejasi"],doc:"3147-5R114.1-04"},
+ "docs_pdf/R115-17-plan-1.pdf": {title:["115 · Выработка электроэнергии — план оборудования, лист 1","115 · Elektr energiyasi ishlab chiqarish — jihozlar rejasi, 1-varaq"],doc:"3147-5R115-17"},
+ "docs_pdf/R115-17-plan-2.pdf": {title:["115 · Выработка электроэнергии — план оборудования, лист 2","115 · Elektr energiyasi ishlab chiqarish — jihozlar rejasi, 2-varaq"],doc:"3147-5R115-17"},
+ "docs_pdf/R115-17-plan-3.pdf": {title:["115 · Выработка электроэнергии — план оборудования, лист 3","115 · Elektr energiyasi ishlab chiqarish — jihozlar rejasi, 3-varaq"],doc:"3147-5R115-17"},
+ "docs_pdf/W131-water-station.pdf": {title:["131 · Водоочистная станция — технологическая схема и план","131 · Suv tozalash stansiyasi — texnologik sxema va reja"],doc:"净水站工艺施工图"},
+};
+
+const UI = {
+  ru: {
+    eyebrow:'Проект 3147 · TMK Chemical LLC',
+    h1:'Документы и исходные чертежи проекта',
+    sub:'Исходные листы (PDF) технологических планов и P&ID, по которым построены схема потоков, 3D-модель и галереи чертежей оборудования. Открываются системным просмотрщиком PDF на устройстве.',
+    h2a:'Планы размещения оборудования и P&ID по отделениям',
+    h2b:'Перечень отделений завода',
+    thCode:'Код', thSec:'Отделение', thDoc:'Документы-основания',
+    footer:'Массу и характеристики оборудования, нормы технологического режима и полный перечень позиций см. во вкладке «Схема потоков». Источник данных — технологические схемы 3147-5G111…5R115, перечни оборудования и временный технологический регламент проекта. Часть исходных PDF (например, чертежи в архивах .rar) в это приложение не вошла — см. пояснение в чате.',
+    emptyPdf:'Пока нет ни одного PDF — они появятся после первой синхронизации с Google Диском.',
+    fromDrive:'добавлено с Google Диска',
+    drawingPrefix:'черт. ',
+    appVersion:'Версия приложения: ',
+    dataUpdated:'данные обновлены: ',
+  },
+  uz: {
+    eyebrow:'3147-loyiha · TMK Chemical LLC',
+    h1:'Loyihaning hujjatlari va asl chizmalari',
+    sub:'Oqim sxemasi, 3D-model va jihozlar chizmalari galereyalari asos qilib olingan texnologik rejalar va P&ID varaqlari (PDF). Qurilmadagi tizim PDF ko‘ruvchisida ochiladi.',
+    h2a:'Bo‘limlar bo‘yicha jihozlarni joylashtirish rejalari va P&ID',
+    h2b:'Zavod bo‘limlari ro‘yxati',
+    thCode:'Kod', thSec:'Bo‘lim', thDoc:'Asos hujjatlar',
+    footer:'Jihozlarning massasi va tavsiflari, texnologik rejim normalari va to‘liq ro‘yxat — «Oqim sxemasi» bo‘limida. Ma’lumotlar manbai — 3147-5G111…5R115 texnologik sxemalari, jihozlar ro‘yxatlari va loyihaning vaqtinchalik texnologik reglamenti. Ba’zi asl PDF fayllar (masalan, .rar arxividagi chizmalar) ilovaga kiritilmagan.',
+    emptyPdf:'Hozircha bitta ham PDF yo‘q — ular Google Disk bilan birinchi sinxronlashdan so‘ng paydo bo‘ladi.',
+    fromDrive:'Google Diskdan qo‘shilgan',
+    drawingPrefix:'chizma ',
+    appVersion:'Ilova versiyasi: ',
+    dataUpdated:'ma’lumotlar yangilangan: ',
+  }
+};
+
+function niceName(path){
+  return path.replace(/^docs_pdf\//,'').replace(/\.pdf$/i,'').replace(/[_-]+/g,' ');
+}
+
+function cardHtml(path, title, doc){
+  return `<div class="card"><a href="${path}" target="_blank" rel="noopener">${title}</a><div class="meta">${doc}</div></div>`;
+}
+
+let currentPaths = null;
+function renderPdfList(lang, paths){
+  const L = UI[lang] || UI.ru;
+  // known files first, in the curated order above; then anything extra
+  // (e.g. newly synced from Google Drive) alphabetically, marked as such
+  const known = Object.keys(KNOWN).filter(p => paths.includes(p));
+  const extra = paths.filter(p => !KNOWN[p]).sort();
+  const html = known.map(p => cardHtml(p, (KNOWN[p].title[lang==='uz'?1:0]), L.drawingPrefix + KNOWN[p].doc))
+    .concat(extra.map(p => cardHtml(p, niceName(p), L.fromDrive)));
+  document.getElementById('pdflist').innerHTML = html.length
+    ? html.join('')
+    : `<p class="sub">${L.emptyPdf}</p>`;
+}
+
+// Ask the native side (Android app) what's actually in docs_pdf/ right now.
+// Falls back to the built-in list when running as a plain web page (no
+// TmkNative bridge) or if something goes wrong.
+try {
+  if (window.TmkNative && TmkNative.listDocsPdf) {
+    currentPaths = JSON.parse(TmkNative.listDocsPdf());
+  }
+} catch (e) { /* fall through to static list below */ }
+if (!currentPaths || !currentPaths.length) currentPaths = Object.keys(KNOWN);
+// Note: when a sync from Google Drive actually changes anything, index.html
+// reloads the whole app (see tmkSyncDone in index.html), which re-runs this
+// script and picks up any newly downloaded PDFs automatically.
+
+const SECTIONS = [
+ ["121","Склад серы и подача сырья","Oltingugurt ombori va xomashyo uzatish","3147-5Hg121-02/04"],
+ ["111","Плавление и фильтрация серы","Oltingugurtni eritish va filtrlash","3147-5G111-03…05, 06 (перечень)"],
+ ["122","Резервуары жидкой серы","Suyuq oltingugurt rezervuarlari","3147-5G122-06 (перечень)"],
+ ["112","Сжигание серы и конверсия","Oltingugurtni yoqish va konversiya","3147-5G112-03 (P&ID), 04 (перечень)"],
+ ["113","Сушка и абсорбция","Quritish va absorbsiya","3147-5G113-03 (P&ID), 04 (перечень)"],
+ ["123","Склад серной кислоты","Kislota ombori","3147-5G123-04 (перечень)"],
+ ["114 / 114.1","Утилизация тепла и деаэрация","Issiqlikni utilizatsiya qilish va deaeratsiya","3147-5R114-01/02; 5R114.1-02"],
+ ["115","Выработка электроэнергии","Elektr energiyasi ishlab chiqarish","3147-5R115-02 (перечень)"],
+ ["136 · 135 · 101 · 141 · 142","Вспомогательные службы","Yordamchi xizmatlar","3147-5G136-04, 5R135-02"],
+ ["131","Водоочистная станция","Suv tozalash stansiyasi","Sichuan Shengjiuyuan, SJY-GY-01…14"],
+ ["132","Станция деминерализации воды","Suvni demineralizatsiya qilish stansiyasi","Sichuan Shengjiuyuan, Rev.A 2026.5.29"],
+ ["133 · 134","Оборотное водоснабжение","Aylanma suv ta’minoti","Регламент §4.2.10–4.2.11"],
+];
+
+function paintUI(lang){
+  const L = UI[lang] || UI.ru;
+  document.getElementById('tEyebrow').textContent = L.eyebrow;
+  document.getElementById('tH1').textContent = L.h1;
+  document.getElementById('tSub').innerHTML = L.sub.replace('P&ID','P&amp;ID');
+  document.getElementById('tH2a').innerHTML = L.h2a.replace('P&ID','P&amp;ID');
+  document.getElementById('tH2b').textContent = L.h2b;
+  document.getElementById('thCode').textContent = L.thCode;
+  document.getElementById('thSec').textContent = L.thSec;
+  document.getElementById('thDoc').textContent = L.thDoc;
+  document.getElementById('tFooter').textContent = L.footer;
+  document.querySelector('#sectbl tbody').innerHTML = SECTIONS.map(([c,n,nu,d])=>
+    `<tr><td class="mono">${c}</td><td>${lang==='uz'?nu:n}</td><td>${d}</td></tr>`
+  ).join('');
+  renderPdfList(lang, currentPaths);
+  paintAppInfo(lang);
+}
+
+// Show the app's own version and when the on-device data was last actually
+// updated (either an app update or a successful "⟳" sync) — useful for
+// support/diagnostics without needing to dig through Android settings.
+function paintAppInfo(lang){
+  const L = UI[lang] || UI.ru;
+  try {
+    if (window.TmkNative && TmkNative.getDataInfo) {
+      const info = JSON.parse(TmkNative.getDataInfo());
+      const parts = [L.appVersion + (info.appVersionName || '?')];
+      if (info.lastSyncMillis) {
+        const d = new Date(info.lastSyncMillis);
+        const locale = lang==='uz' ? 'ru-RU' : 'ru-RU'; // no built-in uz-UZ Latin date formatting in WebView; keep numeric
+        parts.push(L.dataUpdated + d.toLocaleDateString(locale) + ' ' + d.toLocaleTimeString(locale, {hour:'2-digit', minute:'2-digit'}));
+      }
+      document.getElementById('appinfo').textContent = parts.join(' · ');
+    }
+  } catch (e) { /* not running inside the app — leave it empty */ }
+}
+
+const tmkLang = TmkLang.initChild(paintUI);
+paintUI(tmkLang.getLang());
+TmkTheme.initChild();
+</script>
+</body>
+</html>
