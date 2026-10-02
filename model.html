@@ -14,7 +14,7 @@
   --line:#CBD5D2; --accent:#0B6E66;
   --s-water:#23873A; --s-steam:#C9302A; --s-air:#2362C0; --s-gas:#C79A00; --s-acid:#DD6A12;
   --s-alkali:#7A4DB8; --s-sulfur:#8A5A2B; --s-solid:#7C8683; --s-kipair:#C13584; --s-oil:#B08900; --s-fuel:#5B4636; --s-chem:#2E8B7C; --underground:#8A6D3B;
-  --sky:#D9E6EC; --ground:#8DBA5A; --grid:#BAC7C2; --steel:#C3CCCA; --grass:#72AC48; --field:#86B65A; --soil:#9C7A55; --asphalt:#55595D; --pave:#C9CDCB; --rack:#4F9E92; --tree:#3F7F34; --bldg:#FFFFFF; --edge:#6F7F7A; --sel:#0B6E66;
+  --sky:#D9E6EC; --ground:#8DBA5A; --grid:#BAC7C2; --steel:#C3CCCA; --grass:#72AC48; --field:#86B65A; --soil:#9C7A55; --asphalt:#55595D; --pave:#C9CDCB; --rack:#85837D; --tree:#3F7F34; --bldg:#FFFFFF; --edge:#6F7F7A; --sel:#0B6E66;
   --shadow:0 10px 30px rgba(20,32,29,.16);
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --sans:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
@@ -27,7 +27,7 @@
     --line:#2C3A36; --accent:#3FC1B3;
     --s-water:#4CC265; --s-steam:#FF6B5E; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
     --s-alkali:#B18CF0; --s-sulfur:#C99158; --s-solid:#9AA5A1; --s-kipair:#F06BC6; --s-oil:#E0BB3F; --s-fuel:#A9917E; --s-chem:#5FC9B8; --underground:#C9A876;
-    --sky:#121A18; --ground:#22341F; --grid:#2A3834; --steel:#7D8B87; --grass:#294A24; --field:#2C4527; --soil:#4A3C2C; --asphalt:#2B2F31; --pave:#4A5350; --rack:#3C766D; --tree:#20421C; --bldg:#AFC3BD; --edge:#8FA39D; --sel:#3FC1B3;
+    --sky:#121A18; --ground:#22341F; --grid:#2A3834; --steel:#7D8B87; --grass:#294A24; --field:#2C4527; --soil:#4A3C2C; --asphalt:#2B2F31; --pave:#4A5350; --rack:#4E5552; --tree:#20421C; --bldg:#AFC3BD; --edge:#8FA39D; --sel:#3FC1B3;
     --shadow:0 10px 30px rgba(0,0,0,.5);
   }
 }
@@ -37,7 +37,7 @@
   --line:#2C3A36; --accent:#3FC1B3;
   --s-water:#4CC265; --s-steam:#FF6B5E; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
   --s-alkali:#B18CF0; --s-sulfur:#C99158; --s-solid:#9AA5A1; --s-kipair:#F06BC6; --s-oil:#E0BB3F; --s-fuel:#A9917E; --s-chem:#5FC9B8; --underground:#C9A876;
-  --sky:#121A18; --ground:#22341F; --grid:#2A3834; --steel:#7D8B87; --grass:#294A24; --field:#2C4527; --soil:#4A3C2C; --asphalt:#2B2F31; --pave:#4A5350; --rack:#3C766D; --tree:#20421C; --bldg:#AFC3BD; --edge:#8FA39D; --sel:#3FC1B3;
+  --sky:#121A18; --ground:#22341F; --grid:#2A3834; --steel:#7D8B87; --grass:#294A24; --field:#2C4527; --soil:#4A3C2C; --asphalt:#2B2F31; --pave:#4A5350; --rack:#4E5552; --tree:#20421C; --bldg:#AFC3BD; --edge:#8FA39D; --sel:#3FC1B3;
   --shadow:0 10px 30px rgba(0,0,0,.5);
 }
 *{box-sizing:border-box}
@@ -513,7 +513,7 @@ const E = [
  {t:'EXT-G2',k:'extgas',pts:[[5520,2615.7],[5216.8,2623.2],[5216.8,2527.4],[5215.7,2297.7]],ug:2,hcomp:[5249.8,5360.8,5471.8],vcomp:2485.4,meter:2308.1,grp:2298.8,plan:'ГСН 12/792, л. 17'},
 {t:'EXT-B0',k:'extline',col:0x2F7FD0,w:.9,pts:[[5218.4,2395.1],[5177.9,2395.1],[5177.9,2596.0],[5193.6,2596.0],[5195.0,2619.6],[5197.0,2712.0],[5197.1,2730]],wells:[[5218.4,2395.1]],plan:'НВ, л. 2 (план с сетями В0 М1:500)'},
 {t:'EXT-KL10',k:'extline',col:0xD8452B,w:1.2,pts:[[5258.5,2425.5],[5223.0,2425.5],[5224.4,2584.0],[5199.4,2584.0],[5199.4,2730]],posts:50,plan:'/2026-07-ЭС, л. 7'},
-{t:'RW-1…6',k:'railnet',lines:{"1": [[5391.94, 2158.7], [5398.07, 2521.58]], "2": [[5388.5, 2205.32], [5388.42, 2227.57], [5388.5, 2239.64], [5391.5, 2416.73], [5393.48, 2448.32], [5395.37, 2465.9], [5397.46, 2485.13]], "L": [[5392.08, 2167.07], [5390.61, 2182.88], [5377.66, 2320.67]], "3": [[5384.43, 2248.54], [5384.37, 2270.6], [5384.45, 2282.64], [5388.49, 2521.58]], "4": [[5380.36, 2291.76], [5380.29, 2313.39], [5380.37, 2325.38], [5383.69, 2521.56]], "5": [[5377.66, 2320.67], [5376.68, 2339.99], [5376.16, 2359.31], [5378.91, 2521.55]], "6": [[5381.15, 2158.88], [5380.9, 2159.71], [5379.61, 2163.57], [5378.16, 2167.41], [5372.82, 2181.3], [5370.08, 2189.05], [5367.77, 2196.98], [5365.88, 2204.97], [5364.45, 2213.06], [5363.45, 2221.26], [5362.92, 2229.45], [5362.84, 2237.68], [5364.13, 2313.98]]},stops:[[5398.09, 2522.48], [5388.51, 2522.64], [5383.71, 2522.72], [5378.93, 2522.8], [5364.09, 2311.63]],plan:'UZLS-3147-4T100-01 Rev.E'},
+{t:'RW-1…6',k:'railnet',lines:{"1": [[5390.32, 2063], [5391.94, 2158.7], [5398.07, 2521.58]], "2": [[5388.5, 2205.32], [5388.42, 2227.57], [5388.5, 2239.64], [5391.5, 2416.73], [5393.48, 2448.32], [5395.37, 2465.9], [5397.46, 2485.13]], "L": [[5392.08, 2167.07], [5390.61, 2182.88], [5377.66, 2320.67]], "3": [[5384.43, 2248.54], [5384.37, 2270.6], [5384.45, 2282.64], [5388.49, 2521.58]], "4": [[5380.36, 2291.76], [5380.29, 2313.39], [5380.37, 2325.38], [5383.69, 2521.56]], "5": [[5377.66, 2320.67], [5376.68, 2339.99], [5376.16, 2359.31], [5378.91, 2521.55]], "6": [[5390.61, 2080.0], [5390.68, 2086.11], [5390.69, 2091.85], [5390.63, 2097.24], [5390.51, 2102.31], [5390.32, 2107.08], [5390.08, 2111.58], [5389.78, 2115.82], [5389.41, 2119.84], [5389.0, 2123.66], [5388.53, 2127.29], [5388.0, 2130.77], [5387.43, 2134.11], [5386.8, 2137.34], [5386.13, 2140.49], [5385.4, 2143.57], [5384.64, 2146.62], [5383.83, 2149.65], [5382.98, 2152.69], [5382.08, 2155.76], [5381.15, 2158.88], [5380.9, 2159.71], [5379.61, 2163.57], [5378.16, 2167.41], [5372.82, 2181.3], [5370.08, 2189.05], [5367.77, 2196.98], [5365.88, 2204.97], [5364.45, 2213.06], [5363.45, 2221.26], [5362.92, 2229.45], [5362.84, 2237.68], [5364.13, 2313.98]]},stops:[[5398.09, 2522.48], [5388.51, 2522.64], [5383.71, 2522.72], [5378.93, 2522.8], [5364.09, 2311.63]],plan:'UZLS-3147-4T100-01 Rev.E'},
  {t:'SM-12303A~D',k:'rail',norails:1,X:5377.8,y:[2412,2482],pl:{X:5374.1,w:2.4,top:6.2,y:[2420,2474]},plan:'3147-5G123-05'},
  {t:'VE-12301AB',k:'tank',X:5347.606,Y:2460.54,d:24,h:14,R:24,base:1.2,nso:'3147-5H123-01-01',plan:'3147-5G123-05'},
  {t:'TW-12301',k:'vcyl',X:5347.6,Y:2426.6,d:1.4,h:4,base:18.4,plan:'3147-5G123-05',approx:1},
@@ -1135,7 +1135,7 @@ function start(){
  function mk(key,opts){const m=new THREE.MeshStandardMaterial(Object.assign({roughness:.75,metalness:.1,side:THREE.DoubleSide},opts));M[key]=m;mats.push(m);return m}
  mk('ground',{}); mk('steel',{metalness:.35,roughness:.5}); mk('steelDark',{metalness:.35,roughness:.55});
  mk('bldg',{transparent:true,opacity:.18,depthWrite:false}); mk('bund',{transparent:true,opacity:.5});
- mk('rack',{});
+ mk('rack',{roughness:.9,metalness:0});
  // Ground layers (field → soil strips → lawn → paving → asphalt → road marks) lie a few mm apart. Depth-testing
  // them against each other made them flicker while the camera moved (z-fighting: on many phones/GPUs the depth
  // buffer can't resolve 5 mm at 300 m, and polygonOffset is ignored with the logarithmic depth buffer).
@@ -1212,7 +1212,7 @@ function start(){
  { const c=[[5217.2,2229.8],[5375,2229.8],[5375,2585.3],[5223.2,2585.3],[5217.2,2229.8]].map(p=>P(p[0],p[1],.05));
    void c; }
  // north arrow
- { const cone=new THREE.Mesh(new THREE.ConeGeometry(3,9,16),M.steelDark); cone.rotation.x=-Math.PI/2; cone.position.copy(P(5382,2238,1)); scene.add(cone); }
+ // (north-arrow cone removed — it stood on the railway approach NW of store 121)
 
  const pickables=[]; const byTag={}; const bySec={}; const allObj=[];
  function reg(obj,tag,sec,info){obj.userData={tag,sec,info};pickables.push(obj);(byTag[tag]=byTag[tag]||[]).push(obj);(bySec[sec]=bySec[sec]||[]).push(obj);allObj.push(obj);obj.userData.base=obj.material}
@@ -2593,22 +2593,23 @@ function start(){
    // acid: track 1 from the west → lead L → track 5, dead end at the east (arms SM-12303A~D)
    const RN=E.find(e=>e.k==='railnet').lines;
    const ARMS=E.filter(e=>e.k==='larm').map(e=>e.Y).sort((a,b)=>b-a);
-   const acidTrack=[[5391.3,1900],...RN['1'].slice(0,1),...RN['L'],...RN['5'].slice(1)];
+   const W0=RN['1'][0],k1=(RN['1'][1][0]-W0[0])/(RN['1'][1][1]-W0[1]),WEST=[W0[0]-k1*163,1900];   // single access track (track 1 extended west)
+   const acidTrack=[WEST,...RN['1'].slice(0,2),...RN['L'],...RN['5'].slice(1)];
    const tanks=[0,1,2,3].map(i=>tankCar(String(51034470+i*17)));
    const drops=ARMS.map(Y=>{const X=5376.16+(Y-2359.31)*2.75/162.24;const d=new THREE.Mesh(new THREE.CylinderGeometry(.085,.085,1,12),RM.pvdf);d.position.copy(P(X,Y,6.25));d.visible=false;scene.add(d);
      const st=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,1,8),RM.acid);st.visible=false;scene.add(st);return{d,st,X,Y}});
-   TRAINS.push(makeTrain({track:acidTrack,cars:tanks,loco:loco('0417'),frontY:ARMS[0]+.0,phase:0,T:[46,6,30,6,44,10],
+   TRAINS.push(makeTrain({track:acidTrack,cars:tanks,loco:loco('0417'),frontY:ARMS[0]+.0,phase:0,T:[46,6,30,6,44,8],
      work(w,cars){const low=w<0?0:w<.12?smooth(w/.12):w>.88?smooth((1-w)/.12):1, fill=w>.15&&w<.85;
        cars.forEach((c,i)=>{const lid=c.userData.lid;lid.rotation.x=-1.6*(w<0?0:(w<.08?smooth(w/.08):w>.94?smooth((1-w)/.06):1))});
        drops.forEach((q,i)=>{const L=1.75*low;q.d.visible=L>.02;q.d.scale.y=Math.max(L,.001);q.d.position.y=6.25-L/2;
          q.st.visible=fill;if(fill){q.st.scale.y=.55;q.st.position.copy(P(q.X,q.Y,6.25-L-.25+.12*Math.sin(performance.now()/90+i)))}})}}));
    // sulfur: west access line → track 6 → raised track in store 121, dead end at the east stop
-   const sTrack=[[5381.4,1900],...RN['6']];
+   const sTrack=[WEST,W0,...RN['6']];                                          // turnout from track 1 onto track 6
    const hops=[0,1,2,3].map(i=>hopperCar(String(95561230+i*23)));
    const NP=4*4*36,pg=new THREE.BufferGeometry(),pp=new Float32Array(NP*3);pg.setAttribute('position',new THREE.BufferAttribute(pp,3));
    const pts=new THREE.Points(pg,new THREE.PointsMaterial({color:0xE8CC3A,size:.3,sizeAttenuation:true}));pts.frustumCulled=false;pts.visible=false;scene.add(pts);
    const seed=new Float32Array(NP).map((_,i)=>((i*9301+49297)%233280)/233280);
-   TRAINS.push(makeTrain({track:sTrack,cars:hops,loco:loco('0523'),frontY:2304.0,phase:37,T:[42,6,32,6,40,12],back:18,
+   TRAINS.push(makeTrain({track:sTrack,cars:hops,loco:loco('0523'),frontY:2304.0,phase:70,T:[42,6,32,6,40,14],back:18,
      work(w,cars){const open=w<0?0:w<.08?smooth(w/.08):w>.9?smooth((1-w)/.1):1;
        cars.forEach(c=>c.userData.gates.forEach(gp=>gp.rotation.x=1.2*open));
        pts.visible=w>.06&&w<.92;if(!pts.visible)return;const tt=performance.now()/1000;let k=0;
