@@ -78,6 +78,7 @@ const KNOWN = {
  "docs_pdf/G123-03-pid.pdf": {title:["123 · Склад серной кислоты — технологическая схема (P&ID)","123 · Kislota ombori — texnologik sxema (P&ID)"],doc:"3147-5G123-03"},
  "docs_pdf/G123-loading-arm-HCL26040.pdf": {title:["123 · Налив кислоты в ж/д цистерны — наливное устройство AL1402 DN150","123 · Kislotani t/y sisternalariga quyish — AL1402 DN150 quyish qurilmasi"],doc:"HCL26040-00, HCL26040-03"},
  "docs_pdf/R1141-04-plan.pdf": {title:["114.1 · Станция деаэрации воды — план оборудования","114.1 · Suv deaeratsiya stansiyasi — jihozlar rejasi"],doc:"3147-5R114.1-04"},
+ "docs_pdf/R114-deaerator-HD25LD003-40.pdf": {title:["114.1 · Деаэратор DA-114.101 — сборочный чертёж (бак Ø2200 × 11 200, колонка Ø1416)","114.1 · DA-114.101 deaeratori — yig‘ish chizmasi (bak Ø2200 × 11 200, kolonka Ø1416)"],doc:"HD25LD003-40 · HDPEC / Lianyungang Lide, 2025"},
  "docs_pdf/R114-sampling-coolers-35SCG2504-9-2.pdf": {title:["114 · Пробоотборные холодильники SC-11401A~D (комплект 4 шт.)","114 · SC-11401A~D namuna oluvchi sovutgichlari (4 dona to‘plam)"],doc:"35SCG2504-9-2-0 (SOPO CERE)"},
  "docs_pdf/UT-compressed-air-Langair.pdf": {title:["136 · Компрессорная: компрессор, фильтры, осушитель, ресиверы (Langair)","136 · Kompressor xonasi: kompressor, filtrlar, quritgich, resiverlar (Langair)"],doc:"Langair, 2025.12"},
  "docs_pdf/R115-crane-32-5t-19.5m.pdf": {title:["115 · Мостовой кран машзала 32/5 т, пролёт 19,5 м (LR-11501)","115 · Mashina zali ko‘prikli krani 32/5 t, oraliq 19,5 m (LR-11501)"],doc:"CXSM32051950 (Henan Sinoko)"},
@@ -150,6 +151,9 @@ const KNOWN = {
  "docs_pdf/R115-17-plan-3.pdf": {title:["115 · Выработка электроэнергии — план оборудования, лист 3","115 · Elektr energiyasi ishlab chiqarish — jihozlar rejasi, 3-varaq"],doc:"3147-5R115-17"},
  "docs_pdf/W131-water-station.pdf": {title:["131 · Водоочистная станция — технологическая схема и план","131 · Suv tozalash stansiyasi — texnologik sxema va reja"],doc:"净水站工艺施工图"},
  "docs_pdf/W133-134-cooling-towers.pdf": {title:["133/134 · Градирни и насосная оборотной воды — план, фундаменты, трубопроводы, разрезы","133/134 · Gradirnyalar va aylanma suv nasos xonasi — reja, poydevorlar, quvurlar, kesimlar"],doc:"3147-4S133/134-03…06"},
+ "docs_pdf/EXT-gas-supply-12-792.pdf": {title:["Внешние сети · Подводящий газопровод среднего давления Ø219 (ГСН), 8,8 км от ГРС «Навои-1»","Tashqi tarmoqlar · O‘rta bosimli gaz quvuri Ø219 (GSN), «Navoiy-1» GTS dan 8,8 km"],doc:"Шифр 12/792 · SAMANDAR IDEAL GAZ, 2025"},
+ "docs_pdf/EXT-water-B0.pdf": {title:["Внешние сети · Наружный водопровод В0 Ø219×5 от насосной станции","Tashqi tarmoqlar · Tashqi suv quvuri V0 Ø219×5 nasos stansiyasidan"],doc:"НВ · SAMANDAR IDEAL GAZ, 2025"},
+ "docs_pdf/EXT-power-KL-10kV.pdf": {title:["Внешние сети · Внешнее электроснабжение: КЛ-10 кВ 2 × 3 × АПвПу-1×300 от ГПП «Электрохимия», 1,97 км","Tashqi tarmoqlar · Tashqi elektr ta’minoti: KL-10 kV 2 × 3 × APvPu-1×300 «Elektroximiya» GPP dan, 1,97 km"],doc:"/2026-07-ЭС · SCRIBER ENGINEERING ARTS"},
 };
 
 const UI = {
@@ -225,12 +229,13 @@ const SECTIONS = [
  ["112","Сжигание серы и конверсия","Oltingugurtni yoqish va konversiya","3147-5G112-03 (P&ID), 04 (перечень)"],
  ["113","Сушка и абсорбция","Quritish va absorbsiya","3147-5G113-03 (P&ID), 04 (перечень)"],
  ["123","Склад серной кислоты","Kislota ombori","3147-5G123-04 (перечень); HCL26040-00/-03 (налив)"],
- ["114 / 114.1","Утилизация тепла и деаэрация","Issiqlikni utilizatsiya qilish va deaeratsiya","3147-5R114-01/02; 5R114.1-02"],
+ ["114 / 114.1","Утилизация тепла и деаэрация","Issiqlikni utilizatsiya qilish va deaeratsiya","3147-5R114-01/02; 5R114.1-02; деаэратор HD25LD003-40"],
  ["115","Выработка электроэнергии","Elektr energiyasi ishlab chiqarish","3147-5R115-02 (перечень)"],
  ["136 · 135 · 101 · 141 · 142","Вспомогательные службы","Yordamchi xizmatlar","3147-5G136-04, 5R135-02"],
  ["131","Водоочистная станция","Suv tozalash stansiyasi","Sichuan Shengjiuyuan, SJY-GY-01…14"],
  ["132","Станция деминерализации воды","Suvni demineralizatsiya qilish stansiyasi","Sichuan Shengjiuyuan, Rev.A 2026.5.29"],
  ["133 · 134","Оборотное водоснабжение","Aylanma suv ta’minoti","3147-4S133/134-03…06 (градирни, насосная); регламент §4.2.10–4.2.11"],
+ ["—","Внешние сети: газ, вода, электроснабжение","Tashqi tarmoqlar: gaz, suv, elektr ta’minoti","ГСН 12/792; НВ (В0 Ø219); КЛ-10 кВ /2026-07-ЭС"],
 ];
 
 function paintUI(lang){
