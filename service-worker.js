@@ -1,4 +1,4 @@
-const CACHE = 'tmk-plant-v13';
+const CACHE = 'tmk-plant-v15';
 const ASSETS = [
   "sec_img/eq_EX-13501_2.jpg",
   "sec_img/eq_EX-13501_1.jpg",
@@ -190,24 +190,27 @@ const ASSETS = [
 ];
 self.addEventListener('install', e => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(()=>{})));
+  e.waitUntil(caches.open(CACHE).then(c => Promise.all(ASSETS.map(u =>
+    fetch(u, {cache:'reload'}).then(r => r.ok && c.put(u, r)).catch(()=>{})))));
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
+  e.waitUntil(caches.keys()
+    .then(keys => Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))
+    .then(() => self.clients.claim()));
 });
+// Network-first: при наличии сети всегда берём свежий файл (в обход HTTP-кэша),
+// кэш используется только офлайн.
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
+  const req = e.request;
+  if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return;
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      const fetchPromise = fetch(e.request).then(resp => {
-        if (resp && resp.status === 200 && e.request.url.startsWith(self.location.origin)) {
-          const clone = resp.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return resp;
-      }).catch(() => cached);
-      return cached || fetchPromise;
-    })
+    fetch(req, {cache:'no-cache'}).then(resp => {
+      if (resp && resp.status === 200) {
+        const clone = resp.clone();
+        caches.open(CACHE).then(c => c.put(req, clone));
+      }
+      return resp;
+    }).catch(() => caches.match(req, {ignoreSearch:true})
+      .then(c => c || (req.mode === 'navigate' ? caches.match('index.html') : undefined)))
   );
 });

@@ -167,7 +167,7 @@ footer{font-size:11.5px;color:var(--ink3);padding-top:8px;max-width:120ch}
   <div class="bar" role="group" aria-label="Управление сценой">
     <select id="secSel" aria-label="Отделение"><option value="">Все отделения</option></select>
     <button class="btn" id="bHome" type="button">Общий вид</button>
-    <button class="btn" id="bBld" type="button" aria-pressed="true">Здания прозрачные</button>
+    <button class="btn" id="bBld" type="button" aria-pressed="false">Здания прозрачные</button>
     <button class="btn" id="bAnim" type="button" aria-pressed="true">Движение потоков</button>
     <button class="btn" id="bLbl" type="button" aria-pressed="true">Подписи</button>
     <button class="btn" id="bHelp" type="button" title="Вращение — левая кнопка мыши, сдвиг — правая, масштаб — колесо. Нажмите на аппарат или здание, чтобы открыть карточку. Внизу — разрезы: плоскость двигается ползунком, внутреннее устройство аппаратов видно на срезе." aria-label="Подсказка по управлению">?</button>
@@ -221,7 +221,7 @@ footer{font-size:11.5px;color:var(--ink3);padding-top:8px;max-width:120ch}
   </div>
 </div>
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Чертёж"><img id="lbImg" alt=""><div class="hint" id="lbHint"></div><div class="cap" id="lbCap"></div><div class="row"><button type="button" id="lbPrev">←</button><button type="button" id="lbX">Закрыть</button><button type="button" id="lbNext">→</button></div></div>
-<footer>Расстановка — по координатам генплана UZLS-3147-4T100-01 Rev.E (2026.08.05), размеры аппаратов — по перечням оборудования. Конвертер, печь, теплообменники газ–газ, воздухоподогреватель, башни, циркуляционный бак, плавильные и фильтровальные баки, скруббер и резервуары построены по листам общего вида НСО (3147-5H111…5H123). Расстановка оборудования отделений 111, 112 и 113 — по планам расположения 3147-5G111-07/08, 3147-5G112-06/07, 3147-5G113-05; эстакады — два яруса EL 5,600 и 7,100 по 3147-5G116. Габариты, отмеченные в карточке как «условные», приблизительные. Трубопроводы показывают направление потоков по технологическим схемам, а не реальную трассировку. Здания — по архитектурным чертежам 5J101…5J142 (отметки, кровли, перекрытия, краны); внутреннее устройство аппаратов на разрезах схематичное. Нормы режима — по временному технологическому регламенту, табл. 8.1.</footer>
+<footer>Расстановка — по координатам генплана UZLS-3147-4T100-01 Rev.E (2026.08.05), размеры аппаратов — по перечням оборудования. Конвертер, печь, теплообменники газ–газ, воздухоподогреватель, башни, циркуляционный бак, плавильные и фильтровальные баки, скруббер и резервуары построены по листам общего вида НСО (3147-5H111…5H123). Расстановка оборудования отделений 111, 112 и 113 — по планам расположения 3147-5G111-07/08, 3147-5G112-06/07, 3147-5G113-05; эстакады — два яруса EL 5,600 и 7,100 по 3147-5G116. Габариты, отмеченные в карточке как «условные», приблизительные. Трубопроводы показывают направление потоков по технологическим схемам, а не реальную трассировку. Здания — по архитектурным чертежам 5J101…5J142 (отметки, кровли, перекрытия, краны), отделка фасадов — по архитектурному рендеру (SULFAT, 2026); внутреннее устройство аппаратов на разрезах схематичное. Нормы режима — по временному технологическому регламенту, табл. 8.1.</footer>
 
 <script src="vendor/three.min.js"></script>
 <script src="vendor/OrbitControls.js"></script>
@@ -358,7 +358,7 @@ const P=(X,Y,h=0)=>new THREE.Vector3(Y-Y0,h,-(X-X0));
 
 // Buildings / areas from the general plan (corner coordinates)
 const BLD = [
- {id:'b121',sec:'Hg121',code:'121',name:'Склад серы и подача сырья',nameu:"Oltingugurt ombori va xomashyo uzatish",x:[5335.3,5371.3],y:[2238.92,2313.92],h:13.5,approxH:true,info:'Склад гранулированной серы 75 × 36 м, категория В. Штабель высотой до 7 м, грейферный мостовой кран LR-12101 на отметке 12,0 м, приёмные бункеры VE-12101A/B у восточной стены (план 3147-5Hg121-05).',infou:"Donador oltingugurt ombori 75 × 36 m, V toifasi. Balandligi 7 m gacha bo‘lgan uyum, 12,0 belgisida greyfer ko‘prikli kran LR-12101, sharqiy devor yonida VE-12101A/B qabul bunkerlari (3147-5Hg121-05 rejasi).",
+ {id:'b121',plinth:3.0,noWin:1,noDoor:1,sec:'Hg121',code:'121',name:'Склад серы и подача сырья',nameu:"Oltingugurt ombori va xomashyo uzatish",x:[5335.3,5371.3],y:[2238.92,2313.92],h:13.5,approxH:true,info:'Склад гранулированной серы 75 × 36 м, категория В. Штабель высотой до 7 м, грейферный мостовой кран LR-12101 на отметке 12,0 м, приёмные бункеры VE-12101A/B у восточной стены (план 3147-5Hg121-05).',infou:"Donador oltingugurt ombori 75 × 36 m, V toifasi. Balandligi 7 m gacha bo‘lgan uyum, 12,0 belgisida greyfer ko‘prikli kran LR-12101, sharqiy devor yonida VE-12101A/B qabul bunkerlari (3147-5Hg121-05 rejasi).",
   parts:[{x:[5335.3,5371.3],y:[2238.92,2313.92],roof:'gable',along:'y',eaves:12.5,ridge:13.5,crane:12.0,noBridge:1}]},
  {id:'b111',sec:'G111',code:'111',name:'Здание фильтрации жидкой серы',nameu:"Suyuq oltingugurtni filtrlash binosi",x:[5334.0,5357.7],y:[2355.7,2375.4],h:6.7,arch:'UZLS-3147-5J111 Rev.B',
   parts:[{open:1,x:[5334.0,5357.7],y:[2355.7,2375.4],slabs:[5.5],rail:1.2,cx:[0,3.3,9.9,18.3,23.7],cy:[0,4.5,12,19.7]}],
@@ -374,19 +374,19 @@ const BLD = [
          {x:[5232.0,5262.5],y:[2421.0,2430.0],roof:'flat',eaves:19.1,parapet:20.6,slabs:[5.0,8.9,14.6]}],
   info:'Машинный зал (оси 1–4, пролёт 21 м) и 4-этажная подстанция 137 (оси 4–5, 9 м). В зале отметка обслуживания турбины 8,000, промежуточная площадка 3,600, мостовой кран на рельсе 15,500, двускатная кровля: карниз 19,950, конёк 21,000. Подстанция: РУ ВН на 0,000, кабельный этаж 5,000, РУ НН 8,900, помещение электроники 14,600, кровля 19,100, парапет 20,600. Ворота 4,8 × 4,0 м по оси A.',infou:"Mashina zali (1–4 o‘qlar, oralig‘i 21 m) va 4 qavatli 137-kichik stansiya (4–5 o‘qlar, 9 m). Zalda turbinaga xizmat ko‘rsatish belgisi 8,000, oraliq maydoncha 3,600, ko‘prikli kran relsi 15,500, ikki qiyalikli tom: karniz 19,950, tepa 21,000. Kichik stansiya: YuK qurilmasi 0,000 da, kabel qavati 5,000, PK qurilmasi 8,900, elektronika xonasi 14,600, tom 19,100, parapet 20,600. A o‘qi bo‘yicha 4,8 × 4,0 m darvoza."},
  {id:'b131',sec:'W131',code:'131.1',name:'Станция очистки воды',nameu:"Suv tozalash stansiyasi",x:[5234.7,5263.6],y:[2452.5,2463.4],h:9.07,arch:'UZLS-3147-5J131.1 Rev.B',
-  parts:[{x:[5234.7,5239.4],y:[2452.5,2463.4],roof:'flat',eaves:4.5,parapet:5.1},{x:[5239.7,5263.6],y:[2452.5,2463.4],roof:'gable',along:'x',eaves:8.5,ridge:9.065}],
+  parts:[{x:[5234.7,5239.4],y:[2452.5,2463.4],roof:'flat',eaves:4.5,parapet:5.1,style:'plaster'},{x:[5239.7,5263.6],y:[2452.5,2463.4],roof:'gable',along:'x',eaves:8.5,ridge:9.065}],
   info:'Зал оборудования 23,7 × 11,3 м под двускатной кровлей (карниз 8,500, конёк 9,065) и пристройка с пультовой и реагентным отделением (плита 4,500, парапет 5,100).',infou:"Ikki qiyalikli tom ostidagi 23,7 × 11,3 m jihozlar zali (karniz 8,500, tepa 9,065) va boshqaruv pulti hamda reagent bo‘limi bilan qo‘shimcha bino (plita 4,500, parapet 5,100)."},
- {id:'b1312',sec:'W131',code:'131.2',name:'Насосная станции очистки воды',nameu:"Suv tozalash stansiyasi nasos xonasi",x:[5235.27,5241.97],y:[2478.60,2484.71],h:5.1,arch:'UZLS-3147-5J131.2 Rev.B',
+ {id:'b1312',style:'plaster',sec:'W131',code:'131.2',name:'Насосная станции очистки воды',nameu:"Suv tozalash stansiyasi nasos xonasi",x:[5235.27,5241.97],y:[2478.60,2484.71],h:5.1,arch:'UZLS-3147-5J131.2 Rev.B',
   parts:[{x:[5235.27,5241.97],y:[2478.60,2484.71],roof:'flat',eaves:4.5,parapet:5.1}],
   info:'Подземная насосная 15,2 × 6,6 м (пол −4,900…−5,100, приямок −6,000) и наземный павильон с лестницей и монтажным люком (кровля 4,500, парапет 5,100), таль 2 т. Рядом — два подземных резервуара по 600 м³.',infou:"Yer osti nasos xonasi 15,2 × 6,6 m (pol −4,900…−5,100, priyamka −6,000) va zina hamda montaj lyugi bilan yer usti pavilyoni (tom 4,500, parapet 5,100), 2 t talь. Yaqinida — har biri 600 m³ li ikkita yer osti rezervuari."},
  {id:'b132',sec:'W132',code:'132',name:'Станция деминерализации воды',nameu:"Suvni demineralizatsiya qilish stansiyasi",x:[5282.6,5315.5],y:[2482.5,2514.0],h:9.2,arch:'UZLS-3147-5J132 Rev.B',
   parts:[{x:[5282.6,5315.5],y:[2482.5,2489.5],roof:'flat',eaves:6.6,parapet:7.2},{x:[5282.6,5315.5],y:[2489.7,2514.0],roof:'gable',along:'x',eaves:8.0,ridge:9.2}],
   info:'Зал оборудования (оси 3–7, 24 м) под двускатной кровлей (карниз 8,000, конёк 9,200) и пристройка с электрощитовой, реагентной и помещением регенерации (плита 6,600, парапет 7,200). Рулонные ворота высотой 4 м в торцах.',infou:"Ikki qiyalikli tom ostidagi jihozlar zali (3–7 o‘qlar, 24 m; karniz 8,000, tepa 9,200) va elektr shchit xonasi, reagent xonasi hamda regeneratsiya xonasi bilan qo‘shimcha bino (plita 6,600, parapet 7,200). Peshtoqlarda balandligi 4 m rulonli darvozalar."},
- {id:'b133',sec:'W133',code:'133, 134',name:'Насосная оборотной воды',nameu:"Aylanma suv nasos xonasi",x:[5280.6,5288.8],y:[2405.4,2447.0],h:5.3,arch:'UZLS-3147-5J133.2, 134.2 Rev.B',
+ {id:'b133',style:'plaster',sec:'W133',code:'133, 134',name:'Насосная оборотной воды',nameu:"Aylanma suv nasos xonasi",x:[5280.6,5288.8],y:[2405.4,2447.0],h:5.3,arch:'UZLS-3147-5J133.2, 134.2 Rev.B',
   parts:[{x:[5280.6,5288.8],y:[2405.4,2447.0],roof:'flat',eaves:4.7,parapet:5.3,hoist:4.0}],
   below:[{x:[5280.9,5288.5],y:[2405.7,2443.2],top:0,bottom:-2.95,n:'Насосный приямок −2,950 (6 циркуляционных насосов)'}],
   info:'Насосная станций оборотной воды 133 и 134, 41,5 × 7,5 м. Шесть циркуляционных насосов в приямке −2,950, смотровой проход и монтажная площадка на 0,000, электрическая таль 10 т. Плоская кровля 4,700, парапет 5,300.',infou:"133 va 134 aylanma suv stansiyalari nasos xonasi, 41,5 × 7,5 m. −2,950 priyamkasida oltita sirkulyatsiya nasosi, ko‘rish yo‘lagi va 0,000 dagi montaj maydonchasi, 10 t elektr talь. Yassi tom 4,700, parapet 5,300."},
- {id:'b1331',sec:'W133',code:'133.1',name:'Дозировочная',nameu:"Dozalash xonasi",x:[5310.0,5315.4],y:[2407.1,2421.7],h:5.4,arch:'UZLS-3147-5J133.1, 134.1 Rev.B',
+ {id:'b1331',style:'plaster',sec:'W133',code:'133.1',name:'Дозировочная',nameu:"Dozalash xonasi",x:[5310.0,5315.4],y:[2407.1,2421.7],h:5.4,arch:'UZLS-3147-5J133.1, 134.1 Rev.B',
   parts:[{x:[5310.0,5315.4],y:[2407.1,2421.7],roof:'flat',eaves:4.8,parapet:5.4}],
   info:'Реагентное помещение и склад реагентов для оборотной воды, 14,6 × 5,1 м, плоская кровля 4,800, парапет 5,400.',infou:"Aylanma suv uchun reagent xonasi va reagentlar ombori, 14,6 × 5,1 m, yassi tom 4,800, parapet 5,400."},
  {id:'b135',sec:'UT',code:'135',name:'Пусковая котельная',nameu:"Ishga tushirish qozonxonasi",x:[5229.3,5250.9],y:[2277.2,2289.6],h:7.6,arch:'3147-4J135 Rev.A',
@@ -395,12 +395,12 @@ const BLD = [
  {id:'b136',sec:'UT',code:'136',name:'Компрессорная',nameu:"Kompressor xonasi",x:[5228.8,5240.8],y:[2258.2,2265.6],h:6.6,arch:'UZLS-3147-5J136 Rev.A',
   parts:[{x:[5228.8,5240.8],y:[2258.2,2265.6],roof:'flat',eaves:6.0,parapet:6.6}],
   info:'Одно помещение 12 × 7,2 м: воздушные компрессоры CO-13601A/B, осушители и ресиверы. Плоская кровля 6,000, парапет 6,600.',infou:"Bitta xona 12 × 7,2 m: CO-13601A/B havo kompressorlari, quritgichlar va resiverlar. Yassi tom 6,000, parapet 6,600."},
- {id:'b101',sec:'UT',code:'101',name:'Пожарная насосная станция',nameu:"Yong‘in nasos stansiyasi",x:[5235.6,5243.25],y:[2504.6,2513.56],h:5.4,arch:'UZLS-3147-5J101 Rev.B',
+ {id:'b101',style:'plaster',sec:'UT',code:'101',name:'Пожарная насосная станция',nameu:"Yong‘in nasos stansiyasi",x:[5235.6,5243.25],y:[2504.6,2513.56],h:5.4,arch:'UZLS-3147-5J101 Rev.B',
   parts:[{x:[5235.6,5243.25],y:[2504.6,2513.56],roof:'flat',eaves:4.8,parapet:5.4}],
   below:[{x:[5235.46,5243.25],y:[2495.44,2513.56],top:-.05,bottom:-5.0,n:'Подземная пожарная насосная (пол −5,000, приямок −6,200)'},
          {x:[5243.4,5260.7],y:[2495.44,2513.56],top:-1.0,bottom:-5.8,n:'Противопожарные резервуары 2 × 320 м³'}],
   info:'Надземная часть 7,8 × 8,85 м (кровля 4,800, парапет 5,400), под ней подземная пожарная насосная на −5,000 и два противопожарных резервуара по 320 м³ (дно −4,000…−5,800). Монтажный люк 2,5 × 3,5 м.',infou:"Yer usti qismi 7,8 × 8,85 m (tom 4,800, parapet 5,400), uning ostida −5,000 dagi yer osti yong‘in nasos xonasi va har biri 320 m³ li ikkita yong‘inga qarshi rezervuar (tubi −4,000…−5,800). Montaj lyugi 2,5 × 3,5 m."},
- {id:'b141',sec:'UT',code:'141',name:'Административно-бытовой корпус',nameu:"Ma’muriy-maishiy bino",x:[5270.9,5308.7],y:[2532.9,2550.5],h:15.1,arch:'3147-5J141 Rev.C',
+ {id:'b141',style:'plaster',noDoor:1,skipFaces:'E',sec:'UT',code:'141',name:'Административно-бытовой корпус',nameu:"Ma’muriy-maishiy bino",x:[5270.9,5308.7],y:[2532.9,2550.5],h:15.1,arch:'3147-5J141 Rev.C',
   parts:[{x:[5270.9,5308.7],y:[2532.9,2550.5],roof:'flat',eaves:13.8,parapet:15.1,slabs:[4.8,9.0]}],
   info:'Три этажа (0,000 / 4,800 / 9,000), плоская кровля 13,800, парапет 15,100, лестнично-лифтовая надстройка до 17,400. Офисы, конференц-зал, раздевалки и душевые.',infou:"Uch qavat (0,000 / 4,800 / 9,000), yassi tom 13,800, parapet 15,100, zina-lift ustki qurilmasi 17,400 gacha. Ofislar, konferens-zal, kiyinish va dush xonalari."},
  {id:'b142',sec:'UT',code:'142',name:'Ремонтный цех',nameu:"Ta’mirlash sexi",x:[5342.8,5367.1],y:[2554.6,2573.0],h:11.2,arch:'3147-5J142 Rev.C',
@@ -967,7 +967,11 @@ const F = [
  {s:"steam",a:["XX-11502",1],b:["FR-11102",7],w:[[5257,2419.52],[5265.82,2419.52],[5265.82,2395.79],[5329.83,2395.79],[5329.83,2366.33],[5340,2366.33]],e:7.2,code:"LS-111140-100-DB2-H3",r:0.08,via:"RN>RE>R1"},
  {s:"steam",a:["XX-11502",1],b:["VE-12201",2.6],w:[[5265.13,2419],[5265.13,2395.24],[5329.59,2395.24],[5329.59,2295.4],[5289.64,2295.4]],e:7.2,r:0.08,via:"RN>RE>R1>RW"},
  {s:"steam",a:["XX-11502",1],b:["VE-12202",0.3],w:[[5265.13,2419],[5265.13,2395.24],[5329.59,2395.24],[5329.59,2295.4],[5263.7,2295.4]],e:7.2,r:0.08,via:"RN>RE>R1>RW"},
- {s:"steam",a:["XX-11502",1],b:["SM-11201ABC",3.6],w:[[5265.13,2419],[5265.13,2395.24],[5329.59,2395.24],[5329.59,2314.2]],e:7.2,r:0.08,code:"LS-11201-50-DB2-H3 → LS-11204/11205/11206-32-DB2-H3",via:"RN>RE>R1"},
+ {s:"steam",a:["XX-11502",1],b:["SM-11201ABC",3.6],r:0.08,code:"LS-11201-50-DB2-H3 → LS-11204/11205/11206-32-DB2-H3",via:"RN>RE>R1>RW>RU",
+  // on the racks all the way: RN (EL 7,1) → RE → R1 → RW (EL 6,9) → RU (EL 7,1), off-rack only the last 6,9 m over the furnace front to the guns
+  p3:[[5257,2419,1],[5257,2419,7.2],[5264.7,2419,7.2],[5264.7,2395.6,7.2],[5329.2,2395.6,7.2],[5329.2,2295.85,7.2],[5329.2,2295.85,7.0],[5266.0,2295.85,7.0],[5266.0,2295.85,7.2],[5266.0,2315.8,7.2],[5259.1,2315.8,7.2],[5259.1,2315.8,3.75]]},
+{s:"steam",a:[5260.3,2315.8,7.2],b:["SM-11201ABC",3.6],r:0.06,code:"LS-11205-32-DB2-H3 (SM-11201B)",p3:[[5260.3,2315.8,7.2],[5260.3,2315.8,3.75]]},
+{s:"steam",a:[5261.5,2315.8,7.2],b:["SM-11201ABC",3.6],r:0.06,code:"LS-11206-32-DB2-H3 (SM-11201C)",p3:[[5261.5,2315.8,7.2],[5261.5,2315.8,3.75]]},
  {s:"steam",a:["EX-11206",10.45],b:["XX-11401",15.5],e:16.3},
  {s:"steam",a:["XX-11401",15.5],b:["EX-11202",4.05],w:[[5262,2364.8]],e:7.6,via:"local"},
  {s:"steam",a:["EX-11202",4.05],b:["XX-11402",8.4],e:9.7},
@@ -1127,8 +1131,14 @@ function start(){
  function mk(key,opts){const m=new THREE.MeshStandardMaterial(Object.assign({roughness:.75,metalness:.1,side:THREE.DoubleSide},opts));M[key]=m;mats.push(m);return m}
  mk('ground',{}); mk('steel',{metalness:.35,roughness:.5}); mk('steelDark',{metalness:.35,roughness:.55});
  mk('bldg',{transparent:true,opacity:.18,depthWrite:false}); mk('bund',{transparent:true,opacity:.5});
- mk('rack',{}); mk('grass',{roughness:1,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}); mk('field',{roughness:1}); mk('soil',{roughness:1,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1});
- mk('pave',{roughness:.95,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}); mk('asphalt',{roughness:.9,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3}); mk('mark',{color:0xF4F4F0,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}); mk('tree',{roughness:1}); mk('trunk',{color:0x6B4E33}); mk('red',{color:0xC9372C,metalness:.2,roughness:.5}); mk('white',{color:0xF3F3F0,metalness:.2,roughness:.5}); mk('pool',{color:0x6fa7c9,transparent:true,opacity:.6});
+ mk('rack',{});
+ // Ground layers (field → soil strips → lawn → paving → asphalt → road marks) lie a few mm apart. Depth-testing
+ // them against each other made them flicker while the camera moved (z-fighting: on many phones/GPUs the depth
+ // buffer can't resolve 5 mm at 300 m, and polygonOffset is ignored with the logarithmic depth buffer).
+ // So they are drawn first, in a fixed order, as a "painter's" stack: only the bottom field writes depth (so
+ // underground objects stay hidden), the layers above it ignore depth entirely — nothing can fight any more.
+ mk('field',{roughness:1,depthTest:false}); mk('soil',{roughness:1,depthTest:false,depthWrite:false}); mk('grass',{roughness:1,depthTest:false,depthWrite:false});
+ mk('pave',{roughness:.95,depthTest:false,depthWrite:false}); mk('paveR',{color:0x94574E,roughness:.95,depthTest:false,depthWrite:false}); mk('asphalt',{roughness:.9,depthTest:false,depthWrite:false}); mk('mark',{color:0xF4F4F0,depthTest:false,depthWrite:false}); mk('tree',{roughness:1}); mk('trunk',{color:0x6B4E33}); mk('red',{color:0xC9372C,metalness:.2,roughness:.5}); mk('white',{color:0xF3F3F0,metalness:.2,roughness:.5}); mk('pool',{color:0x6fa7c9,transparent:true,opacity:.6});
  mk('slab',{transparent:true,opacity:.55}); mk('conc',{}); mk('below',{transparent:true,opacity:.35,depthWrite:false}); mk('crane',{color:0xE0B21B,metalness:.3,roughness:.5});
  // interiors (seen in sections)
  mk('cat',{color:0x8E7B3A,roughness:.95}); mk('lining',{color:0xB5553A,roughness:.95}); mk('pack',{color:0xD9D2C3,roughness:.95}); mk('tubes',{color:0x9FB3B8,metalness:.4,roughness:.45});
@@ -1157,14 +1167,14 @@ function start(){
    const poolHole=()=>{const h=new THREE.Path(),a=S(5330.9,2498.0),b=S(5366.3,2513.6);h.moveTo(a[0],a[1]);h.lineTo(b[0],a[1]);h.lineTo(b[0],b[1]);h.lineTo(a[0],b[1]);h.lineTo(a[0],a[1]);return h};
    // farmland
    const fs=new THREE.Shape(),f0=S(5090,2060),f1=S(5520,2730);fs.moveTo(f0[0],f0[1]);fs.lineTo(f1[0],f0[1]);fs.lineTo(f1[0],f1[1]);fs.lineTo(f0[0],f1[1]);fs.lineTo(f0[0],f0[1]);fs.holes.push(poolHole());
-   window.ground=flat(fs,M.field,-.05);
+   window.ground=flat(fs,M.field,0);  // depth at 0: everything below grade (basements, pits) stays hidden
    [[5408,5432],[5452,5468],[5490,5520],[5120,5150],[5170,5190]].forEach(([a,b])=>{const sh=new THREE.Shape(),p=S(a,2060),q=S(b,2595);sh.moveTo(p[0],p[1]);sh.lineTo(q[0],p[1]);sh.lineTo(q[0],q[1]);sh.lineTo(p[0],q[1]);sh.lineTo(p[0],p[1]);flat(sh,M.soil,-.045)});
    // lawn inside the fence
    const ls=new THREE.Shape();SITE.fence.forEach(([X,Y],i)=>{const p=S(X,Y);i?ls.lineTo(p[0],p[1]):ls.moveTo(p[0],p[1])});ls.holes.push(poolHole());flat(ls,M.grass,-.04);
    // paved blocks with rounded corners
-   Object.values(SITE.pave).forEach(([x0,x1,y0,y1])=>{const r=6,a=S(x0,y0),b=S(x1,y1),sh=new THREE.Shape();
+   Object.entries(SITE.pave).forEach(([pk,[x0,x1,y0,y1]])=>{const r=6,a=S(x0,y0),b=S(x1,y1),sh=new THREE.Shape();
      sh.moveTo(a[0]+r,a[1]);sh.lineTo(b[0]-r,a[1]);sh.absarc(b[0]-r,a[1]+r,r,-Math.PI/2,0);sh.lineTo(b[0],b[1]-r);sh.absarc(b[0]-r,b[1]-r,r,0,Math.PI/2);
-     sh.lineTo(a[0]+r,b[1]);sh.absarc(a[0]+r,b[1]-r,r,Math.PI/2,Math.PI);sh.lineTo(a[0],a[1]+r);sh.absarc(a[0]+r,a[1]+r,r,Math.PI,1.5*Math.PI);flat(sh,M.pave,-.035)});
+     sh.lineTo(a[0]+r,b[1]);sh.absarc(a[0]+r,b[1]-r,r,Math.PI/2,Math.PI);sh.lineTo(a[0],a[1]+r);sh.absarc(a[0]+r,a[1]+r,r,Math.PI,1.5*Math.PI);flat(sh,/^(A|A2|D)$/.test(pk)?M.paveR:M.pave,-.035)});
    // roads: 6 m ribbons with round joints and dashed centre line
    const ribbon=(pl,w,mat,y,dash)=>{for(let i=1;i<pl.length;i++){const a=P(pl[i-1][0],pl[i-1][1],y),b=P(pl[i][0],pl[i][1],y),d=new THREE.Vector3().subVectors(b,a),L=d.length();
        const m=new THREE.Mesh(new THREE.PlaneGeometry(w,L),mat);m.rotation.x=-Math.PI/2;m.rotation.z=Math.atan2(d.x,d.z)+Math.PI;m.position.copy(a).addScaledVector(d,.5);scene.add(m);
@@ -1179,9 +1189,12 @@ function start(){
    // fence along the genplan boundary
    const fc=SITE.fence.concat([SITE.fence[0]]).map(([X,Y])=>P(X,Y,1.1));for(let i=1;i<fc.length;i++){const a=fc[i-1],b=fc[i],d=new THREE.Vector3().subVectors(b,a);
      const w=new THREE.Mesh(new THREE.BoxGeometry(.12,2.2,d.length()),M.white);w.position.copy(a).addScaledVector(d,.5);w.rotation.y=Math.atan2(d.x,d.z);w.material.transparent=false;scene.add(w)}
+   // painter's order of the ground stack (see the materials above)
+   const RO=new Map([[M.field,-100],[M.soil,-99],[M.grass,-98],[M.pave,-97],[M.paveR,-97],[M.asphalt,-96],[M.mark,-95]]);
+   scene.children.forEach(c=>{if(c.isMesh&&RO.has(c.material))c.renderOrder=RO.get(c.material)});
  }
  const gridMat=new THREE.LineBasicMaterial({transparent:true,opacity:.22});
- { const pts=[]; for(let X=5220;X<=5380;X+=10){pts.push(P(X,2215,0),P(X,2590,0))} for(let Y=2220;Y<=2590;Y+=10){pts.push(P(5215,Y,0),P(5380,Y,0))}
+ { const pts=[]; for(let X=5220;X<=5380;X+=10){pts.push(P(X,2215,.12),P(X,2590,.12))} for(let Y=2220;Y<=2590;Y+=10){pts.push(P(5215,Y,.12),P(5380,Y,.12))}
    const g=new THREE.BufferGeometry().setFromPoints(pts); scene.add(new THREE.LineSegments(g,gridMat)); }
  // fence (approx. from plan)
  { const c=[[5217.2,2229.8],[5375,2229.8],[5375,2585.3],[5223.2,2585.3],[5217.2,2229.8]].map(p=>P(p[0],p[1],.05));
@@ -1200,23 +1213,127 @@ function start(){
    const geo=new THREE.ExtrudeGeometry(sh,{depth:len,bevelEnabled:false});geo.translate(0,0,-len/2);
    const m=new THREE.Mesh(geo,mat); if(along==='y')m.rotation.y=Math.PI/2; return m}
  function bx(w,h,d,mat,x,y,z){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);return m}
+ // ── Building façades per the architectural render (SULFAT, Tashkent 2026): white profiled-sheet walls (plastered
+ //    on the small pump/dosing houses), dark-grey brick plinth, grey parapet band, light-grey roof, blue corner
+ //    strips, teal + green accent stripes, blue number plaque, dark glazing, doors/gates with canopies.
+ //    All overlays stand ≥10 cm proud of the wall (no coplanar faces → no flicker at any distance).
+ const ARCH=[]; // materials that follow the "transparent buildings" switch
+ function cTex(w,h,draw,rep){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);const t=new THREE.CanvasTexture(c);
+   if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping}t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return t}
+ const TX={
+   rib:cTex(128,16,(x,w,h)=>{x.fillStyle='#fff';x.fillRect(0,0,w,h);for(let i=0;i<5;i++){const o=i*w/5;x.fillStyle='#d9dddd';x.fillRect(o,0,4,h);x.fillStyle='#eceeee';x.fillRect(o+4,0,3,h);x.fillStyle='#e4e7e7';x.fillRect(o+w/5-3,0,3,h)}},1),
+   brick:cTex(128,128,(x,w,h)=>{x.fillStyle='#a4a8aa';x.fillRect(0,0,w,h);for(let r=0;r<8;r++)for(let k=-1;k<3;k++){const v=96+((r*7+k*13)%5)*6;x.fillStyle=`rgb(${v},${v+3},${v+6})`;x.fillRect(k*64+(r%2?32:0)+1,r*16+1,62,14)}},1),
+   seam:cTex(64,64,(x,w,h)=>{x.fillStyle='#fff';x.fillRect(0,0,w,h);x.fillStyle='#e2e5e6';for(let i=0;i<2;i++)x.fillRect(i*32,0,2,h)},1),
+   win:cTex(64,64,(x,w,h)=>{const g=x.createLinearGradient(0,0,w,h);g.addColorStop(0,'#3d4c58');g.addColorStop(.55,'#2a3640');g.addColorStop(1,'#46586a');x.fillStyle=g;x.fillRect(0,0,w,h);
+     x.fillStyle='rgba(255,255,255,.10)';x.beginPath();x.moveTo(8,h);x.lineTo(30,0);x.lineTo(40,0);x.lineTo(18,h);x.fill();x.strokeStyle='#e9ebec';x.lineWidth=5;x.strokeRect(2.5,2.5,w-5,h-5);x.lineWidth=3;x.beginPath();x.moveTo(w/2,0);x.lineTo(w/2,h);x.moveTo(0,h*.38);x.lineTo(w,h*.38);x.stroke()}),
+   gate:cTex(32,64,(x,w,h)=>{x.fillStyle='#d6d9db';x.fillRect(0,0,w,h);x.fillStyle='#b7bcbf';for(let i=0;i<h;i+=4)x.fillRect(0,i,w,1)}),
+   cwall:cTex(64,64,(x,w,h)=>{const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#8a979f');g.addColorStop(1,'#4d5a64');x.fillStyle=g;x.fillRect(0,0,w,h);x.fillStyle='#8e979d';x.fillRect(0,0,w,2);x.fillRect(0,0,2,h)},1),
+   lattice:cTex(128,128,(x,w,h)=>{x.fillStyle='#e9e6e1';x.fillRect(0,0,w,h);x.strokeStyle='#3a3431';x.lineWidth=5;
+     const star=(cx,cy,r)=>{x.beginPath();for(let i=0;i<16;i++){const a=i*Math.PI/8,rr=i%2?r*.55:r;x.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a))}x.closePath();x.stroke()};
+     [[0,0],[w,0],[0,h],[w,h],[w/2,h/2]].forEach(([a,b])=>star(a,b,40));x.lineWidth=3;[[w/2,0],[0,h/2],[w,h/2],[w/2,h]].forEach(([a,b])=>star(a,b,18))},1),
+ };
+ function am(key,opts){const m=mk(key,opts);m.userData.arch=1;ARCH.push(m);return m}
+ M.bldg.map=TX.rib; M.bldg.userData.arch=1; ARCH.push(M.bldg);
+ am('bldgP',{roughness:.85}); am('roof',{color:0xA6ABAE,roughness:.9,map:TX.seam}); am('fascia',{color:0x8B9195,roughness:.7});
+ am('plinth',{color:0xffffff,roughness:.95,map:TX.brick}); am('glass',{color:0xffffff,roughness:.25,metalness:.3,map:TX.win});
+ am('cblue',{color:0x1F78C4,roughness:.5}); am('cteal',{color:0x22AFB3,roughness:.5}); am('cgreen',{color:0x6DBE45,roughness:.5});
+ am('door',{color:0xAEB4B8,roughness:.6}); am('gate',{color:0xffffff,roughness:.6,map:TX.gate}); am('canopy',{color:0xDCDFE1,roughness:.6});
+ am('concW',{color:0xE4E3DE,roughness:.9}); am('bronze',{color:0x8C6A56,roughness:.45,metalness:.45}); am('lattice',{color:0xffffff,roughness:.7,map:TX.lattice});
+ am('cwall',{color:0xffffff,roughness:.2,metalness:.35,map:TX.cwall}); am('fasciaW',{color:0xF4F5F4,roughness:.6}); am('stairD',{color:0x3E4346,roughness:.6,metalness:.3});
+ mk('frameW',{color:0xEEF0EF,roughness:.85}); mk('frameC',{color:0x35AFCF,roughness:.5}); mk('railY',{color:0xE6BE1E,roughness:.5,metalness:.2});
+ // world-scaled UVs (1 texture tile = 1/s m) so ribs/bricks keep their real size on every wall
+ function wuv(geo,s){s=s||1;const p=geo.attributes.position,n=geo.attributes.normal,uv=geo.attributes.uv;
+   for(let i=0;i<p.count;i++){const ax=Math.abs(n.getX(i)),ay=Math.abs(n.getY(i)),az=Math.abs(n.getZ(i));
+     if(ay>=ax&&ay>=az)uv.setXY(i,p.getX(i)*s,p.getZ(i)*s);else if(ax>=az)uv.setXY(i,p.getZ(i)*s,p.getY(i)*s);else uv.setXY(i,p.getX(i)*s,p.getY(i)*s)}
+   uv.needsUpdate=true;return geo}
+ function wbx(w,h,d,mat,x,y,z,s){const m=bx(w,h,d,mat,x,y,z);wuv(m.geometry,s);return m}
+ function ringBox(g,cx,cz,sx,sz,y0,y1,t,mat){const h=y1-y0,yc=(y0+y1)/2;
+   [[sx+t,t,0,sz/2],[sx+t,t,0,-sz/2],[t,sz-t,sx/2,0],[t,sz-t,-sx/2,0]].forEach(([w,d,ox,oz])=>g.add(bx(w,h,d,mat,cx+ox,yc,cz+oz)))}
+ const UP=new THREE.Vector3(0,1,0);
+ // a façade = outward normal n, centre o (at y=0, on the wall line), along-face unit t (viewer's right), length L
+ function faces(cx,cz,sx,sz){return[[1,0,sx,sz],[-1,0,sx,sz],[0,1,sz,sx],[0,-1,sz,sx]].map(([nx,nz,dn,L])=>{const n=new THREE.Vector3(nx,0,nz);
+   return{n,o:new THREE.Vector3(cx+nx*dn/2,0,cz+nz*dn/2),t:new THREE.Vector3().crossVectors(n.clone().negate(),UP),L}})}
+ // place a box of size (w,h,depth) on face f at along-offset u, bottom height y, sticking out `out` m (centre)
+ function onFace(f,u,y,w,h,dep,out){const p=f.o.clone().addScaledVector(f.t,u).addScaledVector(f.n,out);p.y=y+h/2;return{p,ry:Math.atan2(f.n.x,f.n.z),w,h,dep}}
+ function putBox(g,f,u,y,w,h,dep,out,mat){const q=onFace(f,u,y,w,h,dep,out),m=new THREE.Mesh(new THREE.BoxGeometry(w,h,dep),mat);m.position.copy(q.p);m.rotation.y=q.ry;g.add(m);return m}
+ function plaqueMat(code){const t=cTex(128,128,(x,w,h)=>{x.fillStyle='#1663B3';x.fillRect(0,0,w,h);x.strokeStyle='#fff';x.lineWidth=4;x.strokeRect(6,6,w-12,h-12);
+   x.fillStyle='#fff';const s=String(code);x.font=`700 ${s.length>4?36:52}px Arial,sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText(s,w/2,h/2+2)});
+   const m=new THREE.MeshStandardMaterial({map:t,roughness:.5,side:THREE.DoubleSide});m.userData.arch=1;ARCH.push(m);mats.push(m);return m}
+ // distance (plan) from a world point to the nearest site road – picks the "street" façade for doors & signage
+ function roadDist(wp){const X=X0-wp.z,Y=Y0+wp.x;let best=1e9;Object.values(SITE.roads).forEach(pl=>{for(let i=1;i<pl.length;i++){const[ax,ay]=pl[i-1],[bx_,by]=pl[i];
+   const dx=bx_-ax,dy=by-ay,l2=dx*dx+dy*dy,tt=Math.max(0,Math.min(1,((X-ax)*dx+(Y-ay)*dy)/l2)),ex=ax+tt*dx-X,ey=ay+tt*dy-Y;best=Math.min(best,Math.hypot(ex,ey))}});return best}
+ function skinBuilding(b,g,C,shells){
+   if(b.noSkin)return;
+   const win=[]; // window instances {p,ry,w,h,dep}
+   const plaster=b.style==='plaster';
+   // which faces of a part touch another part (shared wall) → no glazing there
+   const inner=(sh,f)=>shells.some(o=>{if(o===sh)return false;const a=f.o,ax=Math.abs(f.n.x)>.5;
+     return ax?Math.abs(Math.abs(a.x-o.cx)-o.sx/2)<.6&&Math.abs(a.z-o.cz)<o.sz/2+sh.sz/2-1:Math.abs(Math.abs(a.z-o.cz)-o.sz/2)<.6&&Math.abs(a.x-o.cx)<o.sx/2+sh.sx/2-1});
+   // main part = largest footprint; its street-facing façade carries door/gate, stripes, corner strips and the plaque
+   const main=shells.reduce((a,c)=>c.sx*c.sz>a.sx*a.sz?c:a,shells[0]);
+   shells.forEach(sh=>{
+     const {cx,cz,sx,sz,Hw,levels}=sh, F=faces(cx,cz,sx,sz).filter((f,fi)=>!inner(sh,f)&&!(b.skipFaces||'').includes('EWSN'[fi]));
+     // plinth (brick) or, for the bulk store, a 3 m concrete retaining wall
+     const ph=b.plinth||1.2; const pm=b.plinth?M.concW:M.plinth;
+     const pl=wbx(sx+.24,ph,sz+.24,pm,cx,ph/2,cz,2);g.add(pl);
+     let street=null;
+     if(sh===main&&!b.noDoor){street=F.reduce((a,f)=>{const d=roadDist(f.o.clone().add(C).addScaledVector(f.n,6))-(f.L>8?2:0);return(!a||d<a.d)?{f,d}:a},null).f}
+     F.forEach(f=>{
+       const L=f.L, isSt=f===street;
+       // door / gate
+       let doorZ=[];
+       const sy=Math.max(ph+2.0,Hw-1.75), lt=Math.min(3.2,L*.2), lg=Math.min(4.5,L*.28), u0=-L/2+2.2, zEnd=u0+lt+lg+.2;
+       if(isSt){const hall=Math.min(sx,sz)>=10&&Hw>=6.5;
+         if(hall){putBox(g,f,0,0,4.0,4.2,.22,.05,M.gate);putBox(g,f,0,4.35,4.8,.14,1.1,.55,M.canopy);putBox(g,f,3.6,0,1.1,2.2,.2,.06,M.door);putBox(g,f,3.6,2.45,1.7,.12,1.0,.5,M.canopy);doorZ=[[-2.6,4.4]]}
+         else{const u=L>7?L*.18:0;putBox(g,f,u,0,1.2,2.2,.2,.06,M.door);putBox(g,f,u,2.45,1.9,.12,1.1,.55,M.canopy);putBox(g,f,u,0,1.9,.18,1.3,.65,M.canopy);doorZ=[[u-1.4,u+1.4]]}
+         // blue corner strips, accent stripes, number plaque
+         [-1,1].forEach(sg=>{const q=onFace(f,sg*(L/2),ph,.32,Hw-ph-.7,.32,0);const m=new THREE.Mesh(new THREE.BoxGeometry(.32,q.h,.32),M.cblue);m.position.copy(q.p);m.rotation.y=q.ry;g.add(m)});
+         putBox(g,f,u0+lt/2,sy,lt,.6,.16,.08,M.cteal);putBox(g,f,u0+lt+lg/2,sy,lg,.6,.16,.08,M.cgreen);
+         putBox(g,f,-L/2+1.3,sy-.33,1.25,1.25,.12,.08,M.cblue);
+         putBox(g,f,-L/2+1.3,sy-.27,1.12,1.12,.02,.2,plaqueMat(b.plaque||String(b.code).split(/[ ,]/)[0]))}
+       // glazing: one row per floor (sill 1.2 m above the floor) + a high ribbon in tall single-storey halls
+       if(b.noWin||L<3.5)return;
+       const rows=[];levels.forEach(lv=>{if(lv+1.2+1.5<=Hw-.9)rows.push([lv+(lv?1.0:ph+.05),lv?1.5:1.55,0])});
+       if(!sh.slabs.length&&Hw>=8)rows.push([Hw-3.1,1.25,1]);
+       const pitch=plaster?3.6:(L>30?6:4.8), ww=plaster?1.5:1.8;
+       rows.forEach(([y,h,ribbon],ri)=>{
+         if(ribbon){const span=Math.min(L-3,Math.max(6,L*.62)),n=Math.max(1,Math.round(span/1.55));for(let k=0;k<n;k++){const u=-span/2+(k+.5)*span/n;win.push(onFace(f,u,y,span/n-.08,h,.2,.05))}return}
+         const n=Math.max(L>=5?1:0,Math.floor((L-2.4)/pitch));
+         for(let k=0;k<n;k++){const u=-(n-1)*pitch/2+k*pitch;if(ri===0&&doorZ.some(([a,b2])=>u+ww/2>a-.2&&u-ww/2<b2+.2))continue;if(isSt&&y+h>sy-.45&&u-ww/2<zEnd)continue;
+           win.push(onFace(f,u,y,ww,h,.2,.05))}
+       });
+     });
+   });
+   if(win.length){const im=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),M.glass,win.length),m4=new THREE.Matrix4(),q=new THREE.Quaternion();
+     win.forEach((w,i)=>{q.setFromAxisAngle(UP,w.ry);m4.compose(w.p,q,new THREE.Vector3(w.w,w.h,w.dep));im.setMatrixAt(i,m4)});g.add(im)}
+ }
+ function roofPrism(p,c,sx,sz){ // ridge part of a gable roof only (walls are a separate box up to the eaves)
+   const span=p.along==='x'?sx:sz, len=p.along==='x'?sz:sx, rh=p.ridge-p.eaves;
+   const sh=new THREE.Shape();sh.moveTo(-span/2,0);sh.lineTo(span/2,0);sh.lineTo(0,rh);sh.lineTo(-span/2,0);
+   const geo=new THREE.ExtrudeGeometry(sh,{depth:len,bevelEnabled:false});geo.translate(0,0,-len/2);wuv(geo,1);
+   const m=new THREE.Mesh(geo,M.roof);if(p.along==='y')m.rotation.y=Math.PI/2;m.position.set(c.x,p.eaves,c.z);return m}
  function buildBld(b){
    const g=new THREE.Group(); const C=P((b.x[0]+b.x[1])/2,(b.y[0]+b.y[1])/2,0); g.position.copy(C);
    const loc=(X,Y,h)=>P(X,Y,h).sub(C);
    if(!b.parts){const m=bx(b.y[1]-b.y[0],b.h,b.x[1]-b.x[0],M.bldg,0,b.h/2,0);m.renderOrder=2;edges(m);g.add(m);return g}
+   const shells=[];
    b.parts.forEach(p=>{
      const sx=p.y[1]-p.y[0], sz=p.x[1]-p.x[0], c=loc((p.x[0]+p.x[1])/2,(p.y[0]+p.y[1])/2,0);
      if(p.room){const m=bx(sx,p.h,sz,M.bldg,c.x,p.h/2,c.z);m.renderOrder=2;edges(m);g.add(m);const s=bx(sx,.2,sz,M.slab,c.x,p.h-.1,c.z);g.add(s);return}
-     if(p.open){ // open r.c. frame: columns + slabs + railings
+     if(p.open){ // open r.c. frame (render: white columns, cyan slab edges, yellow handrails)
        const top=Math.max(...p.slabs);
-       p.cx.forEach(ox=>p.cy.forEach(oy=>{const P0=loc(p.x[0]+Math.min(ox,sz-.25),p.y[0]+Math.min(oy,sx-.25),0);g.add(bx(.5,top,.5,M.conc,P0.x+.25,top/2,P0.z-.25))}));
-       p.slabs.forEach(el=>{const s=bx(sx,.25,sz,M.slab,c.x,el-.125,c.z);edges(s);g.add(s);
-         const r=p.rail||1.1;[[sx,.06,0,sz/2],[sx,.06,0,-sz/2],[.06,sz,sx/2,0],[.06,sz,-sx/2,0]].forEach(([w,d,ox,oz])=>g.add(bx(w,.06,d,M.steelDark,c.x+ox,el+r,c.z+oz)))});
+       p.cx.forEach(ox=>p.cy.forEach(oy=>{const P0=loc(p.x[0]+Math.min(ox,sz-.25),p.y[0]+Math.min(oy,sx-.25),0);g.add(bx(.5,top,.5,M.frameW,P0.x+.25,top/2,P0.z-.25))}));
+       p.slabs.forEach(el=>{const s=bx(sx,.25,sz,M.slab,c.x,el-.125,c.z);edges(s);g.add(s);ringBox(g,c.x,c.z,sx,sz,el-.4,el+.02,.14,M.frameC);
+         const r=p.rail||1.1;[[sx,.06,0,sz/2],[sx,.06,0,-sz/2],[.06,sz,sx/2,0],[.06,sz,-sx/2,0]].forEach(([w,d,ox,oz])=>{g.add(bx(w,.06,d,M.railY,c.x+ox,el+r,c.z+oz));g.add(bx(w,.05,d,M.railY,c.x+ox,el+r/2,c.z+oz))})});
        return}
-     let shell;
-     if(p.roof==='gable'){shell=prism(p.x,p.y,0,p.along,p.eaves,p.ridge,M.bldg);shell.position.add(c)}
-     else{const H=p.parapet||p.eaves;shell=bx(sx,H,sz,M.bldg,c.x,H/2,c.z);g.add(bx(sx-.4,.2,sz-.4,M.slab,c.x,p.eaves-.1,c.z))}
+     let shell, Hw, top; const WM=(p.style||b.style)==='plaster'?M.bldgP:M.bldg;
+     if(p.roof==='gable'){Hw=p.eaves;top=b.noParapet?p.ridge:p.ridge+.1;
+       shell=wbx(sx,Hw,sz,WM,c.x,Hw/2,c.z,1);const rf=roofPrism(p,c,sx,sz);edges(rf);g.add(rf)}
+     else{top=p.parapet||p.eaves;Hw=top-.6;shell=wbx(sx,Hw,sz,WM,c.x,Hw/2,c.z,1);
+       g.add(wbx(sx-.05,.15,sz-.05,M.roof,c.x,Hw+.025,c.z,1))}   // flat roof deck 0,5 m below the parapet top
      shell.renderOrder=2;edges(shell);g.add(shell);
+     if(!b.noParapet)ringBox(g,c.x,c.z,sx,sz,Hw-.6,top,.3,M.fascia);   // parapet / fascia band
+     shells.push({cx:c.x,cz:c.z,sx,sz,Hw,levels:[0,...(p.slabs||[]).filter(v=>v<Hw-2)],slabs:p.slabs||[]});
      (p.slabs||[]).forEach(el=>{const s=bx(sx-.4,.22,sz-.4,M.slab,c.x,el-.11,c.z);g.add(s)});
      if(p.crane){ // runway beams along the length + bridge
        const along=p.along||'x', span=along==='x'?sx:sz, len=along==='x'?sz:sx;
@@ -1224,9 +1341,38 @@ function start(){
        if(!p.noBridge)g.add(along==='x'?bx(span-1.2,.9,1.0,M.crane,c.x,p.crane+.45,c.z+len*.15):bx(1.0,.9,span-1.2,M.crane,c.x-len*.15,p.crane+.45,c.z))}
      if(p.hoist){const len=Math.max(sx,sz);g.add(sx>sz?bx(len-.6,.35,.25,M.steelDark,c.x,p.hoist,c.z):bx(.25,.35,len-.6,M.steelDark,c.x,p.hoist,c.z))}
    });
+   if(shells.length)skinBuilding(b,g,C,shells);
+   if(EXTRA[b.id])EXTRA[b.id](g,shells,b);
    (b.below||[]).forEach(u=>{const sx=u.y[1]-u.y[0],sz=u.x[1]-u.x[0],c=loc((u.x[0]+u.x[1])/2,(u.y[0]+u.y[1])/2,0),h=u.top-u.bottom;
      const m=bx(sx,h,sz,M.below,c.x,u.bottom+h/2,c.z);edges(m);g.add(m)});
    return g}
+ // signature features from the render: admin building 141 entrance façade, TMK logo + escape stair on 115
+ const EXTRA={
+   b141(g,sh){const s=sh[0],f=faces(s.cx,s.cz,s.sx,s.sz)[0],L=f.L,H=s.Hw+.6,pw=5.6;  // east façade, towards the gate & parking
+     [[-L/2+.2,-pw],[pw,L/2-.2]].forEach(([a,b2])=>wuv(putBox(g,f,(a+b2)/2,.25,b2-a,s.Hw-.25,.3,.1,M.cwall).geometry,1/1.6));
+     putBox(g,f,0,s.Hw-.1,L+1.6,1.0,1.6,.5,M.fasciaW);                               // white cornice slab
+     [-1,1].forEach(sg=>putBox(g,f,sg*(pw-.45),0,.9,H+1.4,2.4,.9,M.bronze));          // bronze portal frame
+     putBox(g,f,0,H-.4,2*pw,1.8,2.4,.9,M.bronze);
+     [[-pw+.9,-2.9],[2.9,pw-.9]].forEach(([a,b2])=>wuv(putBox(g,f,(a+b2)/2,.2,b2-a,H-.6,1.9,.9,M.lattice).geometry,1/1.2)); // girih lattice screens
+     wuv(putBox(g,f,0,0,5.8,H-.4,1.7,.8,M.cwall).geometry,1/1.6);                      // glazed entrance hall
+     putBox(g,f,0,4.6,13,.45,6.5,3.2,M.bronze);[-5.2,-1.8,1.8,5.2].forEach(u=>putBox(g,f,u,0,.45,4.6,.45,6.0,M.bronze)); // canopy
+     putBox(g,f,0,0,2.4,2.7,.3,1.75,M.door)},
+   b115(g,sh){
+     const hall=sh[0], tex=cTex(512,256,(x,w,h)=>{x.clearRect(0,0,w,h);x.fillStyle='#24B3C2';x.font='900 150px Arial,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('TMK',w/2+40,100);
+       x.lineWidth=14;x.strokeStyle='#24B3C2';x.beginPath();x.arc(70,100,52,0,Math.PI*2);x.stroke();x.fillStyle='#5DBB46';x.font='700 58px Arial,sans-serif';x.fillText('CHEMICALS',w/2+40,205)});
+     const lm=new THREE.MeshStandardMaterial({map:tex,transparent:false,alphaTest:.5,roughness:.6,side:THREE.DoubleSide});lm.userData.arch=1;ARCH.push(lm);mats.push(lm);
+     const logo=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(hall.sz-3,26),Math.min(hall.sz-3,26)/2),lm);logo.rotation.set(-Math.PI/2,0,Math.PI/2);logo.position.set(hall.cx,hall.Hw+(21.0-19.95)+.14,hall.cz);g.add(logo);
+     // external escape stair (dark steel, yellow handrails) on the east face of the 4-storey block
+     const blk=sh[1],f=faces(blk.cx,blk.cz,blk.sx,blk.sz)[0],uc=f.L/2-3,lv=[0,5.0,8.9,14.6];
+     [[-1.55,.35],[1.55,.35],[-1.55,2.65],[1.55,2.65]].forEach(([du,n])=>putBox(g,f,uc+du,0,.14,15.8,.14,n,M.stairD));
+     const flight=(u0,y0,u1,y1,n)=>{const run=u1-u0,rise=y1-y0,len=Math.hypot(run,rise),a=Math.atan2(rise,run);
+       const m=putBox(g,f,(u0+u1)/2,(y0+y1)/2-.08,len,.16,1.0,n,M.stairD);m.rotateZ(a);
+       const r=putBox(g,f,(u0+u1)/2,(y0+y1)/2+.95,len,.06,.06,n+(n<1.5?-.48:.48),M.railY);r.rotateZ(a)};
+     for(let i=0;i<lv.length-1;i++){const a=lv[i],b2=lv[i+1],mid=(a+b2)/2;
+       flight(uc-1.0,a,uc+1.0,mid,.85); putBox(g,f,uc+1.3,mid-.12,.6,.12,2.4,1.5,M.stairD);
+       flight(uc+1.0,mid,uc-1.0,b2,2.15); putBox(g,f,uc-1.3,b2-.12,.6,.12,2.4,1.5,M.stairD);
+       putBox(g,f,uc+1.55,mid+.95,.06,.06,2.4,1.5,M.railY); putBox(g,f,uc-1.55,b2+.95,.06,.06,2.4,1.5,M.railY)}}
+ };
  BLD.forEach(b=>{const g=buildBld(b);scene.add(g);reg(g,b.id,b.sec,{kind:'bldg',b})});
  AREAS.forEach(a=>{
    const sx=a.y[1]-a.y[0], sz=a.x[1]-a.x[0];
@@ -1948,6 +2094,7 @@ function start(){
    lockedTag=null;unlockCamera();
    secSel.value=k;
    isolated=k; const objs=bySec[k]||[];
+   if(BLD.some(b=>b.sec===k))setBldMode(true);
    cutObjSearch.value='';fillCutObj();
    allObj.forEach(o=>{const on=o.userData&&o.userData.sec?o.userData.sec===k:objs.includes(o);setDim(o,!on)});
    const box=new THREE.Box3(); objs.forEach(o=>box.expandByObject(o));
@@ -2015,9 +2162,14 @@ function start(){
  // toggles
  let anim=!matchMedia('(prefers-reduced-motion: reduce)').matches; $('bAnim').setAttribute('aria-pressed',anim);
  $('bAnim').onclick=()=>{anim=!anim;$('bAnim').setAttribute('aria-pressed',anim);applyFlow()};
- $('bBld').onclick=()=>{const on=$('bBld').getAttribute('aria-pressed')!=='true';$('bBld').setAttribute('aria-pressed',on);M.bldg.opacity=on?.18:.92;M.bldg.depthWrite=!on;M.bldg.needsUpdate=true};
+ // Buildings: solid façades as in the render by default; "transparent" shows the equipment inside
+ // (switched on automatically when a department is opened, back to solid with "Общий вид").
+ function setBldMode(tr){$('bBld').setAttribute('aria-pressed',tr);
+   ARCH.forEach(m=>{m.transparent=tr;m.opacity=tr?(m===M.glass?.3:.18):1;m.depthWrite=!tr;m.needsUpdate=true})}
+ $('bBld').onclick=()=>setBldMode($('bBld').getAttribute('aria-pressed')!=='true');
+ setBldMode(false);
  let showL=true; $('bLbl').onclick=()=>{showL=!showL;$('bLbl').setAttribute('aria-pressed',showL)};
- $('bHome').onclick=()=>{unIso();closeD()};
+ $('bHome').onclick=()=>{unIso();closeD();setBldMode(false)};
  applyFlow();
 
  // ---- sections (clipping plane): whole plant or one chosen object ----
