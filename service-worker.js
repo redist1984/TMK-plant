@@ -1,5 +1,14 @@
-const CACHE = 'tmk-plant-v11';
+const CACHE = 'tmk-plant-v13';
 const ASSETS = [
+  "sec_img/eq_EX-13501_2.jpg",
+  "sec_img/eq_EX-13501_1.jpg",
+  "sec_img/eq_VE-13503_1.jpg",
+  "sec_img/eq_VE-13502_1.jpg",
+  "sec_img/eq_SK-13501_1.jpg",
+  "sec_img/eq_FU-13501_4.jpg",
+  "sec_img/eq_FU-13501_3.jpg",
+  "sec_img/eq_FU-13501_2.jpg",
+  "sec_img/eq_FU-13501_1.jpg",
   "sec_img/eq_EX-11502_1.jpg",
   "sec_img/eq_ST-11501_6.jpg",
   "sec_img/eq_ST-11501_5.jpg",
