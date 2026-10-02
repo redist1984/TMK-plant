@@ -2000,11 +2000,11 @@ function start(){
      const gw=new THREE.Mesh(new THREE.BoxGeometry(.8,.06,1.3),M.steelDark);gw.position.set(.9,-.25,-1.75);gw.rotation.x=-.45;g.add(gw);
      g.position.copy(P(o.X,o.Y,0));
      // reach to the track-5 axis at this arm (plan X of the track at the arm's Y)
-     const Xt=5376.16+(o.Y-2359.31)*2.75/162.24, R=Xt-o.X, dn=Math.acos(Math.max(-1,Math.min(1,(R-1.85)/2.2)));
-     const A={o,slew,elbow,tip,drop,dn,set(u,low,ext){ // u: 0 parked … 1 slewed over the track; low: 0 hanging … 1 working angle; ext: drop-pipe length
-         slew.rotation.y=-Math.PI/2*(1-u);const a=(1-low)*1.45+low*dn;elbow.rotation.x=-a;tip.rotation.x=a;
-         drop.scale.y=ext;drop.position.y=-ext/2}};
-     A.set(0,0,.5);LARMS.push(A)}
+     // Kinematics: yaw (slew; 0 = arm towards the track, −π/2 = parked along the platform), a = outer-arm angle below
+     // horizontal (negative = raised; parked raised almost upright so nothing sweeps the platform or the cars),
+     // ext = length of the vertical drop pipe below the swivel.
+     const A={o,g,slew,elbow,tip,drop,PARK:-1.35,set(yaw,a,ext){slew.rotation.y=yaw;elbow.rotation.x=-a;tip.rotation.x=a;drop.scale.y=ext;drop.position.y=-ext/2}};
+     A.set(-Math.PI/2,A.PARK,.3);LARMS.push(A)}
    else if(o.k==='rail'){
      // standard-gauge track (1520) under the loading platform: centre 2.5 m from the platform edge (HCL26040-00)
      const L=o.y[1]-o.y[0], cy=(o.y[0]+o.y[1])/2;
@@ -2822,16 +2822,25 @@ function start(){
    const seg=(w,a,b)=>smooth((w-a)/(b-a));
    TRAINS.push(makeTrain({track:acidTrack,cars:tanks,loco:loco('0417'),frontY:ARMS[0]+.0,phase:0,T:[44,6,40,6,38,6],
      work(w,cars){ // w: −1 outside the loading window; 0…1 during it
-       // arm: unfold (slew) 0–.08 → lower .08–.16 → fill .2–.8 → raise .84–.92 → fold .92–1
-       const W=w<0?-1:w, slewU=W<0?0:Math.min(seg(W,0,.08),1-seg(W,.92,1)), low=W<0?0:Math.min(seg(W,.08,.16),1-seg(W,.84,.92));
-       const lidA=W<0?0:Math.min(seg(W,.04,.09),1-seg(W,.9,.96));
-       const see=W<0?0:Math.min(seg(W,.12,.2),1-seg(W,.82,.9));                          // shell see-through while filling
+       // sequence: slew to the hatch with the outer arm raised (.00–.07) → lower the outer arm, pipe retracted (.07–.13)
+       // → extend the drop pipe straight down through the open hatch (.13–.18) → fill (.20–.80) → retract (.82–.87)
+       // → raise the outer arm (.87–.93) → slew back to the parked position (.93–1.0)
+       const W=w<0?-1:w;
+       const lidA=W<0?0:Math.min(seg(W,.0,.05),1-seg(W,.88,.94));
+       const see=W<0?0:Math.min(seg(W,.14,.2),1-seg(W,.82,.88));
        const lev=W<0?0:seg(W,.2,.8);
        fade(RM.tank,1-.75*see);
        cars.forEach(c=>{c.userData.lid.rotation.x=-1.6*lidA;const q=c.userData.liq;q.visible=see>.01;q.scale.y=Math.max(.001,lev*.88)});
-       LARMS.forEach((A,i)=>{const tipY=6.2+2.2-2.2*Math.sin(A.dn),ext=.25+(tipY-4.15-.25)*low;A.set(slewU,low,ext);
-         const st=streams[i],fl=W>.2&&W<.8;st.visible=fl;if(fl){A.tip.updateMatrixWorld();const p=new THREE.Vector3().setFromMatrixPosition(A.tip.matrixWorld);
-           const top=p.y-ext,bot=.3+2.68-1.34+lev*.88*2.6;const L=Math.max(.05,top-bot);st.scale.set(1,L,1);st.position.set(p.x,bot+L/2,p.z)}})}}));
+       LARMS.forEach((A,i)=>{const st=streams[i];
+         if(W<0){A.set(-Math.PI/2,A.PARK,.3);st.visible=false;return}
+         // target = this car's filling hatch (exact, cars stand still while loading)
+         const c=cars[i];c.updateMatrixWorld();const hw=c.localToWorld(V3(0,2.68+1.4+.36,0));A.g.updateMatrixWorld();const h=A.g.worldToLocal(hw.clone());
+         const dx=h.x,dz=h.z,D=Math.hypot(dx,dz),yaw=Math.atan2(-dx,-dz),aw=Math.acos(Math.max(-1,Math.min(1,(D-1.85)/2.2)));
+         const tipY=2.2-2.2*Math.sin(aw),extW=Math.max(.3,tipY-(h.y-.7));       // local heights; pipe enters 0,7 m below the hatch rim
+         const park=-Math.PI/2, sY=Math.min(seg(W,0,.07),1-seg(W,.93,1)), sA=Math.min(seg(W,.07,.13),1-seg(W,.87,.93)), sE=Math.min(seg(W,.13,.18),1-seg(W,.82,.87));
+         A.set(park+(yaw-park)*sY, A.PARK+(aw-A.PARK)*sA, .3+(extW-.3)*sE);
+         const fl=W>.2&&W<.8;st.visible=fl;if(fl){const bottom=A.g.localToWorld(V3(0,0,0)).y+(tipY-extW);const p=hw;
+           const surf=c.localToWorld(V3(0,2.68-1.34+lev*.88*2.6,0)).y;const L=Math.max(.05,bottom-surf);st.scale.set(1,L,1);st.position.set(p.x,surf+L/2,p.z)}})}}));
    // sulfur: west access line → track 6 → raised track in store 121, dead end at the east stop
    const sTrack=[WEST,W0,...RN['6']];                                          // turnout from track 1 onto track 6
    const hops=[0,1,2,3].map(i=>hopperCar(String(95561230+i*23)));
