@@ -1103,7 +1103,7 @@ function start(){
  const scene=new THREE.Scene();
  const camera=new THREE.PerspectiveCamera(40,1,1,3000);
  const controls=new THREE.OrbitControls(camera,renderer.domElement);
- controls.enableDamping=true; controls.maxPolarAngle=Math.PI*0.49; controls.minDistance=15; controls.maxDistance=900;
+ controls.enableDamping=true; controls.maxPolarAngle=Math.PI*0.49; controls.minDistance=.5; controls.maxDistance=900;   // wheel zoom is handled below (zoom to cursor, never stalls)
  // One-finger drag pans the camera by default (easier for scanning across
  // the plant than the rotate gesture); the button below switches the SAME
  // one-finger drag to rotate instead, until pressed again. Two-finger
@@ -2901,6 +2901,30 @@ function start(){
    if(K.right)camera.position.addScaledVector(r,v);if(K.left)camera.position.addScaledVector(r,-v);
    if(K.up2)camera.position.y=Math.min(60,camera.position.y+v*.6);if(K.dn2)camera.position.y=Math.max(.5,camera.position.y-v*.6);
    camera.rotation.set(WALK.pitch,WALK.yaw,0,'YXZ')}
+ // ───── Mouse-wheel zoom towards the point under the cursor. OrbitControls' own wheel zoom only dollies towards the
+ // orbit target and stopped dead at minDistance (15 m) — e.g. when the target lay on the ground under a tall object.
+ // Here camera AND target move towards the point under the cursor, so zoom never stalls; once very close the view is
+ // pushed forward ("dolly through").
+ {const plane=new THREE.Plane(new THREE.Vector3(0,1,0),0),rc=new THREE.Raycaster(),mv=new THREE.Vector2();
+  view.addEventListener('wheel',e=>{
+   if(WALK.on)return;e.preventDefault();e.stopImmediatePropagation();tw=null;
+   const r=renderer.domElement.getBoundingClientRect();mv.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);rc.setFromCamera(mv,camera);
+   let d=e.deltaY;if(e.deltaMode===1)d*=33;else if(e.deltaMode===2)d*=400;d=Math.max(-300,Math.min(300,d));
+   const f=Math.pow(.9985,-d);                                   // d<0 (wheel up) → f<1 → closer
+   let anchor=null;const hit=rc.intersectObjects(pickables,true).find(h=>h.object.visible&&(cut.m==='off'||cutPlane.distanceToPoint(h.point)>=0));
+   if(hit)anchor=hit.point.clone();else{const pp=new THREE.Vector3();if(rc.ray.intersectPlane(plane,pp)&&pp.distanceTo(camera.position)<2000)anchor=pp}
+   if(!anchor)anchor=rc.ray.at(camera.position.distanceTo(controls.target),new THREE.Vector3());
+   const dist=camera.position.distanceTo(anchor);
+   if(f<1&&dist*f<1.2){ // too close to the surface under the cursor: slide forward along the view ray instead
+     const step=Math.min(3,Math.max(.3,dist*.15))*(1-f)/.14,dir=rc.ray.direction.clone();
+     if(camera.position.y+dir.y*step<.3){dir.y=0;if(dir.lengthSq()<1e-4)return;dir.normalize()}   // at ground level keep sliding horizontally
+     camera.position.addScaledVector(dir,step);controls.target.addScaledVector(dir,step);
+   }else{
+     const nd=camera.position.distanceTo(controls.target)*f;if(f>1&&nd>controls.maxDistance)return;
+     camera.position.sub(anchor).multiplyScalar(f).add(anchor);controls.target.sub(anchor).multiplyScalar(f).add(anchor);
+   }
+   if(camera.position.y<.3){const k=.3-camera.position.y;camera.position.y+=k;controls.target.y+=k}
+   controls.update()},{passive:false,capture:true});}
  function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
    if(WALK.on){tw=null;walkStep(dt)}else{
    if(tw){const k=Math.min(1,(now-tw.t0)/tw.d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;camera.position.lerpVectors(tw.from.p,tw.to.p,e);controls.target.lerpVectors(tw.from.t,tw.to.t,e);if(k>=1)tw=null}
