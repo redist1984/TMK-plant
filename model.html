@@ -155,6 +155,13 @@ body.fs-mode .cutbar{bottom:calc(env(safe-area-inset-bottom,0px) + 78px)}
 footer{font-size:11.5px;color:var(--ink3);padding-top:8px;max-width:120ch}
 @media (max-width:760px){.stage{min-height:520px}}
 @media (prefers-reduced-motion: reduce){aside.detail{transition:none}}
+.walkpad{position:absolute;left:76px;bottom:12px;z-index:6;display:flex;flex-direction:column;gap:6px;align-items:flex-start;pointer-events:none}
+.walkpad[hidden]{display:none}
+.wp-hint{pointer-events:none;font:500 11.5px var(--sans);color:var(--ink);background:color-mix(in srgb,var(--panel) 85%,transparent);border:1px solid var(--line);border-radius:8px;padding:4px 8px;max-width:min(560px,80vw)}
+.wp-grid{display:grid;grid-template-columns:repeat(3,48px);gap:6px;pointer-events:auto}
+.wp-grid button{width:48px;height:48px;border-radius:12px;border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 90%,transparent);color:var(--ink);font-size:20px;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none}
+.wp-grid button:active{background:var(--accent);color:var(--panel)}
+body.walking #view{cursor:grab}
 </style>
 </head>
 <body>
@@ -170,7 +177,8 @@ footer{font-size:11.5px;color:var(--ink3);padding-top:8px;max-width:120ch}
     <button class="btn" id="bBld" type="button" aria-pressed="false">Здания прозрачные</button>
     <button class="btn" id="bAnim" type="button" aria-pressed="true">Движение потоков</button>
     <button class="btn" id="bLbl" type="button" aria-pressed="true">Подписи</button>
-    <button class="btn" id="bHelp" type="button" title="Вращение — левая кнопка мыши, сдвиг — правая, масштаб — колесо. Нажмите на аппарат или здание, чтобы открыть карточку. Внизу — разрезы: плоскость двигается ползунком, внутреннее устройство аппаратов видно на срезе." aria-label="Подсказка по управлению">?</button>
+    <button class="btn" id="bWalk" type="button" aria-pressed="false" title="Прогулка от первого лица: W/A/S/D или стрелки — движение, мышь (перетаскивание) — обзор, Q/E — вверх/вниз, Shift — быстрее, Esc — выход">🚶 От первого лица</button>
+    <button class="btn" id="bHelp" type="button" title="Вращение — левая кнопка мыши, сдвиг — правая, масштаб — колесо. Нажмите на аппарат или здание, чтобы открыть карточку. Внизу — разрезы: плоскость двигается ползунком, внутреннее устройство аппаратов видно на срезе. «От первого лица» — прогулка по заводу: W/A/S/D или стрелки, мышь — обзор, Q/E — высота, Shift — быстрее, Esc — выход." aria-label="Подсказка по управлению">?</button>
   </div>
 </header>
 <div class="bar" id="chips" role="group" aria-label="Фильтр потоков" style="padding-block:0 10px"></div>
@@ -182,6 +190,13 @@ footer{font-size:11.5px;color:var(--ink3);padding-top:8px;max-width:120ch}
 <div class="stage" id="stage">
   <div id="view"></div>
   <div class="labels" id="labels"></div>
+  <div class="walkpad" id="walkPad" hidden>
+    <div class="wp-hint" id="walkHint">W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход</div>
+    <div class="wp-grid">
+      <button type="button" data-k="up2" aria-label="Вверх">⤒</button><button type="button" data-k="fwd" aria-label="Вперёд">▲</button><button type="button" data-k="dn2" aria-label="Вниз">⤓</button>
+      <button type="button" data-k="left" aria-label="Влево">◀</button><button type="button" data-k="back" aria-label="Назад">▼</button><button type="button" data-k="right" aria-label="Вправо">▶</button>
+    </div>
+  </div>
   <div class="tip" id="tip" hidden></div>
   <button class="rotate-fab" type="button" id="bRotateMode" aria-pressed="false"
     title="Включить вращение пальцем (иначе палец перемещает камеру)" aria-label="Режим вращения пальцем">
@@ -2287,10 +2302,12 @@ function start(){
    if(wasLocked===u.tag)return;
    lockedTag=u.tag;select(u.tag);lockCameraOn(u.tag);updateCutForNewSelection()}
  renderer.domElement.addEventListener('pointerdown',e=>{down=[e.clientX,e.clientY];longPressFired=false;cancelLongPress();
+   if(WALK.on)return;   // walk mode: dragging looks around, a tap opens the card (see pointerup)
    longPressTimer=setTimeout(()=>{const o=pick(e);if(o){longPressFired=true;openInfoFor(o)}},LONG_PRESS_MS)});
  renderer.domElement.addEventListener('pointerup',e=>{cancelLongPress();if(!down)return;const moved=Math.hypot(e.clientX-down[0],e.clientY-down[1]);down=null;
    if(longPressFired){longPressFired=false;return}
    if(moved>5)return;
+   if(WALK.on){const o=pick(e);closeD();if(o){const u=o.userData;select(u.tag);if(u.info.kind==='bldg')showBldg(u.info.b);else if(u.info.kind==='ct')showCT();else showEq(u.tag,u.info.o)}return}
    tapLockToggle(e)});
  renderer.domElement.addEventListener('pointermove',e=>{if(down){const moved=Math.hypot(e.clientX-down[0],e.clientY-down[1]);if(moved>5)cancelLongPress()}
    if(e.buttons){tip.hidden=true;return}const o=pick(e);const r=renderer.domElement.getBoundingClientRect();
@@ -2464,7 +2481,7 @@ function start(){
  $('bBld').onclick=()=>setBldMode($('bBld').getAttribute('aria-pressed')!=='true');
  setBldMode(false);
  let showL=true; $('bLbl').onclick=()=>{showL=!showL;$('bLbl').setAttribute('aria-pressed',showL)};
- $('bHome').onclick=()=>{unIso();closeD();setBldMode(false);[1,2,3].forEach(k=>{if(ABK.floors[k])ABK.floors[k].visible=true});ABK.slabs.forEach(m=>m.visible=true)};
+ $('bHome').onclick=()=>{walkSet(false);unIso();closeD();setBldMode(false);[1,2,3].forEach(k=>{if(ABK.floors[k])ABK.floors[k].visible=true});ABK.slabs.forEach(m=>m.visible=true)};
  applyFlow();
 
  // ---- sections (clipping plane): whole plant or one chosen object ----
@@ -2803,9 +2820,47 @@ function start(){
          const v=V3((seed[(k*7)%NP]-.5)*1.1,.62-f*2.4,z+(seed[(k*13)%NP]-.5)*.35).applyMatrix4(c.matrixWorld);pp[k*3]=v.x;pp[k*3+1]=v.y;pp[k*3+2]=v.z}})});
        pg.attributes.position.needsUpdate=true}}));
  }
+ // ───── First-person walk mode: WASD / arrows move at eye height, drag to look, Q/E down/up, Shift faster
+ const WALK={on:false,yaw:0,pitch:0,keys:{},eye:1.7,drag:null,saved:null};
+ function walkSet(on){
+   if(on===WALK.on)return;WALK.on=on;$('bWalk').setAttribute('aria-pressed',on);$('walkPad').hidden=!on;document.body.classList.toggle('walking',on);
+   if(on){tw=null;WALK.saved={p:camera.position.clone(),t:controls.target.clone()};controls.enabled=false;
+     const t=controls.target.clone(),d=new THREE.Vector3().subVectors(t,camera.position);d.y=0;if(d.lengthSq()<1e-6)d.set(0,0,-1);d.normalize();
+     // start on the ground a few metres in front of the orbit target, looking the same way as the camera
+     camera.position.set(t.x-d.x*8,WALK.eye,t.z-d.z*8);WALK.yaw=Math.atan2(-d.x,-d.z);WALK.pitch=0;
+     if(controls.target.distanceTo(HOME.tgt)<2){camera.position.copy(P(5290,2594,WALK.eye));WALK.yaw=Math.PI/2}   // from the overview: start at the main gate (east, by the ABK), facing the plant
+     camera.near=.1;camera.updateProjectionMatrix();
+   }else{camera.near=1;camera.updateProjectionMatrix();
+     const f=new THREE.Vector3(-Math.sin(WALK.yaw),0,-Math.cos(WALK.yaw));
+     controls.target.copy(camera.position).addScaledVector(f,10);controls.target.y=Math.max(0,camera.position.y-1.5);
+     camera.position.addScaledVector(f,-6).add(new THREE.Vector3(0,4,0));controls.enabled=true;controls.update();WALK.keys={}}
+ }
+ $('bWalk').onclick=()=>walkSet(!WALK.on);
+ const WK={KeyW:'fwd',ArrowUp:'fwd',KeyS:'back',ArrowDown:'back',KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right',KeyE:'up2',PageUp:'up2',KeyQ:'dn2',PageDown:'dn2'};
+ window.addEventListener('keydown',e=>{const tg=e.target;if(tg&&/INPUT|SELECT|TEXTAREA/.test(tg.tagName))return;
+   if(e.code==='Escape'&&WALK.on){walkSet(false);return}
+   const k=WK[e.code];if(!k)return;if(!WALK.on){if(/^Key[WASD]$/.test(e.code))walkSet(true);else return}
+   WALK.keys[k]=true;WALK.fast=e.shiftKey;e.preventDefault()});
+ window.addEventListener('keyup',e=>{const k=WK[e.code];if(k)WALK.keys[k]=false;WALK.fast=e.shiftKey});
+ window.addEventListener('blur',()=>{WALK.keys={}});
+ document.querySelectorAll('#walkPad [data-k]').forEach(btn=>{const k=btn.dataset.k;
+   const on=e=>{e.preventDefault();WALK.keys[k]=true},off=()=>{WALK.keys[k]=false};
+   btn.addEventListener('pointerdown',on);['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,off))});
+ renderer.domElement.addEventListener('pointerdown',e=>{if(WALK.on)WALK.drag=[e.clientX,e.clientY]});
+ window.addEventListener('pointermove',e=>{if(!WALK.on||!WALK.drag)return;const dx=e.clientX-WALK.drag[0],dy=e.clientY-WALK.drag[1];WALK.drag=[e.clientX,e.clientY];
+   WALK.yaw-=dx*.004;WALK.pitch=Math.max(-1.45,Math.min(1.45,WALK.pitch-dy*.004))});
+ window.addEventListener('pointerup',()=>{WALK.drag=null});
+ renderer.domElement.addEventListener('wheel',e=>{if(!WALK.on)return;e.preventDefault();WALK.eye=Math.max(.5,Math.min(60,camera.position.y-e.deltaY*.01));camera.position.y=WALK.eye},{passive:false});
+ function walkStep(dt){const K=WALK.keys,v=(WALK.fast?16:5)*dt;
+   const f=new THREE.Vector3(-Math.sin(WALK.yaw),0,-Math.cos(WALK.yaw)),r=new THREE.Vector3(-f.z,0,f.x);
+   if(K.fwd)camera.position.addScaledVector(f,v);if(K.back)camera.position.addScaledVector(f,-v);
+   if(K.right)camera.position.addScaledVector(r,v);if(K.left)camera.position.addScaledVector(r,-v);
+   if(K.up2)camera.position.y=Math.min(60,camera.position.y+v*.6);if(K.dn2)camera.position.y=Math.max(.5,camera.position.y-v*.6);
+   camera.rotation.set(WALK.pitch,WALK.yaw,0,'YXZ')}
  function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
+   if(WALK.on){tw=null;walkStep(dt)}else{
    if(tw){const k=Math.min(1,(now-tw.t0)/tw.d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;camera.position.lerpVectors(tw.from.p,tw.to.p,e);controls.target.lerpVectors(tw.from.t,tw.to.t,e);if(k>=1)tw=null}
-   controls.update();
+   controls.update();}
    FANS.forEach(f=>{f.rotation.y+=dt*2.2});
    TRAINS.forEach(tr=>tr.update(now/1000));
    // crane duty cycle: bridge travel, trolley traverse and hoisting with real speeds from the
@@ -2827,7 +2882,7 @@ function start(){
  function paintModelUI(lang){
    currentLang=lang; const T=L();
    $('tEyebrow').textContent=T.eyebrow; $('tH1').textContent=T.h1;
-   $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim; $('bLbl').textContent=T.bLbl;
+   $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim; $('bLbl').textContent=T.bLbl;$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
    $('bHelp').title=T.bHelpTitle;
    tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut;
    bCutFab.title=T.tabCut; bCutFab.setAttribute('aria-label',T.tabCut);
