@@ -173,16 +173,18 @@ body.fs-mode .fspanel.open{display:flex;flex-direction:column;gap:6px}
 body.fs-mode.fs-panel-open aside.detail{right:274px}
 /* startup simulation (вкладка «Пуск завода») */
 .subar{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);transform:translateX(-50%);
-  display:flex;flex-direction:column;gap:8px;padding:10px 12px;width:min(560px,calc(100% - 24px));max-height:min(38vh,360px);z-index:20}
+  display:flex;flex-direction:column;gap:6px;padding:7px 10px;width:min(760px,calc(100% - 24px));max-height:min(46vh,420px);z-index:20;
+  background:color-mix(in srgb,var(--panel) 88%,transparent);backdrop-filter:blur(6px)}
+.subar:not(.open) .su-list,.subar:not(.open) .su-tot{display:none}
 .subar[hidden]{display:none}
 body.fs-mode .subar{bottom:calc(env(safe-area-inset-bottom,0px) + 78px)}
 .su-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
-.su-clock{font:700 15px var(--mono);color:var(--accent);margin-right:auto}
-.su-now{font-size:12.5px;color:var(--ink2);width:100%}
+.su-clock{font:700 14px var(--mono);color:var(--accent);white-space:nowrap}
+.su-now{font-size:12px;color:var(--ink2);width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .su-tot{font-size:11.5px;color:var(--ink3)}
 .subar select{font:500 12.5px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 6px}
 #suPlay{min-width:40px;font-size:14px}
-#suR{width:100%}
+#suR{flex:1 1 140px;min-width:100px}
 .su-list{list-style:none;margin:0;padding:0;overflow:auto;flex:1;min-height:0;border-top:1px solid var(--line)}
 .su-list ul{list-style:none;margin:0 0 4px;padding:0 0 0 26px}
 .su-list button{display:flex;width:100%;gap:8px;align-items:center;text-align:left;background:none;border:0;color:var(--ink);font:500 12.5px var(--sans);padding:4px 2px;cursor:pointer;border-radius:6px}
@@ -201,7 +203,7 @@ body.fs-mode .subar{bottom:calc(env(safe-area-inset-bottom,0px) + 78px)}
 .lbl.su0{opacity:.6}
 .lbl.su1{border-color:#E3A008;box-shadow:0 0 0 2px #E3A00866}
 .lbl.su2{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-@media (max-width:760px){.subar{left:12px;right:12px;transform:none;width:auto;bottom:12px;max-height:42vh}}
+@media (max-width:760px){.subar{left:8px;right:8px;transform:none;width:auto;bottom:8px;max-height:50vh;padding:6px 8px}.subar .btn{padding:5px 8px}.subar #suSpd{max-width:96px}#suR{flex-basis:100%;order:9}}
 </style>
 </head>
 <body>
@@ -283,10 +285,11 @@ body.fs-mode .subar{bottom:calc(env(safe-area-inset-bottom,0px) + 78px)}
       <button class="btn" type="button" id="suPlay" aria-label="Пуск">▶</button>
       <button class="btn" type="button" id="suReset" title="В начало" aria-label="В начало">⟲</button>
       <select id="suSpd" aria-label="Скорость имитации"><option value="0.1667">1 с = 10 мин</option><option value="0.5" selected>1 с = 30 мин</option><option value="1">1 с = 1 ч</option><option value="2">1 с = 2 ч</option></select>
+      <input type="range" id="suR" min="0" max="1" step="0.01" value="0" aria-label="Время от начала пуска">
       <button class="btn" type="button" id="suCalc">Расчёт</button>
+      <button class="btn" type="button" id="suMore" aria-expanded="false" title="Этапы пуска">Этапы ▴</button>
       <span class="su-now" id="suNow"></span>
     </div>
-    <input type="range" id="suR" min="0" max="1" step="0.01" value="0" aria-label="Время от начала пуска">
     <span class="su-tot" id="suTot"></span>
     <ol class="su-list" id="suList"></ol>
   </div>
@@ -3205,6 +3208,7 @@ function start(){
  $('suR').oninput=e=>{SU.t=+e.target.value;suApply()};
  $('suSpd').onchange=e=>{SU.spd=+e.target.value};
  $('suCalc').onclick=suShowCalc;
+ $('suMore').onclick=()=>{const o=subar.classList.toggle('open');$('suMore').setAttribute('aria-expanded',o);$('suMore').textContent=(currentLang==='uz'?'Bosqichlar':'Этапы')+(o?' ▾':' ▴');if(o){SU.lastAct=null;suPaint()}};
  // chips
  const chips=$('chips'); const active=new Set();
  const lbl=document.createElement('span');lbl.className='eyebrow';lbl.textContent=L().streamsLbl;chips.appendChild(lbl);
@@ -3690,7 +3694,7 @@ function start(){
    $('tEyebrow').textContent=T.eyebrow; $('tH1').textContent=T.h1;
    $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim; $('bLbl').textContent=T.bLbl;$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
    $('bHelp').title=T.bHelpTitle;
-   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода'; if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
+   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода'; $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
    bCutFab.title=T.tabCut; bCutFab.setAttribute('aria-label',T.tabCut);
    $('tCutEyebrow').textContent=T.cutEyebrow; $('tCutOnly').textContent=T.cutOnly;
    $('cutSegOff').textContent=T.cutOff;
