@@ -3378,9 +3378,22 @@ function start(){
    $('suList').querySelectorAll('[data-st]').forEach(li=>{const s=SUP.STEPS[li.dataset.st-1];li.dataset.s=t<s.t0?0:(t<s.t1?1:2)});
    const act=[...$('suList').querySelectorAll('li[data-ev][data-s="1"]')].pop();if(act&&act!==SU.lastAct){SU.lastAct=act;const L=$('suList');L.scrollTop=Math.max(0,act.offsetTop-L.offsetTop-L.clientHeight/2)}
  }
+ // camera rides with the front of the growing flow, then backs off to a good view of the equipment it feeds
+ function suDest(fo){if(fo.dest!==undefined)return fo.dest;const b=fo.f.b,tag=typeof b==='string'?b:(Array.isArray(b)&&typeof b[0]==='string'?b[0]:null);
+   const bx=new THREE.Box3();if(tag)(byTag[tag]||[]).forEach(o=>bx.expandByObject(o));
+   if(bx.isEmpty()||bx.getSize(new THREE.Vector3()).length()>90)bx.setFromCenterAndSize(fo.path.getPointAt(1),new THREE.Vector3(8,8,8));
+   const sz=bx.getSize(new THREE.Vector3()).length();return fo.dest={c:bx.getCenter(new THREE.Vector3()),d:Math.min(60,Math.max(18,sz*1.5))}}
+ function suCamFollow(dt){
+   const fl=flowObjs.filter(fo=>fo.ev===SU.focus);if(!fl.length)return;
+   const fo=fl.filter(f=>f.rev>0&&f.rev<1).sort((a,b)=>a.dp-b.dp||a.st0-b.st0)[0];let tgt,dist;
+   if(fo){SU.lastFo=fo;const k=fo.rev,tip=fo.path.getPointAt(Math.min(k,.999)),end=suDest(fo);tgt=tip.clone().lerp(end.c,k*k*.7);dist=20+Math.max(0,end.d-20)*Math.min(1,k*1.15)}
+   else if(SU.lastFo&&SU.lastFo.ev===SU.focus){const end=suDest(SU.lastFo);tgt=end.c;dist=end.d}else return;
+   const dir=camera.position.clone().sub(controls.target);dir.y=0;if(dir.lengthSq()<1e-6)dir.set(1,0,1);dir.normalize().multiplyScalar(.82);dir.y=.57;dir.normalize();
+   const a=1-Math.exp(-dt*2.2);controls.target.lerp(tgt,a);camera.position.lerp(tgt.clone().add(dir.multiplyScalar(dist)),a)}
  function suTick(dt){
    if(!SU.on)return;
    if(SU.play){SU.t=Math.min(SUP.total,SU.t+dt*(SU.spd==='auto'?suRate(SU.t):SU.spd));if(SU.t>=SUP.total)SU.play=false;suApply()}
+   if(SU.follow&&SU.focus&&!tw)suCamFollow(dt);
    if(anim)SU.ext.forEach(x=>{const on=x.rev>0;x.off=(x.off+dt*8/x.len)%1;const n=x.dots.length;x.dots.forEach((d,i)=>{const u=((i/n)+x.off)%1;d.visible=on&&u<=x.rev;if(d.visible){d.position.copy(x.path.getPointAt(Math.min(u,.9995)));const X=X0-d.position.z,Y=d.position.x+Y0;if(x.hide.some(r=>X>r[0]&&X<r[1]&&Y>r[2]&&Y<r[3]))d.visible=false}})});
    else SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
  }
