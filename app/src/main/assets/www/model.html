@@ -496,21 +496,21 @@ const RACKS = [ // 3147-5G116-04 (наружные эстакады), 3147-5G112
 ];
 // Equipment geometry. k: vcyl/hcylX/hcylY/box/tower/stack/conv/ct ; d=diameter, h=height, L=length ; X,Y centre
 const E = [
- {t:'TK-11101A/B',k:'mtank',X:5354.4,Y:2339.4,d:6.32,h:4.6,nso:'3147-5H111-01-01'},
- {t:'TK-11101A/B',k:'mtank',X:5342.2,Y:2339.4,d:6.32,h:4.6,nso:'3147-5H111-01-01'},
- {t:'TK-11104',k:'cbox',X:5352.7,Y:2350.1,sx:4.9,sz:4.61,h:2.5,drive:1,nso:'3147-5H111-02-01'},
- {t:'TK-11102',k:'cbox',X:5348.1,Y:2350.1,sx:4.9,sz:4.61,h:2.5,drive:1,nso:'3147-5H111-02-01'},
- {t:'TK-11103',k:'cbox',X:5343.5,Y:2350.1,sx:4.9,sz:4.61,h:2.5,nso:'3147-5H111-02-01'},
- {t:'TK-11105',k:'cbox',X:5338.9,Y:2350.1,sx:4.9,sz:4.61,h:2.5,nso:'3147-5H111-02-01'},
+ {t:'TK-11101A/B',k:'mtank',dims:'Ø6,0 × H 4,614 м, V=110 м³',X:5354.4,Y:2339.4,d:6.0,h:5.8,nso:'3147-5H111-01-01'},
+ {t:'TK-11101A/B',k:'mtank',dims:'Ø6,0 × H 4,614 м, V=110 м³',X:5342.2,Y:2339.4,d:6.0,h:5.8,nso:'3147-5H111-01-01'},
+ {t:'TK-11104',k:'cbox',dims:'4,5 × 4,5 × H 2,5 м, V=50,6 м³',X:5352.7,Y:2350.1,sx:4.5,sz:4.5,h:3.18,drive:1,nso:'3147-5H111-02-01'},
+ {t:'TK-11102',k:'cbox',dims:'4,5 × 4,5 × H 2,5 м, V=50,6 м³',X:5348.1,Y:2350.1,sx:4.5,sz:4.5,h:3.18,drive:1,nso:'3147-5H111-02-01'},
+ {t:'TK-11103',k:'cbox',dims:'4,5 × 4,5 × H 2,5 м, V=50,6 м³',X:5343.5,Y:2350.1,sx:4.5,sz:4.5,h:3.18,nso:'3147-5H111-02-01'},
+ {t:'TK-11105',k:'cbox',dims:'4,5 × 4,5 × H 2,5 м, V=50,6 м³',X:5338.9,Y:2350.1,sx:4.5,sz:4.5,h:3.18,nso:'3147-5H111-02-01'},
  {t:'FR-11101A/B',k:'leaf',X:5350.5,Y:2365.0,base:5.5,plan:'3147-5G111-08',vend:'Jiangsu Juneng WYB-YL-TY80-F',approx:1},
  {t:'FR-11101A/B',k:'leaf',X:5346.8,Y:2365.0,base:5.5,plan:'3147-5G111-08',vend:'Jiangsu Juneng WYB-YL-TY80-F',approx:1},
  {t:'FR-11102',k:'leaf',X:5342.2,Y:2365.0,base:5.5,plan:'3147-5G111-08',vend:'Jiangsu Juneng WYB-YL-TY80-F',approx:1},
- {t:'TW-11101',k:'prof',X:5347.8,Y:2329.2,segs:[[0,8.3,2.4],[8.3,8.9,2.4,1.6]],ducts:[[9.3,90,0.73,1,90,0],[4.5,180,0.72,1,0,1.2]],nso:'3147-5H111-04-01 Rev.1',plan:'3147-5G111-07'},
- {t:'SK-11101',k:'stack',X:5360.4,Y:2324.0,d:0.8,h:21.15,plan:'3147-5G111-07'},
- {t:'BO-11101',k:'box',X:5350.9,Y:2323,sx:3,sz:1.6,h:1.6,plan:'3147-5G111-07',approx:1},
+ {t:'TW-11101',k:'tw111',dims:'Ø2,4 × H 8,79 м',X:5347.8,Y:2329.2,d:2.4,h:8.79,nso:'3147-5H111-04-01 Rev.1',plan:'3147-5G111-07/36'},
+ {t:'SK-11101',k:'sk111',dims:'Ø0,8 × H 21,15 м',X:5360.4,Y:2324.0,d:0.8,h:21.15,plan:'3147-5G111-07'},
+ {t:'BO-11101',k:'fan111',X:5350.9,Y:2323,sx:3,sz:1.4,h:1.6,plan:'3147-5G111-07',approx:1},
  {t:'FR-11103',k:'fpress',X:5336.1,Y:2319.5,plan:'3147-5G111-07',vend:'XMYZ50-1000-U (черт. 20190604-1)'},
- {t:'VE-11101',k:'box',X:5362.2,Y:2330.7,sx:4.5,sz:4.5,h:2.2,y0:-2.2,plan:'3147-5G111-03',nso:'3147-5H111-03-01'},
- {t:'MZ-11101',k:'box',X:5337.3,Y:2329.3,sx:1.9,sz:1.3,h:1.45,plan:'3147-5G111-07'},
+ {t:'VE-11101',k:'pit111',dims:'4,5 × 4,5 × H 2,2 м (подземный)',X:5362.2,Y:2330.7,sx:4.5,sz:4.5,h:2.2,y0:-2.2,plan:'3147-5G111-03',nso:'3147-5H111-03-01'},
+ {t:'MZ-11101',k:'dose111',dims:'1,9 × 1,3 × H 1,45 м',X:5337.3,Y:2329.3,sx:1.9,sz:1.3,h:1.45,plan:'3147-5G111-07'},
  {t:'CV-12101AB',k:'conv',a:[5354.4,2308.42],b:[5354.4,2334],h0:1.2,h1:8.1,plan:'3147-5Hg121-05'},
  {t:'VE-12101AB',k:'hopper',X:5354.4,Y:2309.52,w:3.87,h:3.87,top:4.8,plan:'3147-5Hg121-05'},
  {t:'VE-12101AB',k:'hopper',X:5342.2,Y:2309.52,w:3.87,h:3.87,top:4.8,plan:'3147-5Hg121-05'},
@@ -608,25 +608,25 @@ const E = [
  {t:'VE-11401',k:'vcyl',X:5240.75,Y:2323.6,d:1.2,h:3.8,vend:'SOPO CERE 37SCG2504-0',plan:'3147-5R114-14'},
  {t:'VE-11402',k:'vcyl',X:5240.9,Y:2317.1,d:2,h:4.1,vend:'SOPO CERE 38SCG2504-0',plan:'3147-5R114-14'},
  {t:'MZ-114.101',k:'box',X:5236.2,Y:2331.5,sx:1.5,sz:1.2,h:1.5,y0:6,plan:'3147-5R114.1-04',approx:1},
- {t:'PP-11101A/B',k:'pump',X:5349.96,Y:2349.9,y0:2.5,sm:.55,plan:'3147-5G111-34'},
- {t:'PP-11101A/B',k:'pump',X:5346.24,Y:2349.9,y0:2.5,sm:.55,plan:'3147-5G111-34'},
- {t:'PP-11102A/B',k:'pump',X:5345.36,Y:2349.9,y0:2.5,sm:.55,plan:'3147-5G111-34'},
- {t:'PP-11102A/B',k:'pump',X:5341.64,Y:2349.9,y0:2.5,sm:.55,plan:'3147-5G111-34'},
- {t:'PP-11103A/B',k:'pump',X:5354.56,Y:2349.9,y0:2.5,sm:.55,plan:'3147-5G111-34'},
- {t:'PP-11103A/B',k:'pump',X:5350.84,Y:2349.9,y0:2.5,sm:.55,plan:'3147-5G111-34'},
- {t:'PP-11104A/B',k:'pump',X:5340.76,Y:2349.9,y0:2.5,sm:.55,plan:'3147-5G111-34'},
- {t:'PP-11104A/B',k:'pump',X:5337.04,Y:2349.9,y0:2.5,sm:.55,plan:'3147-5G111-34'},
- {t:'PP-11105A/B',k:'pump',X:5363.8,Y:2329.6,y0:0.07,plan:'3147-5G111-07'},
- {t:'PP-11105A/B',k:'pump',X:5363.8,Y:2332.0,y0:0.07,plan:'3147-5G111-07'},
- {t:'XX-11101ABC',k:'box',X:5352.2,Y:2363.5,sx:3.8,sz:1.2,h:1.5,base:5.5,plan:'3147-5G111-08'},
- {t:'XX-11101ABC',k:'box',X:5348.65,Y:2363.5,sx:3.8,sz:1.2,h:1.5,base:5.5,plan:'3147-5G111-08'},
- {t:'XX-11101ABC',k:'box',X:5344.5,Y:2363.5,sx:3.8,sz:1.2,h:1.5,base:5.5,plan:'3147-5G111-08'},
+ {t:'PP-11101A/B',k:'vpump',dims:'полупогружной, глубина погружения 2,58 м',X:5349.96,Y:2349.9,y0:3.18,sub:2.58,plan:'3147-5G111-34'},
+ {t:'PP-11101A/B',k:'vpump',dims:'полупогружной, глубина погружения 2,58 м',X:5346.24,Y:2349.9,y0:3.18,sub:2.58,plan:'3147-5G111-34'},
+ {t:'PP-11102A/B',k:'vpump',dims:'полупогружной, глубина погружения 2,58 м',X:5345.36,Y:2349.9,y0:3.18,sub:2.58,plan:'3147-5G111-34'},
+ {t:'PP-11102A/B',k:'vpump',dims:'полупогружной, глубина погружения 2,58 м',X:5341.64,Y:2349.9,y0:3.18,sub:2.58,plan:'3147-5G111-34'},
+ {t:'PP-11103A/B',k:'vpump',dims:'полупогружной, глубина погружения 2,58 м',X:5354.56,Y:2349.9,y0:3.18,sub:2.58,plan:'3147-5G111-34'},
+ {t:'PP-11103A/B',k:'vpump',dims:'полупогружной, глубина погружения 2,58 м',X:5350.84,Y:2349.9,y0:3.18,sub:2.58,plan:'3147-5G111-34'},
+ {t:'PP-11104A/B',k:'vpump',dims:'полупогружной, глубина погружения 2,58 м',X:5340.76,Y:2349.9,y0:3.18,sub:2.58,plan:'3147-5G111-34'},
+ {t:'PP-11104A/B',k:'vpump',dims:'полупогружной, глубина погружения 2,58 м',X:5337.04,Y:2349.9,y0:3.18,sub:2.58,plan:'3147-5G111-34'},
+ {t:'PP-11105A/B',k:'vpump',dims:'полупогружной, глубина погружения 2,0 м',X:5363.7,Y:2329.6,y0:0.08,plan:'3147-5G111-07'},
+ {t:'PP-11105A/B',k:'vpump',dims:'полупогружной, глубина погружения 2,0 м',X:5363.7,Y:2331.8,y0:0.08,plan:'3147-5G111-07'},
+ {t:'XX-11101ABC',k:'slagbin',dims:'3,8 × 1,2 × H 1,5 м',X:5352.2,Y:2363.5,sx:3.8,sz:1.2,h:1.5,base:5.5,plan:'3147-5G111-08'},
+ {t:'XX-11101ABC',k:'slagbin',dims:'3,8 × 1,2 × H 1,5 м',X:5348.65,Y:2363.5,sx:3.8,sz:1.2,h:1.5,base:5.5,plan:'3147-5G111-08'},
+ {t:'XX-11101ABC',k:'slagbin',dims:'3,8 × 1,2 × H 1,5 м',X:5344.5,Y:2363.5,sx:3.8,sz:1.2,h:1.5,base:5.5,plan:'3147-5G111-08'},
  {t:'PP-11106A/B',k:'hpump',X:5352.9,Y:2327.9,plan:'3147-5G111-07',sx:1.6,sz:0.8,h:0.9,approx:1},
  {t:'PP-11106A/B',k:'hpump',X:5352.9,Y:2329.9,plan:'3147-5G111-07',sx:1.6,sz:0.8,h:0.9,approx:1},
  {t:'PP-11107',k:'hpump',X:5342.6,Y:2329.9,plan:'3147-5G111-07',sx:1.3,sz:0.7,h:0.8,approx:1},
  {t:'PP-11108',k:'hpump',X:5342.6,Y:2327.2,plan:'3147-5G111-07',sx:1.5,sz:0.8,h:0.9,approx:1},
- {t:'VE-11102',k:'box',X:5337.3,Y:2325.7,plan:'3147-5G111-07',sx:2,sz:2,h:2,y0:-2,approx:1},
- {t:'PP-11109',k:'pump',X:5337.3,Y:2325.7,plan:'3147-5G111-07',y0:0,approx:1},
+ {t:'VE-11102',k:'pit111',dims:'2 × 2 × H 2 м, V=8 м³ (подземный)',X:5337.3,Y:2325.7,plan:'3147-5G111-07',sx:2,sz:2,h:2,y0:-2,approx:1},
+ {t:'PP-11109',k:'vpump',dims:'полупогружной, Q=25 м³/ч, H=30 м',X:5336.95,Y:2325.7,plan:'3147-5G111-07',y0:0,approx:1},
  {t:'EW-11101A/B',k:'eyew',X:5356.7,Y:2332.0,plan:'3147-5G111-07'},
  {t:'EW-11101A/B',k:'eyew',X:5331.7,Y:2354.9,plan:'3147-5G111-07'},
  {t:'SM-11201ABC',k:'sgun',X:5260.66,Y:2314.975,yc:4.536,vend:'XCC XHQ-1-WX-00',plan:'3147-5G112-09 (план EL+4.250, разрез M-M: штуцер c1)'},
@@ -1783,7 +1783,7 @@ function start(){
      const [n,cd,cl,hang]=CANDLES[o.t];const sheetY=hang?H-.9:H-2.4;const sh=cyl(dmin,dmin,.1,M.steelDark,40);sh.position.y=sheetY;add(sh);
      const pts=[];let r=0;while(pts.length<n){const cnt=r===0?1:Math.floor(2*Math.PI*r/(cd*1.35));for(let i=0;i<cnt&&pts.length<n;i++){const a=i/cnt*Math.PI*2;pts.push([Math.cos(a)*r,Math.sin(a)*r])}r+=cd*1.35}
      pts.forEach(([x,z])=>{const c=cyl(cd,cd,cl,M.candle,14);c.position.set(x,hang?sheetY-cl/2:sheetY+cl/2,z);add(c)})}
-   else if(o.k==='prof'&&o.t==='TW-11101'){const d=o.segs[0][2]-.2;const pk=cyl(d,d,2.6,M.pack,32);pk.position.y=3.6;add(pk);const lq=cyl(d,d,1.2,M.liqW,32);lq.position.y=.7;add(lq)}
+   else if(o.k==='tw111'){const pk=cyl(2.2,2.2,2.6,M.pack,32);pk.position.y=3.6;add(pk);const lq=cyl(2.2,2.2,1.2,M.liqW,32);lq.position.y=.7;add(lq)}
    else if(o.k==='prof'){const straight=o.segs.filter(s=>(s[3]??s[2])===s[2]);const dmin=Math.min(...o.segs.map(s=>Math.min(s[2],s[3]??s[2])));
      const y0=o.segs[0][1]+.3,y1=H-2.3;const tb=cyl(dmin*.82,dmin*.82,y1-y0,M.tubes,40);tb.position.y=(y0+y1)/2;add(tb)}
    else if(o.k==='furnace'){const ln=new THREE.Mesh(new THREE.CylinderGeometry(4.37/2,4.37/2,o.L-.6,48,1,true),M.lining);ln.rotation.z=Math.PI/2;ln.position.y=o.yc;add(ln);
@@ -1795,12 +1795,10 @@ function start(){
      if(o.drum){const dd=(o.dd||1.8)*.92;const w=cyl(dd,dd,(o.dl||o.L*.75)*.97,M.liqW,20);w.rotation.copy(tb.rotation);w.position.set(0,o.yc+(o.dz||o.d/2+1.6)-.05,0);add(w)}}
    else if(o.k==='hves'){const lq=new THREE.Mesh(new THREE.BoxGeometry(o.d*.82,o.d*.5,o.L*.98),M.liqAcid);lq.position.y=o.yc-o.d*.2;add(lq)}
    else if(o.k==='tank'){const lq=cyl(o.d-.3,o.d-.3,o.h*.72,o.t.startsWith('VE-122')?M.liqS:M.liqAcid,64);lq.position.y=o.h*.36+.05;add(lq)}
-   else if(o.k==='mtank'){const lq=cyl(o.d-.2,o.d-.2,o.h*.8,M.liqS,40);lq.position.y=o.h*.4+.25;add(lq);
-     const sh=cyl(.18,.18,o.h+.4,M.steelDark,10);sh.position.y=o.h/2+.6;add(sh);
-     [1.0,2.25,3.5].forEach(y=>{[0,Math.PI/2].forEach(r=>{const b=new THREE.Mesh(new THREE.BoxGeometry(1.5,.12,.25),M.steelDark);b.position.y=y;b.rotation.y=r+Math.PI/4;add(b)})})}
-   else if(o.k==='cbox'){const lq=new THREE.Mesh(new THREE.BoxGeometry(o.sx-.3,o.h*.7,o.sz-.3),M.liqS);lq.position.y=o.h*.35+.05;add(lq)}
+   else if(o.k==='mtank'){const lq=cyl(5.8,5.8,3.6,M.liqS,40);lq.position.y=2.9;add(lq)}
+   else if(o.k==='cbox'){const lq=new THREE.Mesh(new THREE.BoxGeometry(4.3,1.8,4.3),M.liqS);lq.position.y=1.65;add(lq)}
    else if(o.k==='vcyl'&&o.t==='VE-11302'){const lq=cyl(o.d-.3,o.d-.3,o.h*.7,M.liqAcid,40);lq.position.y=o.h*.35+.02;add(lq)}
-   else if(o.k==='box'&&o.t==='VE-11101'){const lq=new THREE.Mesh(new THREE.BoxGeometry(o.sx-.3,o.h*.6,o.sz-.3),M.liqW);lq.position.y=o.h*.3+.1;add(lq)}
+   else if(o.k==='pit111'&&o.t==='VE-11101'){const lq=new THREE.Mesh(new THREE.BoxGeometry(o.sx-.3,o.h*.6,o.sz-.3),M.liqW);lq.position.y=o.h*.3+.1;add(lq)}
    else if(o.k==='box'&&o.t==='VE-11303'){const lq=new THREE.Mesh(new THREE.BoxGeometry(o.sx-.3,o.h*.6,o.sz-.3),M.liqAcid);lq.position.y=o.h*.3+.1;add(lq)}
  }
  const FANS=[]; const CRANES=[]; const LARMS=[];
@@ -1864,17 +1862,121 @@ function start(){
        const sd=new THREE.Mesh(new THREE.BoxGeometry(.3,.12,.5),M.steelDark);sd.position.set(sg*o.L*.33,o.yc-o.d/2-.06,0);g.add(sd)})}
      if(o.drum){const dd=o.dd||1.8,dr=cyl(dd,dd,o.dl||o.L*.75,mat,24);dr.rotation.copy(c.rotation);dr.position.set(0,o.yc+(o.dz||o.d/2+1.6),0);g.add(dr);[-1,1].forEach(sg=>{const p=cyl(.34,.34,(o.dz||2)-o.d/2-dd/2+.4,mat,10);p.position.set(o.k==='hcylY'?sg*(o.dl||4)/3:0,o.yc+o.d/2+((o.dz||2)-o.d/2-dd/2)/2,o.k==='hcylX'?sg*(o.dl||4)/3:0);g.add(p)})}
      g.position.copy(P(o.X,o.Y,0))}
-   else if(o.k==='mtank'){const c=cyl(o.d,o.d,o.h,mat,48);c.position.y=o.h/2+.2;g.add(c);
-     const pw=Math.min(o.d*1.15,8);const pl=new THREE.Mesh(new THREE.BoxGeometry(pw,.18,pw),M.steelDark);pl.position.y=o.h+.5;g.add(pl);
-     [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a,b])=>{const leg=new THREE.Mesh(new THREE.BoxGeometry(.12,.3,.12),M.steelDark);leg.position.set(a*pw/2*.8,o.h+.35,b*pw/2*.8);g.add(leg)});
-     const col=cyl(.55,.55,1.6,M.steelDark,20);col.position.y=o.h+1.4;g.add(col);
-     const gbx=new THREE.Mesh(new THREE.BoxGeometry(1.6,1.3,1.6),mat);gbx.position.y=o.h+2.85;g.add(gbx);
-     const mot=cyl(.55,.55,1.7,mat,20);mot.rotation.z=Math.PI/2;mot.position.set(0,o.h+3.6,1.1);g.add(mot);
-     const shaft=cyl(.14,.14,o.h*.85,M.steelDark,12);shaft.position.y=o.h*.55+.2;g.add(shaft);
-     g.position.copy(P(o.X,o.Y,0))}
-   else if(o.k==='cbox'){const b=new THREE.Mesh(new THREE.BoxGeometry(o.sx,o.h,o.sz),mat);b.position.y=o.h/2;g.add(b);
-     if(o.drive){const fr=new THREE.Mesh(new THREE.BoxGeometry(1.6,1.8,1.6),M.steelDark);fr.position.y=o.h+.9;g.add(fr);const mot=cyl(.8,.8,1.0,mat,20);mot.position.y=o.h+2.3;g.add(mot)}
-     g.position.copy(P(o.X,o.Y,0))}
+   else if(o.k==='mtank'||o.k==='cbox'||o.k==='vpump'||o.k==='tw111'||o.k==='sk111'||o.k==='pit111'||o.k==='slagbin'||o.k==='dose111'||o.k==='fan111'){
+     // Dept 111 equipment per 3147-5G111-06/09/10 and nozzle sheets 32–39. Plan angle θ from PN clockwise:
+     // local direction (sin θ, 0, −cos θ); local −z = north (plan +X), +x = east (plan +Y).
+     const B=(w,h,d,x,y,z,m)=>{const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m||M.steelDark);b.position.set(x,y,z);g.add(b);return b};
+     const C=(d,h,x,y,z,m,seg,d1)=>{const c=cyl(d,d1??d,h,m||M.steelDark,seg||16);c.position.set(x,y,z);g.add(c);return c};
+     const pol=(r,a)=>[r*Math.sin(a*Math.PI/180),-r*Math.cos(a*Math.PI/180)];
+     // flanged nozzle: vertical (on a top) or radial (on a round shell / flat wall)
+     const nzV=(x,y,z,d,h=.3)=>{C(d,h,x,y+h/2,z);C(d+.1,.04,x,y+h,z)};
+     const nzR=(r,a,y,d,L=.35)=>{const [sx,sz]=pol(r+L/2,a);const n=C(d,L,sx,y,sz);
+       n.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(Math.sin(a*Math.PI/180),0,-Math.cos(a*Math.PI/180)));
+       const [fx,fz]=pol(r+L,a);const f=C(d+.12,.04,fx,y,fz);f.quaternion.copy(n.quaternion)};
+     const rail=(pts,y0)=>{for(let i=0;i<pts.length;i++){const [x,z]=pts[i];B(.05,1.0,.05,x,y0+.5,z,M.yel);if(i){const [px,pz]=pts[i-1];const L=Math.hypot(x-px,z-pz),a=Math.atan2(z-pz,x-px);[.5,1.0].forEach(h=>{const r=B(L,.04,.04,(x+px)/2,y0+h,(z+pz)/2,M.yel);r.rotation.y=-a})}}};
+     if(o.k==='mtank'){
+       // TK-11101A/B Ø6000×4614, V=110 m³ on a 1.0 m concrete plinth (5G111-09: EL+1.000, cover EL+5.800, AG top EL+7.200)
+       const D=6.0,H=4.614,y0=1.0,top=y0+H;
+       B(6.6,y0,6.6,0,y0/2,0,M.conc);
+       C(D,H,0,y0+H/2,0,mat,64); C(D+.12,.08,0,top-.02,0,M.steelDark,64); C(D+.16,.1,0,y0+.05,0,M.steelDark,64);
+       [1.6,2.7,3.8].forEach(h=>C(D+.06,.06,0,y0+h,0,M.steelDark,64));                     // stiffening rings
+       const dk=C(D,.06,0,top+.03,0,M.steel,64);
+       [0,90].forEach(a=>{const b=B(D-.1,.22,.28,0,top+.17,0);b.rotation.y=a*Math.PI/180});   // cover cross beams
+       // 12 coil bundles (f/g 1–27) on Ø4.3 + 3 inner ones, each a blind flange with steam in / condensate out
+       const coil=(x,z)=>{C(.9,.1,x,top+.11,z);[[.22,0],[-.12,.18],[-.12,-.18]].forEach(([dx,dz])=>nzV(x+dx,top+.16,z+dz,.07,.28))};
+       for(let a=0;a<360;a+=30){const [x,z]=pol(2.15,a);coil(x,z)}
+       [45,135,225].forEach(a=>{const [x,z]=pol(1.45,a);coil(x,z)});
+       // agitator d Ø1900: flange, lantern, gearbox, motor up to EL+7.200
+       C(1.9,.12,0,top+.12,0); C(.7,.7,0,top+.53,0); B(.9,.55,.9,0,top+1.15,0,mat); C(.55,.75,0,top+1.8,0,mat,20); C(.6,.06,0,top+2.2,0);
+       const sh=C(.14,H-.6,0,y0+H/2+.25,0); [1.3,2.6].forEach(h=>{const bl=B(1.6,.1,.3,0,y0+h,0);bl.rotation.y=h});
+       { const [x,z]=pol(1.25,90); nzV(x,top+.06,z,.62,.35)}                                  // a: manhole DN600
+       { const [x,z]=pol(1.25,270); nzV(x,top+.06,z,.42,.5)}                                  // c: vent 300×400
+       { const [x,z]=pol(1.95,307); B(.7,.12,.7,x,top+.12,z); const hp=C(1.05,.55,x,top+.45,z,M.steelDark,4,1.05*1.4);hp.rotation.y=Math.PI/4}  // i: sulfur charging 700×700
+       { const [x,z]=pol(2.6,8); nzV(x,top+.06,z,.08,.3)}                                     // h: fire steam
+       [[107,top-.25,.19],[113,top-.4,.42],[133,top-.4,.42],[162,top-.4,.1]].forEach(([a,y,d])=>nzR(D/2,a,y,d));  // q inlet, e overflows, k/l
+       nzR(D/2,315,y0+.45,.7,.45);                                                            // b: slag drain 600/700
+       [[150,y0+.25],[210,y0+.25]].forEach(([a,y])=>nzR(D/2,a,y,.28));                         // m: drains 200×250
+       nzR(D/2,240,y0+1.0,.06); nzR(D/2,300,top-.3,.06);                                       // j1/j2 thermowells
+       // cover handrail and caged ladder (≈200°)
+       const rp=[];for(let a=0;a<=360;a+=20)rp.push(pol(D/2-.08,a));rail(rp,top+.06);
+       const [lx,lz]=pol(D/2+.35,200);[-.22,.22].forEach(s=>B(.05,H+1.1,.05,lx+s*Math.cos(20*Math.PI/180),y0+(H+1.1)/2,lz+s*Math.sin(20*Math.PI/180),M.yel));
+       for(let y=y0+.3;y<top+1;y+=.3){const r=B(.44,.03,.03,lx,y,lz,M.yel);r.rotation.y=-20*Math.PI/180}
+       g.position.copy(P(o.X,o.Y,0))}
+     else if(o.k==='cbox'){
+       // TK-11102/03/04/05 4500×4500×2500 (5G111-34): steel beams on a pad at EL+0.200, body EL+0.680…+3.180
+       const W=4.5,H=2.5,y0=.68,top=y0+H;
+       B(W+.06,.2,W+.06,0,.1,0,M.conc);
+       [-1.8,-.6,.6,1.8].forEach(z=>B(W,.48,.2,0,.2+.24,z));
+       B(W,H,W,0,y0+H/2,0,mat);
+       B(W+.08,.1,W+.08,0,top-.05,0); B(W+.08,.12,W+.08,0,y0+.06,0);
+       for(let i=-2;i<=2;i++){[1,-1].forEach(s=>{B(.1,H,.04,i*.9,y0+H/2,s*(W/2+.02));B(.04,H,.1,s*(W/2+.02),y0+H/2,i*.9)})}  // wall stiffeners
+       [-.75,.75].forEach(u=>{B(W,.04,.1,0,top+.02,u*1.0);B(.1,.04,W,u*1.0,top+.02,0)});        // cover panel seams (3×3)
+       // coil bundles f/g (4 per tank) and their steam/condensate nozzles
+       [[-1.25,-1.5],[1.15,-1.6],[-1.25,1.5],[1.15,1.5]].forEach(([x,z])=>{C(.9,.1,x,top+.05,z);[[.22,0],[-.12,.18],[-.12,-.18]].forEach(([dx,dz])=>nzV(x+dx,top+.1,z+dz,.07,.26))});
+       nzV(-1.75,top,0,.62,.3);                                                                 // a: manhole DN600
+       nzV(-1.9,top,-.9,.26,.4); nzV(1.9,top,.9,.18,.35);                                       // c: vent 200×250, p: level gauge
+       [[.25,-1.1],[.25,1.1]].forEach(([x,z])=>nzV(x,top,z,.06,.25));                           // j: thermowells
+       if(o.drive){B(1.17,.14,1.6,0,top+.07,0);C(.6,.55,0,top+.42,0);B(.8,.5,.8,0,top+.95,0,mat);C(.5,.7,0,top+1.55,0,mat,20)}  // d: agitator 1170×1600
+       const sb=new THREE.Mesh(new THREE.BoxGeometry(.5,.62,.72),M.steelDark);sb.position.set(W/2+.25,y0+.45,.3);g.add(sb);   // b: jacketed slag outlet 600×700 (east)
+       B(.12,.82,.92,W/2+.56,y0+.45,.3);
+       const ei=C(.28,.35,-W/2-.17,top-.35,.6);ei.rotation.z=Math.PI/2;                         // e: sulfur inlet (west)
+       g.position.copy(P(o.X,o.Y,0))}
+     else if(o.k==='vpump'){
+       // vertical semi-submerged pump (PP-111xx): mounting plate on the cover, lantern, motor; column below (L≈2.0–2.58 m)
+       const sub=o.sub||2.0;
+       B(.8,.05,.8,0,.025,0); C(.24,sub,0,-sub/2,0,M.steelDark,12); C(.34,.3,0,-sub+.15,0,M.steelDark,12);
+       C(.36,.45,0,.28,0); C(.4,.07,0,.53,0); C(.42,.62,0,.87,0,mat,20); C(.3,.12,0,1.24,0,M.steelDark,12);
+       const dn=C(.12,.4,.32,.2,0);dn.rotation.z=Math.PI/2; C(.2,.03,.53,.2,0).rotation.z=Math.PI/2;
+       g.position.copy(P(o.X,o.Y,o.y0||0))}
+     else if(o.k==='tw111'){
+       // TW-11101 dynamic-wave scrubber Ø2400×8790 (5G111-36): 12 anchor chairs, N1/N2 DN700 on top at ±650 E–W
+       const D=2.4,H=8.0;
+       C(D+.5,.12,0,.06,0,M.steelDark,32);for(let a=15;a<360;a+=30){const [x,z]=pol(D/2+.12,a);const b=B(.22,.45,.22,x,.33,z);b.rotation.y=-a*Math.PI/180}
+       C(D,H,0,H/2,0,mat,40); C(D,.79,0,H+.395,0,mat,40,D*.72); C(D+.08,.08,0,H,0,M.steelDark,40);
+       [2,4,6].forEach(h=>C(D+.06,.06,0,h,0,M.steelDark,40));
+       [.65,-.65].forEach(x=>{C(.72,9.3-H,x,H+(9.3-H)/2,0,mat,24);C(.88,.06,x,9.3,0)});         // N1 gas in (E), N2 gas out (W)
+       nzR(D/2,90,6.4,.18); nzR(D/2,90,1.0,.62,.25); nzR(D/2,190,1.0,.62,.25);                  // N3 nozzle, M1/M2 manholes
+       nzR(D/2,345,7.0,.27); nzR(D/2,5,7.2,.05); nzR(D/2,270,.4,.22); nzR(D/2,270,4.0,.08); nzR(D/2,270,7.0,.08);  // N4, N9, N5, N10, N7
+       nzR(D/2,180,.8,.12); nzR(D/2,180,1.4,.12); nzR(D/2,240,1.5,.12); nzR(D/2,135,3.0,.04);     // N11/N12, N13, N8
+       [[240,1.0],[240,3.0]].forEach(([a,y])=>nzR(D/2,a+5,y,.04,.2));                           // L1/L2, P1/P2
+       const [lx,lz]=pol(D/2+.3,300);[-.22,.22].forEach(s=>B(.05,H,.05,lx+s*.87,H/2,lz+s*.5,M.yel));for(let y=.3;y<H;y+=.3){const r=B(.44,.03,.03,lx,y,lz,M.yel);r.rotation.y=-Math.PI/6}
+       g.position.copy(P(o.X,o.Y,0))}
+     else if(o.k==='sk111'){
+       // SK-11101 exhaust stack Ø800, H=21.15 m (5G111-38): N1 DN500 gas inlet low, N3 DN50 drain, guy-free self-supporting
+       C(1.6,.1,0,.05,0,M.steelDark,20); for(let a=0;a<360;a+=45){const [x,z]=pol(.55,a);const b=B(.12,.5,.25,x,.35,z);b.rotation.y=-a*Math.PI/180}
+       C(.8,o.h,0,o.h/2,0,mat,24); [5,10,15,20].forEach(h=>C(.86,.06,0,h,0,M.steelDark,24)); C(.9,.08,0,o.h,0,M.steelDark,24);
+       nzR(.4,270,2.2,.52,.5); nzR(.4,180,.35,.06,.2);
+       g.position.copy(P(o.X,o.Y,0))}
+     else if(o.k==='pit111'){
+       // underground tank: VE-11101 4.5×4.5×2.2 (5G111-35) or VE-11102 2×2×2 concrete (5G111-37); cover at ±0.000
+       const W=o.sx,H=o.h; B(W+.5,.12,W+.5,0,-.06,0,M.conc);
+       [-1,1].forEach(s=>{B(W+.5,.3,.25,0,.15,s*(W/2+.12),M.conc);B(.25,.3,W+.5,s*(W/2+.12),.15,0,M.conc)});  // curb
+       B(W-.1,.04,W-.1,0,.02,0,M.grate);
+       for(let i=1;i<4;i++){B(W,.06,.1,0,.05,-W/2+i*W/4);B(.1,.06,W,-W/2+i*W/4,.05,0)}           // cover framing
+       if(o.t==='VE-11101'){nzV(0,.06,0,.5,.6);nzV(0,.06,-1.975,.1,.25);nzV(-.9,.06,1.75,.6,.12);nzV(-1.75,.06,.85,.12,.2);nzV(-1.75,.06,1.75,.17,.3);
+         nzV(1.1,.06,1.75,.17,.25);nzV(2.05,.06,1.75,.11,.25);nzV(2.05,.06,.65,.06,.25);nzV(2.05,.06,1.05,.06,.25);nzV(.45,.06,0,.06,.3)}
+       else{nzV(.5,.06,-.5,.5,.12);nzV(-.6,.06,.6,.17,.3);nzV(.6,.06,.6,.06,.3);nzV(-.6,.06,-.6,.06,.25);nzV(0,.06,.75,.11,.25);nzV(.75,.06,0,.22,.25)}
+       g.position.copy(P(o.X,o.Y,0))}
+     else if(o.k==='slagbin'){
+       // XX-11101A/B/C slag hopper 3800×1200 top, 3400×1000 outlet, H 1.5 m, hung from the EL+5.500 deck by 6 lugs (5G111-39)
+       const top=0,H=1.5;
+       const sg=new THREE.CylinderGeometry(Math.SQRT1_2,Math.SQRT1_2*.87,H,4,1);sg.rotateY(Math.PI/4);const sh=new THREE.Mesh(sg,mat);sh.scale.set(3.8,1,1.2);sh.position.y=top-H/2;g.add(sh);
+       B(3.9,.1,1.3,0,top-.05,0); B(3.5,.08,1.1,0,top-H+.04,0);
+       [-1.2,0,1.2].forEach(x=>[1,-1].forEach(s=>B(.16,.3,.24,x,top-.15,s*.72)));
+       g.position.copy(P(o.X,o.Y,0))}
+     else if(o.k==='dose111'){
+       // MZ-11101 soda-ash dosing unit 1900×1300×1450: tank with agitator, two dosing pumps, cabinet
+       B(1.9,.12,1.3,0,.06,0); C(.95,1.0,-.35,.62,0,M.white,24); C(1.0,.04,-.35,1.12,0); C(.18,.2,-.35,1.24,0); C(.24,.25,-.35,1.45,0,mat,12);
+       [-.3,.3].forEach(z=>{B(.36,.2,.18,.55,.22,z);C(.14,.24,.55,.44,z,mat,10)}); B(.3,.6,.25,.75,.42,.48,M.white);
+       g.position.copy(P(o.X,o.Y,0))}
+     else if(o.k==='fan111'){
+       // BO-11101 centrifugal induced-draft fan: volute, inlet box, coupling guard, motor on a common base
+       B(3.0,.2,1.4,0,.1,0);
+       const v=C(1.3,.55,-.6,.95,0,mat,28);v.rotation.x=Math.PI/2; B(.55,.55,.55,-.6,1.6,.0,mat);
+       const ic=C(.6,.5,-.6,.95,.5,M.steelDark,20);ic.rotation.x=Math.PI/2;
+       B(.5,.35,.35,.15,.55,0); const mo=C(.55,.9,.85,.55,0,mat,20);mo.rotation.z=Math.PI/2;
+       g.position.copy(P(o.X,o.Y,0))}
+   }
    else if(o.k==='pump'){const fr=new THREE.Mesh(new THREE.BoxGeometry(1.2,.9,1.2),M.steelDark);fr.position.y=.45;g.add(fr);const mot=cyl(.8,.8,1.3,mat,20);mot.position.y=1.55;g.add(mot);
      g.position.copy(P(o.X,o.Y,o.y0||0))}
    else if(o.k==='eyew'){
@@ -1961,6 +2063,8 @@ function start(){
      const hd=new THREE.Mesh(new THREE.SphereGeometry(.9,24,12,0,Math.PI*2,0,Math.PI/2),mat);hd.rotation.z=-Math.PI/2;hd.scale.set(.55,1,1);hd.position.set(4.06,ax,0);g.add(hd);
      [[4.3,.1],[4.55,-.2]].forEach(([x,z])=>{const n=cyl(.16,.16,.7,M.steelDark,10);n.position.set(x,ax+1.0,z);g.add(n)});
      const hs=new THREE.Mesh(new THREE.BoxGeometry(.85,.9,.8),M.steelDark);hs.position.set(4.6,.45,1.45);g.add(hs);
+     // slag discharge chute from the shell bottom through the EL+5.500 deck into XX-11101 (5G111-09/10)
+     {const cg=new THREE.CylinderGeometry(.5,.36,1.1,4,1);cg.rotateY(Math.PI/4);const ch=new THREE.Mesh(cg,M.steelDark);ch.position.set(1.675,ax-.9-.55+.05,0);g.add(ch)}
      g.position.copy(P(o.X,o.Y,0))}
    else if(o.k==='sgun'){
      // Sulfur gun XHQ-1: Ø89 barrel 2500 inside the furnace, 400 mm steam-jacketed head outside
@@ -2749,7 +2853,8 @@ function start(){
    const e=EQ[tag]; o=o||E.find(x=>x.t===tag);
    let dims=T.noData3d;
    if(o){const k=o.k;
-     if(['vcyl','tower','reactor','stack','tank','mtank'].includes(k))dims=`Ø${o.d} × H ${o.h} м`;
+     if(o.dims)dims=o.dims;
+     else if(['vcyl','tower','reactor','stack','tank','mtank'].includes(k))dims=`Ø${o.d} × H ${o.h} м`;
      else if(k==='prof'){const dm=Math.max(...o.segs.flatMap(s=>[s[2],s[3]??s[2]]));const hm=Math.max(...o.segs.map(s=>s[1]))+(o.dome?o.dome[2]:0);dims=`Ø до ${dm} × H ${hm.toFixed(2)} м`}
      else if(k.startsWith('hcyl')||k==='hves'||k==='furnace')dims=`Ø${o.d} × L ${o.L} м`;
      else if(k==='deaer')dims=currentLang==='uz'?`bak Ø${o.d} × L ${o.Lo} m, kolonka Ø${o.hd} m`:`бак Ø${o.d} × L ${o.Lo} м, колонка Ø${o.hd} м`;
