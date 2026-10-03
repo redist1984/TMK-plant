@@ -284,6 +284,8 @@ body.fs-mode .subar{bottom:calc(env(safe-area-inset-bottom,0px) + 78px)}
       <span class="su-clock" id="suClock">Т+ 0 ч 00 мин</span>
       <button class="btn" type="button" id="suPlay" aria-label="Пуск">▶</button>
       <button class="btn" type="button" id="suReset" title="В начало" aria-label="В начало">⟲</button>
+      <select id="suMode" aria-label="Сценарий пуска"><option value="repair" selected>После ремонта</option><option value="cold">С нуля</option></select>
+      <button class="btn" type="button" id="suFollow" aria-pressed="true" title="Камера следует за запускаемым объектом">🎯 Следить</button>
       <select id="suSpd" aria-label="Скорость имитации"><option value="0.1667">1 с = 10 мин</option><option value="0.5" selected>1 с = 30 мин</option><option value="1">1 с = 1 ч</option><option value="2">1 с = 2 ч</option></select>
       <input type="range" id="suR" min="0" max="1" step="0.01" value="0" aria-label="Время от начала пуска">
       <button class="btn" type="button" id="suCalc">Расчёт</button>
@@ -3033,7 +3035,8 @@ function start(){
  // производства» (BFD, BFD 2): 137 → 136 → водоснабжение 131/101/132/133-134 → 135 → 114.1/114 →
  // технология 121-111-122-112-113-123/124 → 115. Длительности считаются ниже из паспортных данных
  // оборудования (перечни, чертежи поставщиков); принятые допущения подписаны в тексте расчёта.
- const SUP=(()=>{
+ function mkSUP(mode){
+   const rep=mode==='repair';
    const QRAW=165.88;                                  // сырая вода по BFD, м³/ч
    const f1=(v,d=1)=>fmtN(v,d), h=v=>f1(v,2)+' ч';
    const V_RW=600, V_WT21=14*4.58*4.25, V_FIRE=2*320, V_DM01=150, V_DNW=150;
@@ -3096,6 +3099,20 @@ function start(){
     {id:'t115',st:7,dep:['hus','oil115','w134'],dur:1+1.5+20.6/0.3/60,n:'115: пуск турбины, синхронизация',nu:'115: turbinani ishga tushirish, sinxronlash',
      c:`Прогрев паропровода 1 ч; разворот ST-11501 до 3000 об/мин с выдержками 1,5 ч; синхронизация и набор 20,6 МВт со скоростью 0,3 МВт/мин = ${h(20.6/0.3/60)}. Пар НД берётся из отбора 0,9 МПа, котёл 135 переводят в резерв.`},
    ];
+   // «После ремонта»: ёмкости воды, кислоты и склад твёрдой серы заполнены, системы залиты водой; нет только пара и жидкой серы
+   if(rep){const R={
+     w_rw:[.25,'Резервуар исходной воды 600 м³ заполнен; пуск насосов насосной 131.2 и выход на расход — 0,25 ч.','Xom suv rezervuari to‘la; nasoslarni ishga tushirish — 0,25 soat.'],
+     w131:[1,'Установка WT-21 залита; вывод осветлителя на режим (взвешенный слой, дозирование реагентов) — 1 ч.','WT-21 to‘la; tindirgichni rejimga chiqarish — 1 soat.'],
+     w101:[.1,'Пожарные резервуары 2 × 320 м³ заполнены — проверка уровня и задвижек 0,1 ч.','Yong‘in rezervuarlari to‘la — tekshirish 0,1 soat.'],
+     w132:[.5,'Баки DM-01 и TK-13205 заполнены; промывка УФ/ОО и пуск ФСД — 0,5 ч.','DM-01 va TK-13205 to‘la; yuvish va FSD ni ishga tushirish — 0,5 soat.'],
+     w133:[.5,'Чаша градирни CT-13301 заполнена; пуск насосов PP-13301 и заполнение сети — 0,5 ч.','CT-13301 havzasi to‘la; PP-13301 nasoslari — 0,5 soat.'],
+     w134:[.5,'Чаша CT-13401 заполнена; пуск насосов PP-13401 — 0,5 ч.','CT-13401 havzasi to‘la; PP-13401 nasoslari — 0,5 soat.'],
+     ng:[.5,'Газопровод Г2 остаётся под давлением после ремонта — открытие отсекающей арматуры, проверка ГРПШ и узлов учёта 0,5 ч.','G2 bosim ostida — armaturani ochish, GRPSh tekshiruvi 0,5 soat.'],
+     b135:[(194-20)/60,`Бак VE-13503 и котёл залиты водой. Розжиг горелки XX-13501 и подъём давления до 1,25 МПа (194 °C) со скоростью 60 °C/ч = ${h((194-20)/60)}.`,'Qozon suv bilan to‘la; yoqish va bosimni 1,25 MPa gacha ko‘tarish.'],
+     d1141:[daQ/daS,`Бак DA-114.101 33 м³ заполнен; нагрев 20 → 135 °C: ${f1(daQ)} ГДж ÷ ${f1(daS,2)} ГДж/ч = ${h(daQ/daS)}.`,'DA-114.101 to‘la; 20 → 135 °C gacha qizdirish.'],
+     b114:[.25,'Котёл-утилизатор EX-11201 и экономайзеры залиты; проверка уровней и подпитка PP-114.101 — 0,25 ч.','EX-11201 to‘la; sathlarni tekshirish — 0,25 soat.'],
+     a113:[.5,'VE-11301, башни и трубопроводы заполнены кислотой; пуск PP-11301/02/03 и холодильников — 0,5 ч.','VE-11301 va minoralar kislota bilan to‘la; nasoslar — 0,5 soat.']};
+     EV.forEach(e=>{const r=R[e.id];if(!r)return;e.dur=r[0];e.c=r[1];e.cu=r[2];if(e.id==='w133')e.off=0})}
    const by={};EV.forEach((e,i)=>{e.i=i;by[e.id]=e});
    EV.forEach(e=>{let t=0;e.dep.forEach(d=>{const p=by[d];t=Math.max(t,e.rel==='start'?p.t0:p.t0+p.dur)});e.t0=Math.max(0,t+(e.off||0));e.t1=e.t0+e.dur});
    const total=Math.max(...EV.map(e=>e.t1));
@@ -3103,8 +3120,9 @@ function start(){
      [4,'Газоснабжение · 135','Gaz ta’minoti · 135'],[5,'Пар, рекуперация тепла · 114.1, 114','Bug‘, issiqlik utilizatsiyasi · 114.1, 114'],
      [6,'Технология · 121-111-122-112-113-123/124','Texnologiya · 121-111-122-112-113-123/124'],[7,'Выработка электроэнергии · 115','Elektr energiyasi ishlab chiqarish · 115']]
      .map(([n,t,tu])=>{const ev=EV.filter(e=>e.st===n);return {n,t,tu,ev,t0:Math.min(...ev.map(e=>e.t0)),t1:Math.max(...ev.map(e=>e.t1))}});
-   return {EV,by,total,STEPS};
- })();
+   return {EV,by,total,STEPS,mode};
+ }
+ let SUP=mkSUP('repair');
  // events of equipment tags and flows
  const T135=/^(FU|PP|VE|XX|SK|EX)-1350/, T136=/^(CO|VE|DR|XX)-1360/;
  function tagEvt(t){
@@ -3122,7 +3140,7 @@ function start(){
    if(s==='G123')return /^SM-12303/.test(t)?'prod':'a113';
    return null;
  }
- const SUo=SUP.by;
+ let SUo=SUP.by;
  function flowEvt(fo){
    const f=fo.f, s=f.s, d=fo.tube.userData.flow, a=(d.a||'').replace(/^~/,''), b=(d.b||'').replace(/^~/,'');
    const ab=a+'>'+b, has=re=>re.test(a)||re.test(b), sa=eqSec(a), sb=eqSec(b);
@@ -3143,17 +3161,16 @@ function start(){
  const SUlbl={Hg121:['m121'],G111:['f111'],G122:['v122'],G112:['h112','hc112','ign'],G113:['a113','bl113'],G123:['prod'],R114:['d1141','b114','hus'],R115:['p137','oil115','t115'],
    W131:['w_rw','w131'],W132:['w132'],W133:['w133','w134'],UT:['a136','ng','b135']};
  const SUextLbl={'Г2':['ng'],'В0':['w_rw'],'КЛ-10 кВ':['p137']};
- const SU={on:false,t:0,play:false,spd:.5,inited:false,ext:[],cold:new Set()};
+ const SU={on:false,t:0,play:false,spd:.5,inited:false,ext:[],cold:new Set(),follow:true,focus:null};
  function suInit(){
    if(SU.inited)return;SU.inited=true;
    // flows: event + order inside the event by the a→b chain depth
    const groups={};flowObjs.forEach(fo=>{fo.ev=flowEvt(fo);(groups[fo.ev]=groups[fo.ev]||[]).push(fo)});
    Object.entries(groups).forEach(([ev,list])=>{
-     const EVo=SUo[ev];const nd=fo=>{const u=fo.tube.userData.flow;return [u.a||'',u.b||'']};
+     const nd=fo=>{const u=fo.tube.userData.flow;return [u.a||'',u.b||'']};
      list.forEach(fo=>fo.dp=0);
      for(let it=0;it<12;it++){let ch=false;list.forEach(fo=>{const [a]=nd(fo);list.forEach(p=>{if(p!==fo&&nd(p)[1]===a&&a&&p.dp+1>fo.dp&&p.dp<20){fo.dp=p.dp+1;ch=true}})});if(!ch)break}
-     const D=Math.max(...list.map(fo=>fo.dp))+1, slot=EVo.dur/D;
-     list.forEach(fo=>{fo.st0=EVo.t0+fo.dp*slot;fo.sdur=Math.max(.05,slot)});
+     const D=Math.max(...list.map(fo=>fo.dp))+1;list.forEach(fo=>fo.D=D);
    });
    // external networks: dots along the routes (the line itself stays as built)
    const EXTD=[['EXT-KL10','p137',0xE8B330,.3,true,.2],['EXT-B0','w_rw',null,1.6,true,.45],['EXT-G2','ng',null,.6,false,.2]];   // газ — по оси надземной трубы
@@ -3164,10 +3181,26 @@ function start(){
      const pts=pl.map(([X,Y])=>P(X,Y,hh));const path=new THREE.CurvePath();for(let i=1;i<pts.length;i++)path.add(new THREE.LineCurve3(pts[i-1],pts[i]));
      const len=path.getLength(),n=Math.max(4,Math.round(len/14)),mat=col?new THREE.MeshBasicMaterial({color:col}):(t==='EXT-B0'?SM.water.dot:SM.fuel.dot),dots=[];
      for(let i=0;i<n;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(dr,10,8),mat);d.visible=false;scene.add(d);dots.push(d)}
-     SU.ext.push({ev,path,len,dots,off:0,hide:t==='EXT-KL10'?[[5216.2,5223.4,2582,2586]]:[],st0:SUo[ev].t0,sdur:Math.max(.2,SUo[ev].dur*.5)})});
+     SU.ext.push({ev,path,len,dots,off:0,hide:t==='EXT-KL10'?[[5216.2,5223.4,2582,2586]]:[]})});
    // equipment → event (grey until its event starts)
    SU.eqEv=[];Object.entries(byTag).forEach(([t,objs])=>{const ev=tagEvt(t);if(!ev)return;objs.forEach(o=>{if(o.userData&&o.userData.info&&(o.userData.info.kind==='eq'||/^EXT-/.test(t)))SU.eqEv.push({o,ev})})});
-   suBuildPanel();
+   suTime();suBuildPanel();
+ }
+ // timings of flows / external dots for the current scenario
+ function suTime(){
+   flowObjs.forEach(fo=>{const EVo=SUo[fo.ev];const slot=EVo.dur/fo.D;fo.st0=EVo.t0+fo.dp*slot;fo.sdur=Math.max(.05,slot)});
+   SU.ext.forEach(x=>{x.st0=SUo[x.ev].t0;x.sdur=Math.max(.2,SUo[x.ev].dur*.5)});
+ }
+ function suSetMode(m){SUP=mkSUP(m);SUo=SUP.by;SU.focus=null;if(SU.inited){suTime();suBuildPanel()}if(SU.t>SUP.total)SU.t=SUP.total;if(SU.on)suApply()}
+ // camera follows the object that is starting now and frames it with a highlight box
+ const suHL=new THREE.Box3Helper(new THREE.Box3(),0xE3A008);suHL.visible=false;suHL.material.depthTest=false;suHL.renderOrder=5;scene.add(suHL);
+ function suFocus(id){
+   const box=new THREE.Box3();(SU.eqEv||[]).forEach(({o,ev})=>{if(ev===id)box.expandByObject(o)});
+   const fb=new THREE.Box3();flowObjs.forEach(fo=>{if(fo.ev===id)fb.expandByObject(fo.tube)});
+   if(box.isEmpty()||box.getSize(new THREE.Vector3()).length()<4){if(!fb.isEmpty())box.union(fb)}
+   if(box.isEmpty()||box.getSize(new THREE.Vector3()).length()>260){suHL.visible=false;return}
+   suHL.box.copy(box).expandByScalar(.5);suHL.visible=true;
+   if(SU.follow){const c=box.getCenter(new THREE.Vector3()),sz=box.getSize(new THREE.Vector3()).length();flyTo(c,Math.min(160,Math.max(28,sz*1.25)))}
  }
  const coldCache=new Map(), grey=new THREE.Color(0x9aa3a0);
  function coldMat(m){if(coldCache.has(m))return coldCache.get(m);let c=m;if(m.color){c=m.clone();c.color=m.color.clone().lerp(grey,.75);if(c.emissive)c.emissive.setRGB(0,0,0)}coldCache.set(m,c);return c}
@@ -3180,9 +3213,12 @@ function start(){
    SU.eqEv.forEach(({o,ev})=>setCold(o,t<SUo[ev].t0));
    LB.forEach(l=>{const ids=SUlbl[l.sec]&&l.sec!=='EXT'?SUlbl[l.sec]:SUextLbl[(l.d.querySelector('b')||{}).textContent];l.d.classList.remove('su0','su1','su2');if(!ids)return;
      const st=ids.map(evState);l.d.classList.add(st.every(s=>s===2)?'su2':(st.some(s=>s>0)?'su1':'su0'))});
+   const cur=SUP.EV.filter(e=>t>=e.t0&&t<e.t1).sort((a,b)=>b.t0-a.t0)[0];
+   const fid=cur?cur.id:null;if(fid!==SU.focus){SU.focus=fid;if(fid)suFocus(fid);else suHL.visible=false}
    applyFlow();suPaint();
  }
  function suRestore(){
+   suHL.visible=false;SU.focus=null;
    SU.play=false;
    flowObjs.forEach(fo=>{fo.rev=1;fo.tube.geometry.setDrawRange(0,Infinity)});
    SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
@@ -3206,12 +3242,13 @@ function start(){
    <div class="eyebrow" style="margin-top:12px">${uz?'Hisob':'Расчёт'}</div><p class="note">${esc(e.c)}</p>`)}
  function suShowCalc(){const uz=currentLang==='uz';openD(`<div class="eyebrow">${uz?'Ishga tushirish':'Пуск завода'}</div><h3>${uz?'Ishga tushirish vaqtining hisobi':'Расчёт времени пуска'}</h3>
    <p class="note">${uz?'Ketma-ketlik — BFD sxemalari bo‘yicha. Davomiylik uskunalar pasport ma’lumotlaridan hisoblangan; sig‘imlar bo‘sh holatdan.':'Последовательность — по схемам BFD «Логическая последовательность ввода объектов». Длительности посчитаны из паспортных данных оборудования, ёмкости — с пустого состояния. Начало этапа — по окончании тех этапов, от которых он зависит.'}</p>
-   <table class="regmini">${SUP.EV.map(e=>`<tr><td><b>${fmtN(e.t0,1)}–${fmtN(e.t1,1)} ч</b><br>${esc(uz?e.nu:e.n)}</td><td>${esc(e.c)}</td></tr>`).join('')}</table>
+   <p class="note"><b>${uz?'Ssenariy':'Сценарий'}: ${SUP.mode==='repair'?(uz?'ta’mirdan keyin — sig‘imlar to‘la, faqat bug‘ va suyuq oltingugurt yo‘q':'после ремонта — ёмкости воды и кислоты, склад серы заполнены; нет только пара и жидкой серы'):(uz?'noldan — barcha sig‘imlar bo‘sh':'с нуля — все ёмкости пустые')}</b></p>
+   <table class="regmini">${SUP.EV.map(e=>`<tr><td><b>${fmtN(e.t0,1)}–${fmtN(e.t1,1)} ч</b><br>${esc(uz?e.nu:e.n)}</td><td>${esc(uz&&e.cu?e.cu:e.c)}</td></tr>`).join('')}</table>
    <p class="note"><b>${uz?'Jami':'Итого'}: ${fmtN(SUP.total,1)} ${uz?'soat':'ч'} (${esc(fmtT(SUP.total))})</b></p>`)}
  function suPaint(){
    const t=SU.t;$('suClock').textContent=fmtT(t);$('suR').value=t.toFixed(2);
    const cur=SUP.STEPS.filter(s=>t>=s.t0).pop();const uz=currentLang==='uz';
-   $('suNow').textContent=t>=SUP.total?(uz?'Zavod ishga tushirildi, rejimda':'Завод пущен, работает на режиме'):(cur?(uz?'Bosqich ':'Этап ')+cur.n+' · '+(uz?cur.tu:cur.t):'');
+   $('suNow').textContent=t>=SUP.total?(uz?'Zavod ishga tushirildi, rejimda':'Завод пущен, работает на режиме'):(SU.focus?'▶ '+(uz?SUo[SU.focus].nu:SUo[SU.focus].n)+' · ':'')+(cur?(uz?'Bosqich ':'Этап ')+cur.n:'');
    $('suPlay').textContent=SU.play?'⏸':'▶';$('suPlay').setAttribute('aria-label',SU.play?(uz?'Pauza':'Пауза'):(uz?'Boshlash':'Пуск'));
    $('suList').querySelectorAll('[data-ev]').forEach(li=>li.dataset.s=evState(li.dataset.ev));
    $('suList').querySelectorAll('[data-st]').forEach(li=>{const s=SUP.STEPS[li.dataset.st-1];li.dataset.s=t<s.t0?0:(t<s.t1?1:2)});
@@ -3238,6 +3275,10 @@ function start(){
  $('suR').oninput=e=>{SU.t=+e.target.value;suApply()};
  $('suSpd').onchange=e=>{SU.spd=+e.target.value};
  $('suCalc').onclick=suShowCalc;
+ $('suMode').onchange=e=>{suSetMode(e.target.value)};
+ const suFollowUI=()=>{const b=$('suFollow'),uz=currentLang==='uz';b.setAttribute('aria-pressed',SU.follow);b.textContent=SU.follow?(uz?'🎯 Kuzatish':'🎯 Следить'):(uz?'✋ Erkin':'✋ Свободно')};
+ $('suFollow').onclick=()=>{SU.follow=!SU.follow;suFollowUI();if(SU.follow&&SU.focus)suFocus(SU.focus)};
+ controls.addEventListener('start',()=>{if(SU.on&&SU.follow&&SU.play){SU.follow=false;suFollowUI()}});
  $('suMore').onclick=()=>{const o=subar.classList.toggle('open');$('suMore').setAttribute('aria-expanded',o);$('suMore').textContent=(currentLang==='uz'?'Bosqichlar':'Этапы')+(o?' ▾':' ▴');if(o){SU.lastAct=null;suPaint()}};
  // chips
  const chips=$('chips'); const active=new Set();
@@ -3724,7 +3765,7 @@ function start(){
    $('tEyebrow').textContent=T.eyebrow; $('tH1').textContent=T.h1;
    $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim; $('bLbl').textContent=T.bLbl;$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
    $('bHelp').title=T.bHelpTitle;
-   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода'; $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
+   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода'; $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
    bCutFab.title=T.tabCut; bCutFab.setAttribute('aria-label',T.tabCut);
    $('tCutEyebrow').textContent=T.cutEyebrow; $('tCutOnly').textContent=T.cutOnly;
    $('cutSegOff').textContent=T.cutOff;
