@@ -507,9 +507,9 @@ const E = [
  {t:'TK-11102',k:'cbox',dims:'4,5 × 4,5 × H 2,5 м, V=50,6 м³',X:5348.1,Y:2350.1,sx:4.5,sz:4.5,h:3.18,drive:1,nso:'3147-5H111-02-01'},
  {t:'TK-11103',k:'cbox',dims:'4,5 × 4,5 × H 2,5 м, V=50,6 м³',X:5343.5,Y:2350.1,sx:4.5,sz:4.5,h:3.18,nso:'3147-5H111-02-01'},
  {t:'TK-11105',k:'cbox',dims:'4,5 × 4,5 × H 2,5 м, V=50,6 м³',X:5338.9,Y:2350.1,sx:4.5,sz:4.5,h:3.18,nso:'3147-5H111-02-01'},
- {t:'FR-11101A/B',k:'leaf',X:5350.5,Y:2365.0,base:5.5,plan:'3147-5G111-08',vend:'Jiangsu Juneng WYB-YL-TY80-F',approx:1},
- {t:'FR-11101A/B',k:'leaf',X:5346.8,Y:2365.0,base:5.5,plan:'3147-5G111-08',vend:'Jiangsu Juneng WYB-YL-TY80-F',approx:1},
- {t:'FR-11102',k:'leaf',X:5342.2,Y:2365.0,base:5.5,plan:'3147-5G111-08',vend:'Jiangsu Juneng WYB-YL-TY80-F',approx:1},
+ {t:'FR-11101A/B',k:'leaf',X:5350.5,Y:2365.0,base:5.505,plan:'3147-5G111-08',vend:'Jiangsu Juneng WYB-YL-TY80-F',approx:1},
+ {t:'FR-11101A/B',k:'leaf',X:5346.8,Y:2365.0,base:5.505,plan:'3147-5G111-08',vend:'Jiangsu Juneng WYB-YL-TY80-F',approx:1},
+ {t:'FR-11102',k:'leaf',X:5342.2,Y:2365.0,base:5.505,plan:'3147-5G111-08',vend:'Jiangsu Juneng WYB-YL-TY80-F',approx:1},
  {t:'TW-11101',k:'tw111',dims:'Ø2,4 × H 8,79 м',X:5347.8,Y:2329.2,d:2.4,h:8.79,nso:'3147-5H111-04-01 Rev.1',plan:'3147-5G111-07/36'},
  {t:'SK-11101',k:'sk111',dims:'Ø0,8 × H 21,15 м',X:5360.4,Y:2324.0,d:0.8,h:21.15,plan:'3147-5G111-07'},
  {t:'BO-11101',k:'fan111',X:5350.9,Y:2323,sx:3,sz:1.4,h:1.6,plan:'3147-5G111-07',approx:1},
@@ -631,7 +631,7 @@ const E = [
  {t:'PP-11107',k:'hpump',X:5342.6,Y:2329.9,plan:'3147-5G111-07',sx:1.3,sz:0.7,h:0.8,approx:1},
  {t:'PP-11108',k:'hpump',X:5342.6,Y:2327.2,plan:'3147-5G111-07',sx:1.5,sz:0.8,h:0.9,approx:1},
  {t:'VE-11102',k:'pit111',dims:'2 × 2 × H 2 м, V=8 м³ (подземный)',X:5337.3,Y:2325.7,plan:'3147-5G111-07',sx:2,sz:2,h:2,y0:-2,approx:1},
- {t:'PP-11109',k:'vpump',dims:'полупогружной, Q=25 м³/ч, H=30 м',X:5336.95,Y:2325.7,plan:'3147-5G111-07',y0:0,approx:1},
+ {t:'PP-11109',k:'vpump',dims:'полупогружной, Q=25 м³/ч, H=30 м',X:5336.95,Y:2325.7,plan:'3147-5G111-07',y0:.08,approx:1},
  {t:'EW-11101A/B',k:'eyew',X:5356.7,Y:2332.0,plan:'3147-5G111-07'},
  {t:'EW-11101A/B',k:'eyew',X:5331.7,Y:2354.9,plan:'3147-5G111-07'},
  {t:'SM-11201ABC',k:'sgun',X:5260.66,Y:2314.975,yc:4.536,vend:'XCC XHQ-1-WX-00',plan:'3147-5G112-09 (план EL+4.250, разрез M-M: штуцер c1)'},
@@ -1511,7 +1511,7 @@ function start(){
      if(p.open){ // open r.c. frame (render: white columns, cyan slab edges, yellow handrails)
        const top=Math.max(...p.slabs);
        p.cx.forEach(ox=>p.cy.forEach(oy=>{const P0=loc(p.x[0]+Math.min(ox,sz-.25),p.y[0]+Math.min(oy,sx-.25),0);g.add(bx(.5,top,.5,M.frameW,P0.x+.25,top/2,P0.z-.25))}));
-       p.slabs.forEach(el=>{const s=bx(sx,.25,sz,M.slab,c.x,el-.125,c.z);edges(s);g.add(s);ringBox(g,c.x,c.z,sx,sz,el-.4,el+.02,.14,M.frameC);
+       p.slabs.forEach(el=>{const s=p.open?bx(sx+.03,.25,sz+.03,M.deckC||(M.deckC=Object.assign(M.conc.clone(),{color:new THREE.Color(0x8f948f)})),c.x,el-.122,c.z):bx(sx,.25,sz,M.slab,c.x,el-.125,c.z);edges(s);g.add(s);ringBox(g,c.x,c.z,sx,sz,el-.4,el+.02,.14,M.frameC);
          const r=p.rail||1.1;[[sx,.06,0,sz/2],[sx,.06,0,-sz/2],[.06,sz,sx/2,0],[.06,sz,-sx/2,0]].forEach(([w,d,ox,oz])=>{g.add(bx(w,.06,d,M.railY,c.x+ox,el+r,c.z+oz));g.add(bx(w,.05,d,M.railY,c.x+ox,el+r/2,c.z+oz))})});
        return}
      let shell, Hw, top; const WM=b.glassy?M.bldgG:(p.style||b.style)==='plaster'?M.bldgP:M.bldg;
@@ -1757,8 +1757,8 @@ function start(){
      for(let k=0;k<nX;k++){const p=A.clone().addScaledVector(dir,s0+L*k/(nX-1));m4.compose(new THREE.Vector3(p.x,tt-.12,p.z),q0,new THREE.Vector3(dir.x?.16:r.w,.2,dir.z?.16:r.w));tr.setMatrixAt(ti++,m4)}});
    scene.add(tr);
    for(let s=0;s<=len+.01;s+=Math.min(8,len/Math.max(1,Math.round(len/8)))){const p=A.clone().add(dir.clone().multiplyScalar(s));
-     [-1,1].forEach(side=>{const c=new THREE.Mesh(new THREE.BoxGeometry(.35,topT,.35),M.rack);
-       c.position.set(p.x+(dir.z?side*r.w/2:0),topT/2,p.z+(dir.x?side*r.w/2:0));scene.add(c)})}
+     [-1,1].forEach(side=>{const c=new THREE.Mesh(new THREE.BoxGeometry(.35,topT-.006,.35),M.rack);   // 6 mm under the beam top: no coplanar caps
+       c.position.set(p.x+(dir.z?side*r.w/2:0),(topT-.006)/2,p.z+(dir.x?side*r.w/2:0));scene.add(c)})}
  });
  // equipment
  const Y1=new THREE.Vector3(0,1,0);
@@ -1878,17 +1878,17 @@ function start(){
      const nzR=(r,a,y,d,L=.35)=>{const [sx,sz]=pol(r+L/2,a);const n=C(d,L,sx,y,sz);
        n.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(Math.sin(a*Math.PI/180),0,-Math.cos(a*Math.PI/180)));
        const [fx,fz]=pol(r+L,a);const f=C(d+.12,.04,fx,y,fz);f.quaternion.copy(n.quaternion)};
-     const rail=(pts,y0)=>{for(let i=0;i<pts.length;i++){const [x,z]=pts[i];B(.05,1.0,.05,x,y0+.5,z,M.yel);if(i){const [px,pz]=pts[i-1];const L=Math.hypot(x-px,z-pz),a=Math.atan2(z-pz,x-px);[.5,1.0].forEach(h=>{const r=B(L,.04,.04,(x+px)/2,y0+h,(z+pz)/2,M.yel);r.rotation.y=-a})}}};
+     const rail=(pts,y0)=>{const cl=Math.hypot(pts[0][0]-pts[pts.length-1][0],pts[0][1]-pts[pts.length-1][1])<1e-6;for(let i=0;i<pts.length;i++){const [x,z]=pts[i];if(!(cl&&i===pts.length-1))B(.05,1.0,.05,x,y0+.5,z,M.yel);if(i){const [px,pz]=pts[i-1];const L=Math.hypot(x-px,z-pz),a=Math.atan2(z-pz,x-px);[.5,1.0].forEach(h=>{const r=B(L,.04,.04,(x+px)/2,y0+h,(z+pz)/2,M.yel);r.rotation.y=-a})}}};
      if(o.k==='mtank'){
        // TK-11101A/B Ø6000×4614, V=110 m³ on a 1.0 m concrete plinth (5G111-09: EL+1.000, cover EL+5.800, AG top EL+7.200)
        const D=6.0,H=4.614,y0=1.0,top=y0+H;
        B(6.6,y0,6.6,0,y0/2,0,M.conc);
-       C(D,H,0,y0+H/2,0,mat,64); C(D+.12,.08,0,top-.02,0,M.steelDark,64); C(D+.16,.1,0,y0+.05,0,M.steelDark,64);
+       C(D,H,0,y0+H/2+.004,0,mat,64); C(D+.12,.08,0,top-.022,0,M.steelDark,64); C(D+.16,.1,0,y0+.056,0,M.steelDark,64);
        [1.6,2.7,3.8].forEach(h=>C(D+.06,.06,0,y0+h,0,M.steelDark,64));                     // stiffening rings
-       const dk=C(D,.06,0,top+.03,0,M.steel,64);
-       [0,90].forEach(a=>{const b=B(D-.1,.22,.28,0,top+.17,0);b.rotation.y=a*Math.PI/180});   // cover cross beams
+       const dk=C(D-.02,.06,0,top+.036,0,M.steel,64);
+       [0,90].forEach(a=>{const b=B(D-.1,a?.212:.22,.28,0,top+.17,0);b.rotation.y=a*Math.PI/180});   // cover cross beams
        // 12 coil bundles (f/g 1–27) on Ø4.3 + 3 inner ones, each a blind flange with steam in / condensate out
-       const coil=(x,z)=>{C(.9,.1,x,top+.11,z);[[.22,0],[-.12,.18],[-.12,-.18]].forEach(([dx,dz])=>nzV(x+dx,top+.16,z+dz,.07,.28))};
+       const coil=(x,z)=>{C(.9,.1,x,top+.115,z);[[.22,0],[-.12,.18],[-.12,-.18]].forEach(([dx,dz])=>nzV(x+dx,top+.16,z+dz,.07,.28))};
        for(let a=0;a<360;a+=30){const [x,z]=pol(2.15,a);coil(x,z)}
        [45,135,225].forEach(a=>{const [x,z]=pol(1.45,a);coil(x,z)});
        // agitator d Ø1900: flange, lantern, gearbox, motor up to EL+7.200
@@ -1896,7 +1896,7 @@ function start(){
        const sh=C(.14,H-.6,0,y0+H/2+.25,0); [1.3,2.6].forEach(h=>{const bl=B(1.6,.1,.3,0,y0+h,0);bl.rotation.y=h});
        { const [x,z]=pol(1.25,90); nzV(x,top+.06,z,.62,.35)}                                  // a: manhole DN600
        { const [x,z]=pol(1.25,270); nzV(x,top+.06,z,.42,.5)}                                  // c: vent 300×400
-       { const [x,z]=pol(1.95,307); B(.7,.12,.7,x,top+.12,z); const hp=C(1.05,.55,x,top+.45,z,M.steelDark,4,1.05*1.4);hp.rotation.y=Math.PI/4}  // i: sulfur charging 700×700
+       { const [x,z]=pol(1.95,307); B(.7,.12,.7,x,top+.125,z); const hp=C(1.05,.55,x,top+.45,z,M.steelDark,4,1.05*1.4);hp.rotation.y=Math.PI/4}  // i: sulfur charging 700×700
        { const [x,z]=pol(2.6,8); nzV(x,top+.06,z,.08,.3)}                                     // h: fire steam
        [[107,top-.25,.19],[113,top-.4,.42],[133,top-.4,.42],[162,top-.4,.1]].forEach(([a,y,d])=>nzR(D/2,a,y,d));  // q inlet, e overflows, k/l
        nzR(D/2,315,y0+.45,.7,.45);                                                            // b: slag drain 600/700
@@ -1910,33 +1910,33 @@ function start(){
      else if(o.k==='cbox'){
        // TK-11102/03/04/05 4500×4500×2500 (5G111-34): steel beams on a pad at EL+0.200, body EL+0.680…+3.180
        const W=4.5,H=2.5,y0=.68,top=y0+H;
-       B(W+.06,.2,W+.06,0,.1,0,M.conc);
-       [-1.8,-.6,.6,1.8].forEach(z=>B(W,.48,.2,0,.2+.24,z));
+       B(W+.06,.2,W+.06,0,.105,0,M.conc);
+       [-1.8,-.6,.6,1.8].forEach(z=>B(W-.04,.47,.2,0,.2+.24,z));
        B(W,H,W,0,y0+H/2,0,mat);
-       B(W+.08,.1,W+.08,0,top-.05,0); B(W+.08,.12,W+.08,0,y0+.06,0);
-       for(let i=-2;i<=2;i++){[1,-1].forEach(s=>{B(.1,H,.04,i*.9,y0+H/2,s*(W/2+.02));B(.04,H,.1,s*(W/2+.02),y0+H/2,i*.9)})}  // wall stiffeners
-       [-.75,.75].forEach(u=>{B(W,.04,.1,0,top+.02,u*1.0);B(.1,.04,W,u*1.0,top+.02,0)});        // cover panel seams (3×3)
+       B(W+.08,.104,W+.08,0,top-.048,0); B(W+.08,.12,W+.08,0,y0+.064,0);
+       for(let i=-2;i<=2;i++){[1,-1].forEach(s=>{B(.1,H-.3,.04,i*.9,y0+H/2,s*(W/2+.02));B(.04,H-.3,.1,s*(W/2+.02),y0+H/2,i*.9)})}  // wall stiffeners
+       [-.75,.75].forEach(u=>{B(W-.02,.04,.1,0,top+.03,u*1.0);B(.1,.03,W-.02,u*1.0,top+.03,0)});        // cover panel seams (3×3)
        // coil bundles f/g (4 per tank) and their steam/condensate nozzles
-       [[-1.25,-1.5],[1.15,-1.6],[-1.25,1.5],[1.15,1.5]].forEach(([x,z])=>{C(.9,.1,x,top+.05,z);[[.22,0],[-.12,.18],[-.12,-.18]].forEach(([dx,dz])=>nzV(x+dx,top+.1,z+dz,.07,.26))});
-       nzV(-1.75,top,0,.62,.3);                                                                 // a: manhole DN600
-       nzV(-1.9,top,-.9,.26,.4); nzV(1.9,top,.9,.18,.35);                                       // c: vent 200×250, p: level gauge
-       [[.25,-1.1],[.25,1.1]].forEach(([x,z])=>nzV(x,top,z,.06,.25));                           // j: thermowells
-       if(o.drive){B(1.17,.14,1.6,0,top+.07,0);C(.6,.55,0,top+.42,0);B(.8,.5,.8,0,top+.95,0,mat);C(.5,.7,0,top+1.55,0,mat,20)}  // d: agitator 1170×1600
-       const sb=new THREE.Mesh(new THREE.BoxGeometry(.5,.62,.72),M.steelDark);sb.position.set(W/2+.25,y0+.45,.3);g.add(sb);   // b: jacketed slag outlet 600×700 (east)
-       B(.12,.82,.92,W/2+.56,y0+.45,.3);
+       [[-1.25,-1.5],[1.15,-1.6],[-1.25,1.5],[1.15,1.5]].forEach(([x,z])=>{C(.9,.1,x,top+.065,z);[[.22,0],[-.12,.18],[-.12,-.18]].forEach(([dx,dz])=>nzV(x+dx,top+.1,z+dz,.07,.26))});
+       nzV(-1.75,top+.004,0,.62,.3);                                                                 // a: manhole DN600
+       nzV(-1.9,top+.004,-.9,.26,.4); nzV(1.9,top+.004,.9,.18,.35);                                       // c: vent 200×250, p: level gauge
+       [[.25,-1.1],[.25,1.1]].forEach(([x,z])=>nzV(x,top+.004,z,.06,.25));                           // j: thermowells
+       if(o.drive){B(1.17,.14,1.6,0,top+.075,0);C(.6,.55,0,top+.42,0);B(.8,.5,.8,0,top+.95,0,mat);C(.5,.7,0,top+1.55,0,mat,20)}  // d: agitator 1170×1600
+       const sb=new THREE.Mesh(new THREE.BoxGeometry(.5,.62,.72),M.steelDark);sb.position.set(W/2+.26,y0+.45,.3);g.add(sb);   // b: jacketed slag outlet 600×700 (east)
+       B(.12,.82,.92,W/2+.57,y0+.45,.3);
        const ei=C(.28,.35,-W/2-.17,top-.35,.6);ei.rotation.z=Math.PI/2;                         // e: sulfur inlet (west)
        g.position.copy(P(o.X,o.Y,0))}
      else if(o.k==='vpump'){
        // vertical semi-submerged pump (PP-111xx): mounting plate on the cover, lantern, motor; column below (L≈2.0–2.58 m)
        const sub=o.sub||2.0;
-       B(.8,.05,.8,0,.025,0); C(.24,sub,0,-sub/2,0,M.steelDark,12); C(.34,.3,0,-sub+.15,0,M.steelDark,12);
+       B(.8,.05,.8,0,.03,0); C(.24,sub,0,-sub/2,0,M.steelDark,12); C(.34,.3,0,-sub+.15,0,M.steelDark,12);
        C(.36,.45,0,.28,0); C(.4,.07,0,.53,0); C(.42,.62,0,.87,0,mat,20); C(.3,.12,0,1.24,0,M.steelDark,12);
        const dn=C(.12,.4,.32,.2,0);dn.rotation.z=Math.PI/2; C(.2,.03,.53,.2,0).rotation.z=Math.PI/2;
        g.position.copy(P(o.X,o.Y,o.y0||0))}
      else if(o.k==='tw111'){
        // TW-11101 dynamic-wave scrubber Ø2400×8790 (5G111-36): 12 anchor chairs, N1/N2 DN700 on top at ±650 E–W
        const D=2.4,H=8.0;
-       C(D+.5,.12,0,.06,0,M.steelDark,32);for(let a=15;a<360;a+=30){const [x,z]=pol(D/2+.12,a);const b=B(.22,.45,.22,x,.33,z);b.rotation.y=-a*Math.PI/180}
+       C(D+.5,.12,0,.065,0,M.steelDark,32);for(let a=15;a<360;a+=30){const [x,z]=pol(D/2+.12,a);const b=B(.22,.45,.22,x,.33,z);b.rotation.y=-a*Math.PI/180}
        C(D,H,0,H/2,0,mat,40); C(D,.79,0,H+.395,0,mat,40,D*.72); C(D+.08,.08,0,H,0,M.steelDark,40);
        [2,4,6].forEach(h=>C(D+.06,.06,0,h,0,M.steelDark,40));
        [.65,-.65].forEach(x=>{C(.72,9.3-H,x,H+(9.3-H)/2,0,mat,24);C(.88,.06,x,9.3,0)});         // N1 gas in (E), N2 gas out (W)
@@ -1948,36 +1948,36 @@ function start(){
        g.position.copy(P(o.X,o.Y,0))}
      else if(o.k==='sk111'){
        // SK-11101 exhaust stack Ø800, H=21.15 m (5G111-38): N1 DN500 gas inlet low, N3 DN50 drain, guy-free self-supporting
-       C(1.6,.1,0,.05,0,M.steelDark,20); for(let a=0;a<360;a+=45){const [x,z]=pol(.55,a);const b=B(.12,.5,.25,x,.35,z);b.rotation.y=-a*Math.PI/180}
+       C(1.6,.1,0,.055,0,M.steelDark,20); for(let a=0;a<360;a+=45){const [x,z]=pol(.55,a);const b=B(.12,.5,.25,x,.35,z);b.rotation.y=-a*Math.PI/180}
        C(.8,o.h,0,o.h/2,0,mat,24); [5,10,15,20].forEach(h=>C(.86,.06,0,h,0,M.steelDark,24)); C(.9,.08,0,o.h,0,M.steelDark,24);
        nzR(.4,270,2.2,.52,.5); nzR(.4,180,.35,.06,.2);
        g.position.copy(P(o.X,o.Y,0))}
      else if(o.k==='pit111'){
        // underground tank: VE-11101 4.5×4.5×2.2 (5G111-35) or VE-11102 2×2×2 concrete (5G111-37); cover at ±0.000
-       if(o.round){const D=o.d;C(D+.5,.12,0,-.06,0,M.conc,40);C(D+.5,.3,0,.15,0,M.conc,40);C(D-.1,.05,0,.32,0,M.grate,40);nzV(1.2,.34,1.2,.6,.12);nzV(-1.3,.34,.4,.17,.3);nzV(-.9,.34,-1.0,.11,.25);nzV(.2,.34,-1.6,.11,.25);g.position.copy(P(o.X,o.Y,0))}
-       else{const W=o.sx,H=o.h; B(W+.5,.12,W+.5,0,-.06,0,M.conc);
-       [-1,1].forEach(s=>{B(W+.5,.3,.25,0,.15,s*(W/2+.12),M.conc);B(.25,.3,W+.5,s*(W/2+.12),.15,0,M.conc)});  // curb
-       B(W-.1,.04,W-.1,0,.02,0,M.grate);
-       for(let i=1;i<4;i++){B(W,.06,.1,0,.05,-W/2+i*W/4);B(.1,.06,W,-W/2+i*W/4,.05,0)}           // cover framing
+       if(o.round){const D=o.d;C(D+.5,.12,0,-.066,0,M.conc,40);C(D+.5,.3,0,.155,0,M.conc,40);C(D-.1,.05,0,.33,0,M.grate,40);nzV(1.2,.34,1.2,.6,.12);nzV(-1.3,.34,.4,.17,.3);nzV(-.9,.34,-1.0,.11,.25);nzV(.2,.34,-1.6,.11,.25);g.position.copy(P(o.X,o.Y,0))}
+       else{const W=o.sx,H=o.h; B(W+.5,.12,W+.5,0,-.066,0,M.conc);
+       [-1,1].forEach(s=>{B(W+.5,.3,.25,0,.155,s*(W/2+.12),M.conc);B(.24,.3,W+.01,s*(W/2+.12),.155,0,M.conc)});  // curb
+       B(W-.1,.04,W-.1,0,.026,0,M.grate);
+       for(let i=1;i<4;i++){B(W-.02,.06,.1,0,.056,-W/2+i*W/4);B(.1,.052,W-.02,-W/2+i*W/4,.058,0)}           // cover framing
        if(o.t==='VE-11101'){nzV(0,.06,0,.5,.6);nzV(0,.06,-1.975,.1,.25);nzV(-.9,.06,1.75,.6,.12);nzV(-1.75,.06,.85,.12,.2);nzV(-1.75,.06,1.75,.17,.3);
          nzV(1.1,.06,1.75,.17,.25);nzV(2.05,.06,1.75,.11,.25);nzV(2.05,.06,.65,.06,.25);nzV(2.05,.06,1.05,.06,.25);nzV(.45,.06,0,.06,.3)}
        else{nzV(.5,.06,-.5,.5,.12);nzV(-.6,.06,.6,.17,.3);nzV(.6,.06,.6,.06,.3);nzV(-.6,.06,-.6,.06,.25);nzV(0,.06,.75,.11,.25);nzV(.75,.06,0,.22,.25)}
        g.position.copy(P(o.X,o.Y,0))}}
      else if(o.k==='slagbin'){
        // XX-11101A/B/C slag hopper 3800×1200 top, 3400×1000 outlet, H 1.5 m, hung from the EL+5.500 deck by 6 lugs (5G111-39)
-       const top=0,H=1.5;
+       const top=-.26,H=1.5;
        const sg=new THREE.CylinderGeometry(Math.SQRT1_2,Math.SQRT1_2*.87,H,4,1);sg.rotateY(Math.PI/4);const sh=new THREE.Mesh(sg,mat);sh.scale.set(3.8,1,1.2);sh.position.y=top-H/2;g.add(sh);
-       B(3.9,.1,1.3,0,top-.05,0); B(3.5,.08,1.1,0,top-H+.04,0);
-       [-1.2,0,1.2].forEach(x=>[1,-1].forEach(s=>B(.16,.3,.24,x,top-.15,s*.72)));
+       B(3.9,.1,1.3,0,top-.054,0); B(3.5,.08,1.1,0,top-H+.036,0);
+       [-1.2,0,1.2].forEach(x=>[1,-1].forEach(s=>B(.16,.24,.24,x,top+.1,s*.72)));
        g.position.copy(P(o.X,o.Y,0))}
      else if(o.k==='dose111'){
        // MZ-11101 soda-ash dosing unit 1900×1300×1450: tank with agitator, two dosing pumps, cabinet
-       B(1.9,.12,1.3,0,.06,0); C(.95,1.0,-.35,.62,0,M.white,24); C(1.0,.04,-.35,1.12,0); C(.18,.2,-.35,1.24,0); C(.24,.25,-.35,1.45,0,mat,12);
+       B(1.9,.12,1.3,0,.065,0); C(.95,1.0,-.35,.63,0,M.white,24); C(1.0,.04,-.35,1.12,0); C(.18,.2,-.35,1.24,0); C(.24,.25,-.35,1.45,0,mat,12);
        [-.3,.3].forEach(z=>{B(.36,.2,.18,.55,.22,z);C(.14,.24,.55,.44,z,mat,10)}); B(.3,.6,.25,.75,.42,.48,M.white);
        g.position.copy(P(o.X,o.Y,0))}
      else if(o.k==='blower'){
        // BO-11301 single-stage centrifugal blower BI3300-1.613 (Q≈130 000 Nm³/h): volute, inlet cone, gearbox, motor, oil skid, common base
-       const L=o.sx,W=o.sz;B(L,.3,W,0,.15,0,M.conc);B(L-.2,.25,W-.4,0,.42,0);
+       const L=o.sx,W=o.sz;B(L,.3,W,0,.155,0,M.conc);B(L-.2,.25,W-.4,0,.43,0);
        const vx=-L/2+1.6;const v=C(2.9,1.3,vx,2.1,0,mat,36);v.rotation.x=Math.PI/2;B(1.2,1.4,1.3,vx+.9,3.2,0,mat);
        const ic=C(1.7,1.0,vx,2.1,-1.1,M.steelDark,28,2.4);ic.rotation.x=-Math.PI/2;
        B(1.2,1.1,1.2,vx+2.0,1.1,0,mat);B(.6,.5,.6,vx+2.9,1.0,0);
@@ -2001,7 +2001,7 @@ function start(){
        g.position.copy(P(o.X,o.Y,o.y0||0))}
      else if(o.k==='fan111'){
        // BO-11101 centrifugal induced-draft fan: volute, inlet box, coupling guard, motor on a common base
-       B(3.0,.2,1.4,0,.1,0);
+       B(3.0,.2,1.4,0,.105,0);
        const v=C(1.3,.55,-.6,.95,0,mat,28);v.rotation.x=Math.PI/2; B(.55,.55,.55,-.6,1.6,.0,mat);
        const ic=C(.6,.5,-.6,.95,.5,M.steelDark,20);ic.rotation.x=Math.PI/2;
        B(.5,.35,.35,.15,.55,0); const mo=C(.55,.9,.85,.55,0,mat,20);mo.rotation.z=Math.PI/2;
@@ -2762,7 +2762,7 @@ function start(){
      const W=o.w,col=o.collar??.95,ox=o.ox??.4,oz=o.oz??.4,sp=o.spout??.42,top=o.top;
      sq(W,ox,o.h,top-o.h/2,mat); sq(W,W,col,top+col/2,mat); sq(W+.16,W+.16,.1,top+col-.05,M.steelDark);
      sq(ox,ox,sp,top-o.h-sp/2,M.steelDark);
-     if(W>2){for(let i=-15;i<=15;i+=3){const b1=new THREE.Mesh(new THREE.BoxGeometry(.02,.15,W-.1),M.steelDark);b1.position.set(i*.11,top+col-.08,0);g.add(b1);const b2=b1.clone();b2.rotation.y=Math.PI/2;g.add(b2)}
+     if(W>2){for(let i=-15;i<=15;i+=3){const b1=new THREE.Mesh(new THREE.BoxGeometry(.02,.15,W-.1),M.steelDark);b1.position.set(i*.11,top+col-.08,0);g.add(b1);const b2=b1.clone();b2.rotation.y=Math.PI/2;b2.position.set(0,top+col-.075,i*.11);b2.scale.y=.93;g.add(b2)}
        [-1.2,0,1.2].forEach(u=>[1,-1].forEach(sg=>{const l1=new THREE.Mesh(new THREE.BoxGeometry(.24,.3,.22),M.steelDark);l1.position.set(u,top+.08,sg*(W/2+.11));g.add(l1);const l2=l1.clone();l2.rotation.y=Math.PI/2;l2.position.set(sg*(W/2+.11),top+.08,u);g.add(l2)}));
        [-1.2,0,1.2].forEach(u=>{const v=new THREE.Mesh(new THREE.BoxGeometry(.3,.38,.06),M.steelDark);v.position.set(u,top+col*.45,W/2+.03);g.add(v)})}
      const ly=top-o.h,lw=Math.max(W*.4,.35);[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a,b])=>{const l=new THREE.Mesh(new THREE.BoxGeometry(.2,ly+(W>2?.1:o.h*.5),.2),M.steelDark);l.position.set(a*lw,(ly+(W>2?.1:o.h*.5))/2,b*lw);g.add(l)});
