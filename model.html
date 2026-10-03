@@ -178,6 +178,13 @@ body.fs-mode.fs-panel-open aside.detail{right:274px}
 .subar:not(.open) .su-list,.subar:not(.open) .su-tot{display:none}
 .subar[hidden]{display:none}
 body.fs-mode .subar{bottom:calc(env(safe-area-inset-bottom,0px) + 78px)}
+/* «Пуск завода»: панели отображения скрыты, панель пуска стоит под картинкой и не закрывает её */
+body.su-mode header.top>.bar,body.su-mode #chips,body.su-mode footer,body.su-mode header.top .eyebrow{display:none}
+body.su-mode header.top h1{font-size:clamp(15px,2.2vw,22px);margin:0}
+body.su-mode:not(.fs-mode) .stage{flex:none;min-height:0}
+body.su-mode:not(.fs-mode) .subar{position:static;transform:none;width:auto;max-height:42vh;margin-top:8px;bottom:auto;left:auto;right:auto}
+body.su-mode.fs-mode .subar{left:0;right:0;bottom:0;transform:none;width:auto;border-radius:0;max-height:42vh}
+body.su-mode.fs-mode #view,body.su-mode.fs-mode .labels{bottom:var(--suH,0px)}
 .su-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
 .su-clock{font:700 14px var(--mono);color:var(--accent);white-space:nowrap}
 .su-now{font-size:12px;color:var(--ink2);width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -286,7 +293,7 @@ body.fs-mode .subar{bottom:calc(env(safe-area-inset-bottom,0px) + 78px)}
       <button class="btn" type="button" id="suReset" title="В начало" aria-label="В начало">⟲</button>
       <select id="suMode" aria-label="Сценарий пуска"><option value="repair" selected>После ремонта</option><option value="cold">С нуля</option></select>
       <button class="btn" type="button" id="suFollow" aria-pressed="true" title="Камера следует за запускаемым объектом">🎯 Следить</button>
-      <select id="suSpd" aria-label="Скорость имитации"><option value="0.1667">1 с = 10 мин</option><option value="0.5" selected>1 с = 30 мин</option><option value="1">1 с = 1 ч</option><option value="2">1 с = 2 ч</option></select>
+      <select id="suSpd" aria-label="Скорость имитации"><option value="auto" selected>Скорость: авто</option><option value="0.1667">1 с = 10 мин</option><option value="0.5">1 с = 30 мин</option><option value="1">1 с = 1 ч</option><option value="2">1 с = 2 ч</option></select>
       <input type="range" id="suR" min="0" max="1" step="0.01" value="0" aria-label="Время от начала пуска">
       <button class="btn" type="button" id="suCalc">Расчёт</button>
       <button class="btn" type="button" id="suMore" aria-expanded="false" title="Этапы пуска">Этапы ▴</button>
@@ -1287,7 +1294,8 @@ function start(){
    fsOn=on; paintFsBtn();
    document.body.classList.toggle('fs-mode',fsOn);
    fsMoveControls(fsOn);
-   resize();
+   if(fsOn&&document.body.classList.contains('su-mode')){bFsMenu.setAttribute('aria-expanded',false);fsPanelState(false)}
+   resize();if(typeof suLayout==='function')suLayout();
    if(notifyParent!==false){try{window.parent.postMessage({__tmkFullscreen:true,on:fsOn},'*')}catch(e){}}
  }
  bFullscreen.addEventListener('click',()=>setFullscreen(!fsOn));
@@ -3258,7 +3266,7 @@ function start(){
  const SUlbl={Hg121:['m121'],G111:['f111'],G122:['v122'],G112:['h112','hc112','ign'],G113:['a113','bl113'],G123:['prod'],R114:['d1141','b114','hus'],R115:['p137','oil115','t115'],
    W131:['w_rw','w131'],W132:['w132'],W133:['w133','w134'],UT:['a136','ng','b135']};
  const SUextLbl={'Г2':['ng'],'В0':['w_rw'],'КЛ-10 кВ':['p137']};
- const SU={on:false,t:0,play:false,spd:.5,inited:false,ext:[],cold:new Set(),follow:true,focus:null};
+ const SU={on:false,t:0,play:false,spd:'auto',inited:false,ext:[],cold:new Set(),follow:true,focus:null};
  function suInit(){
    if(SU.inited)return;SU.inited=true;
    // flows: event + order inside the event by the a→b chain depth
@@ -3291,13 +3299,32 @@ function start(){
  function suSetMode(m){SUP=mkSUP(m);SUo=SUP.by;SU.focus=null;if(SU.inited){suTime();suBuildPanel()}if(SU.t>SUP.total)SU.t=SUP.total;if(SU.on)suApply()}
  // camera follows the object that is starting now and frames it with a highlight box
  const suHL=new THREE.Box3Helper(new THREE.Box3(),0xE3A008);suHL.visible=false;suHL.material.depthTest=false;suHL.renderOrder=5;scene.add(suHL);
+ // automatic speed: slow (≈1 мин/с) around every equipment start, accelerating through long gaps
+ // and braking smoothly before the next start. d = hours to the nearest start (before or after).
+ function suRate(t){const st=SUP.EV.map(e=>e.t0);let dn=Infinity,dp=Infinity;st.forEach(x=>{if(x>t+1e-6)dn=Math.min(dn,x-t);else dp=Math.min(dp,t-x)});
+   const d=Math.min(dn,dp,(SUP.total-t)+.05);return Math.min(3,.016+.9*d)}
  function suFocus(id){
-   const box=new THREE.Box3();(SU.eqEv||[]).forEach(({o,ev})=>{if(ev===id)box.expandByObject(o)});
-   const fb=new THREE.Box3();flowObjs.forEach(fo=>{if(fo.ev===id)fb.expandByObject(fo.tube)});
-   if(box.isEmpty()||box.getSize(new THREE.Vector3()).length()<4){if(!fb.isEmpty())box.union(fb)}
-   if(box.isEmpty()||box.getSize(new THREE.Vector3()).length()>260){suHL.visible=false;return}
-   suHL.box.copy(box).expandByScalar(.5);suHL.visible=true;
-   if(SU.follow){const c=box.getCenter(new THREE.Vector3()),sz=box.getSize(new THREE.Vector3()).length();flyTo(c,Math.min(160,Math.max(28,sz*1.25)))}
+   // close-up on the equipment where the first flow of the event starts, so the flow can be seen appearing
+   const evFl=flowObjs.filter(fo=>fo.ev===id).sort((a,b)=>a.dp-b.dp||a.st0-b.st0);
+   const eqB=new THREE.Box3();(SU.eqEv||[]).forEach(({o,ev})=>{if(ev===id)eqB.expandByObject(o)});
+   let box=new THREE.Box3(),tgt=null,dist=30;
+   const eqOk=!eqB.isEmpty()&&eqB.getSize(new THREE.Vector3()).length()<120;
+   if(eqOk){
+     // the event's own equipment, plus the nearby end of its first flow (where the stream enters or leaves it)
+     box.copy(eqB);const c=eqB.getCenter(new THREE.Vector3());let best=null,bd=1e9;
+     evFl.slice(0,6).forEach(fo=>[0,1].forEach(u=>{const q=fo.path.getPointAt(u),d=eqB.distanceToPoint(q);if(d<bd){bd=d;best=q}}));
+     if(best&&bd<25)box.expandByPoint(best);
+     tgt=box.getCenter(new THREE.Vector3());dist=Math.min(70,Math.max(19,box.getSize(new THREE.Vector3()).length()*1.45))}
+   else if(evFl[0]){const f0=evFl[0],p0=f0.path.getPointAt(0),p1=f0.path.getPointAt(Math.min(1,12/Math.max(12,f0.len)));
+     const a=f0.f.a,src=typeof a==='string'?a:(Array.isArray(a)&&typeof a[0]==='string'?a[0]:null);
+     const sb=new THREE.Box3();if(src)(byTag[src]||[]).forEach(o=>sb.expandByObject(o));
+     if(!sb.isEmpty()&&sb.getSize(new THREE.Vector3()).length()<60){box.copy(sb);box.expandByPoint(p0)}else{box.setFromPoints([p0,p1]).expandByScalar(2)}
+     tgt=box.getCenter(new THREE.Vector3()).lerp(p0.clone().lerp(p1,.5),.45);
+     dist=Math.min(55,Math.max(19,box.getSize(new THREE.Vector3()).length()*1.6))}
+   if(!tgt){suHL.visible=false;return}
+   suHL.box.copy(box).expandByScalar(.4);suHL.visible=true;
+   if(SU.follow){const dir=camera.position.clone().sub(controls.target);dir.y=0;if(dir.lengthSq()<1e-6)dir.set(1,0,1);dir.normalize().multiplyScalar(.82);dir.y=.57;dir.normalize();
+     flyTo(tgt,null,tgt.clone().add(dir.multiplyScalar(dist)))}
  }
  const coldCache=new Map(), grey=new THREE.Color(0x9aa3a0);
  function coldMat(m){if(coldCache.has(m))return coldCache.get(m);let c=m;if(m.color){c=m.clone();c.color=m.color.clone().lerp(grey,.75);if(c.emissive)c.emissive.setRGB(0,0,0)}coldCache.set(m,c);return c}
@@ -3343,7 +3370,7 @@ function start(){
    <table class="regmini">${SUP.EV.map(e=>`<tr><td><b>${fmtN(e.t0,1)}–${fmtN(e.t1,1)} ч</b><br>${esc(uz?e.nu:e.n)}</td><td>${esc(uz&&e.cu?e.cu:e.c)}</td></tr>`).join('')}</table>
    <p class="note"><b>${uz?'Jami':'Итого'}: ${fmtN(SUP.total,1)} ${uz?'soat':'ч'} (${esc(fmtT(SUP.total))})</b></p>`)}
  function suPaint(){
-   const t=SU.t;$('suClock').textContent=fmtT(t);$('suR').value=t.toFixed(2);
+   const t=SU.t;$('suClock').textContent=fmtT(t)+(SU.spd==='auto'&&SU.play?(()=>{const m=suRate(t)*60;return m<59.5?` · 1 с = ${Math.max(1,Math.round(m))} ${currentLang==='uz'?'daq':'мин'}`:` · 1 с = ${fmtN(m/60,1)} ${currentLang==='uz'?'soat':'ч'}`})():'');$('suR').value=t.toFixed(2);
    const cur=SUP.STEPS.filter(s=>t>=s.t0).pop();const uz=currentLang==='uz';
    $('suNow').textContent=t>=SUP.total?(uz?'Zavod ishga tushirildi, rejimda':'Завод пущен, работает на режиме'):(SU.focus?'▶ '+(uz?SUo[SU.focus].nu:SUo[SU.focus].n)+' · ':'')+(cur?(uz?'Bosqich ':'Этап ')+cur.n:'');
    $('suPlay').textContent=SU.play?'⏸':'▶';$('suPlay').setAttribute('aria-label',SU.play?(uz?'Pauza':'Пауза'):(uz?'Boshlash':'Пуск'));
@@ -3353,24 +3380,31 @@ function start(){
  }
  function suTick(dt){
    if(!SU.on)return;
-   if(SU.play){SU.t=Math.min(SUP.total,SU.t+dt*SU.spd);if(SU.t>=SUP.total)SU.play=false;suApply()}
+   if(SU.play){SU.t=Math.min(SUP.total,SU.t+dt*(SU.spd==='auto'?suRate(SU.t):SU.spd));if(SU.t>=SUP.total)SU.play=false;suApply()}
    if(anim)SU.ext.forEach(x=>{const on=x.rev>0;x.off=(x.off+dt*8/x.len)%1;const n=x.dots.length;x.dots.forEach((d,i)=>{const u=((i/n)+x.off)%1;d.visible=on&&u<=x.rev;if(d.visible){d.position.copy(x.path.getPointAt(Math.min(u,.9995)));const X=X0-d.position.z,Y=d.position.x+Y0;if(x.hide.some(r=>X>r[0]&&X<r[1]&&Y>r[2]&&Y<r[3]))d.visible=false}})});
    else SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
  }
+ const stage=$('stage');
+ function suLayout(){
+   if(!SU.on){stage.style.height='';document.documentElement.style.removeProperty('--suH');return}
+   const sh=subar.offsetHeight;document.documentElement.style.setProperty('--suH',sh+'px');
+   if(document.body.classList.contains('fs-mode')){stage.style.height='';return}
+   const top=stage.getBoundingClientRect().top+scrollY;stage.style.height=Math.max(260,innerHeight-top-sh-14)+'px'}
+ new ResizeObserver(()=>suLayout()).observe(subar);addEventListener('resize',()=>suLayout());
  function setStart(on){
    if(on===SU.on)return;
    const tabStart=$('tabStart');tabStart.setAttribute('aria-pressed',on);tabStart.setAttribute('aria-selected',on);
-   subar.hidden=!on;
+   subar.hidden=!on;if(subar.parentNode!==stage.parentNode)stage.after(subar);document.body.classList.toggle('su-mode',on);if(on){SU.bld0=$('bBld').getAttribute('aria-pressed')==='true';if(typeof setBldMode==='function')setBldMode(true)}else if(SU.bld0===false&&typeof setBldMode==='function')setBldMode(false);if(on&&fsOn){bFsMenu.setAttribute('aria-expanded',false);fsPanelState(false)}
    if(on){suInit();SU.on=true;tabModel.setAttribute('aria-pressed',false);tabModel.setAttribute('aria-selected',false);
      if(isolated)unIso();else flyTo(HOME.tgt,null,HOME.pos);
-     if(SU.t>=SUP.total)SU.t=0;SU.play=SU.t<SUP.total;suApply()}
-   else{SU.on=false;suRestore()}
+     if(SU.t>=SUP.total)SU.t=0;SU.play=SU.t<SUP.total;suApply();scrollTo(0,0);suLayout()}
+   else{SU.on=false;suRestore();suLayout()}
  }
  $('tabStart').onclick=()=>{if(!SU.on){setTab(false);setStart(true)}};
  $('suPlay').onclick=()=>{if(SU.t>=SUP.total)SU.t=0;SU.play=!SU.play;suApply()};
  $('suReset').onclick=()=>{SU.t=0;SU.play=false;suApply()};
  $('suR').oninput=e=>{SU.t=+e.target.value;suApply()};
- $('suSpd').onchange=e=>{SU.spd=+e.target.value};
+ $('suSpd').onchange=e=>{SU.spd=e.target.value==='auto'?'auto':+e.target.value};
  $('suCalc').onclick=suShowCalc;
  $('suMode').onchange=e=>{suSetMode(e.target.value)};
  const suFollowUI=()=>{const b=$('suFollow'),uz=currentLang==='uz';b.setAttribute('aria-pressed',SU.follow);b.textContent=SU.follow?(uz?'🎯 Kuzatish':'🎯 Следить'):(uz?'✋ Erkin':'✋ Свободно')};
