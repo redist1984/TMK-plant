@@ -171,6 +171,37 @@ body.fs-mode .fspanel.open{display:flex;flex-direction:column;gap:6px}
 .fspanel .bar>*{width:100%!important;height:auto!important;border-radius:8px!important;max-width:none!important;justify-content:flex-start;text-align:left}
 .fspanel .bar .eyebrow,.fspanel .bar>span{padding:2px 2px 0}
 body.fs-mode.fs-panel-open aside.detail{right:274px}
+/* startup simulation (вкладка «Пуск завода») */
+.subar{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);transform:translateX(-50%);
+  display:flex;flex-direction:column;gap:8px;padding:10px 12px;width:min(560px,calc(100% - 24px));max-height:min(38vh,360px);z-index:20}
+.subar[hidden]{display:none}
+body.fs-mode .subar{bottom:calc(env(safe-area-inset-bottom,0px) + 78px)}
+.su-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.su-clock{font:700 15px var(--mono);color:var(--accent);margin-right:auto}
+.su-now{font-size:12.5px;color:var(--ink2);width:100%}
+.su-tot{font-size:11.5px;color:var(--ink3)}
+.subar select{font:500 12.5px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 6px}
+#suPlay{min-width:40px;font-size:14px}
+#suR{width:100%}
+.su-list{list-style:none;margin:0;padding:0;overflow:auto;flex:1;min-height:0;border-top:1px solid var(--line)}
+.su-list ul{list-style:none;margin:0 0 4px;padding:0 0 0 26px}
+.su-list button{display:flex;width:100%;gap:8px;align-items:center;text-align:left;background:none;border:0;color:var(--ink);font:500 12.5px var(--sans);padding:4px 2px;cursor:pointer;border-radius:6px}
+.su-list button:hover{background:var(--panel2)}
+.su-list .su-tm{margin-left:auto;font:500 11px var(--mono);color:var(--ink3);white-space:nowrap}
+.su-n{flex:none;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font:700 11px var(--mono);background:var(--line);color:var(--ink2)}
+.su-step{font-weight:600!important}
+.su-ev i{flex:none;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ink3)}
+.su-list li[data-s="1"]>button .su-n{background:#E3A008;color:#1b1300}
+.su-list li[data-s="2"]>button .su-n{background:var(--accent);color:var(--panel)}
+.su-list li[data-s="1"]>.su-ev i{background:#E3A008;border-color:#E3A008}
+.su-list li[data-s="2"]>.su-ev i{background:var(--accent);border-color:var(--accent)}
+.su-list li[data-s="0"]>button{color:var(--ink3)}
+.su-list li[data-st]:not([data-s="1"])>ul{display:none}
+.su-list li[data-st].open>ul{display:block}
+.lbl.su0{opacity:.6}
+.lbl.su1{border-color:#E3A008;box-shadow:0 0 0 2px #E3A00866}
+.lbl.su2{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+@media (max-width:760px){.subar{left:12px;right:12px;transform:none;width:auto;bottom:12px;max-height:42vh}}
 </style>
 </head>
 <body>
@@ -194,6 +225,7 @@ body.fs-mode.fs-panel-open aside.detail{right:274px}
 <div class="bar" id="tabs" role="tablist" aria-label="Режим просмотра" style="padding-block:0 10px">
   <button class="btn" type="button" id="tabModel" role="tab" aria-selected="true" aria-pressed="true">Модель</button>
   <button class="btn" type="button" id="tabCut" role="tab" aria-selected="false" aria-pressed="false">Разрез</button>
+  <button class="btn" type="button" id="tabStart" role="tab" aria-selected="false" aria-pressed="false">Пуск завода</button>
 </div>
 
 <div class="stage" id="stage">
@@ -244,6 +276,19 @@ body.fs-mode.fs-panel-open aside.detail{right:274px}
       <output id="cutV">—</output>
       <button class="btn" type="button" id="cutFlip" disabled title="Показать другую сторону">⇄ сторона</button>
     </div>
+  </div>
+  <div class="card subar" id="subar" role="tabpanel" aria-label="Пуск завода" hidden>
+    <div class="su-top">
+      <span class="su-clock" id="suClock">Т+ 0 ч 00 мин</span>
+      <button class="btn" type="button" id="suPlay" aria-label="Пуск">▶</button>
+      <button class="btn" type="button" id="suReset" title="В начало" aria-label="В начало">⟲</button>
+      <select id="suSpd" aria-label="Скорость имитации"><option value="0.1667">1 с = 10 мин</option><option value="0.5" selected>1 с = 30 мин</option><option value="1">1 с = 1 ч</option><option value="2">1 с = 2 ч</option></select>
+      <button class="btn" type="button" id="suCalc">Расчёт</button>
+      <span class="su-now" id="suNow"></span>
+    </div>
+    <input type="range" id="suR" min="0" max="1" step="0.01" value="0" aria-label="Время от начала пуска">
+    <span class="su-tot" id="suTot"></span>
+    <ol class="su-list" id="suList"></ol>
   </div>
 </div>
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Чертёж"><img id="lbImg" alt=""><div class="hint" id="lbHint"></div><div class="cap" id="lbCap"></div><div class="row"><button type="button" id="lbPrev">←</button><button type="button" id="lbX">Закрыть</button><button type="button" id="lbNext">→</button></div></div>
@@ -671,7 +716,7 @@ const E = [
  {t:'WT-21',X:5251.3,Y:2458.73,vend:'Sichuan Shengjiuyuan, SJY-GY-04/-08',k:'wpur',plan:'SJY-GY-04, SJY-GY-08 (2026.02)'},
 {t:'WT-WS',X:5251.3,Y:2461.8,vend:'Sichuan Shengjiuyuan, SJY-GY-04',k:'box',sx:1.2,sz:14.0,h:1.0,y0:-1.0,underground:1},
  {t:'WT-ST',X:5260.3,Y:2461.17,vend:'Sichuan Shengjiuyuan, SJY-GY-04',k:'box',sx:2,sz:2,h:2.7,y0:-2.5},
- {t:'WT-DU',X:5262.76,Y:2457.12,vend:'Sichuan Shengjiuyuan, SJY-GY-04/-09',k:'dose3',plan:'SJY-GY-04'},
+ {t:'WT-DU',X:5262.6,Y:2457.12,vend:'Sichuan Shengjiuyuan, SJY-GY-04/-09',k:'dose3',plan:'SJY-GY-04'},
  {t:'WT-24',X:5257.4,Y:2453.6,vend:'Sichuan Shengjiuyuan, SJY-GY-04/-10',k:'dtank',d:1.8,h:2,base:0.2,plan:'SJY-GY-04'},
  {t:'WT-13',X:5254.35,Y:2453.6,vend:'Sichuan Shengjiuyuan, SJY-GY-10',k:'domro',base:0.2,plan:'SJY-GY-04'},
  {t:'WT-26',X:5251.65,Y:2453.6,vend:'Sichuan Shengjiuyuan, SJY-GY-04/-10',k:'dtank',d:1.8,h:2,base:0.2,plan:'SJY-GY-04'},
@@ -977,11 +1022,11 @@ const F = [
 {s:"water",a:["WT-26",0.35],b:["WT-28",0.5],r:0.04,code:"всас насосов хозпитьевой воды",p3:[[5250.75,2453.6,0.35],[5249.8,2453.6,0.35]]},
 {s:"water",a:["WT-28",0.75],b:[5233.8,2453.0,4.2],r:0.04,code:"PW-13109/13110 → PW-131011-20-CB2 (в сеть хозпитьевого водоснабжения)",p3:[[5249.0,2453.45,0.75],[5248.6,2453.45,0.75],[5248.6,2453.0,0.75],[5248.6,2453.0,4.2],[5233.8,2453.0,4.2]]},
 {s:"water",a:["WT-13",0.25],b:["WT-WS",0],dashed:1,r:0.025,code:"DN15 концентрат RO / DN20 дренаж → лоток",p3:[[5254.6,2453.95,0.25],[5254.6,2455.6,0.25],[5254.6,2455.6,0.0]]},
-{s:"water",a:["PP-13102A/B",-4.4],b:["WT-DU",0.8],r:0.05,code:"PW-13106-15-CB2 (вода на растворение реагентов)",p3:[[5238.6,2483.0,-4.4],[5238.6,2483.0,-2.0],[5240.2,2483.0,-2.0],[5240.2,2463.05,-2.0],[5240.2,2463.05,4.2],[5263.25,2463.05,4.2],[5263.25,2458.8,4.2],[5263.25,2458.8,0.8]]},
+{s:"water",a:["PP-13102A/B",-4.4],b:["WT-DU",0.8],r:0.05,code:"PW-13106-15-CB2 (вода на растворение реагентов)",p3:[[5238.6,2483.0,-4.4],[5238.6,2483.0,-2.0],[5240.2,2483.0,-2.0],[5240.2,2463.05,-2.0],[5240.2,2463.05,4.2],[5263.0,2463.05,4.2],[5263.0,2459.1,4.2],[5263.0,2459.1,1.25],[5263.0,2458.72,1.25]]},
 {s:"water",a:["WT-28",1.0],b:["WT-21",5.2],dashed:1,r:0.04,code:"промывка DN40/DN50 (принудительная промывка фильтров)",p3:[[5249.5,2453.0,1.0],[5249.5,2452.75,1.0],[5249.4,2452.75,1.0],[5249.4,2452.75,5.4],[5244.4,2452.75,5.4],[5244.4,2459.6,5.4],[5258.2,2459.6,5.4]]},
 {s:"steam",a:["XX-11502",1],b:["WT-19",1.5],r:0.06,code:"пар на пластинчатый подогреватель",p3:[[5257.5,2420.6,2.0],[5257.5,2420.6,7.6],[5264.95,2420.6,7.6],[5264.95,2464.6,7.6],[5240.35,2464.6,7.6],[5240.35,2462.85,7.6],[5240.35,2462.85,1.5]]},
-{s:"alkali",a:["WT-DU",0.5],b:["WT-20",1.3],r:0.04,code:"SJ-13101/13102/13103-15-CE1 (PAC, PAM, NaClO → смеситель)",p3:[[5262.3,2458.8,0.5],[5262.3,2462.8,0.5],[5243.6,2462.8,0.5],[5243.6,2460.4,0.5],[5243.6,2460.4,1.18]]},
-{s:"alkali",a:["WT-DU",0.5],b:["WT-26",1.6],r:0.03,code:"SJ-13104-15-CE1 (NaClO → бак хозпитьевой воды)",p3:[[5262.76,2455.45,0.5],[5262.76,2455.45,2.6],[5262.76,2455.25,2.6],[5251.65,2455.25,2.6],[5251.65,2455.25,1.6],[5251.65,2454.52,1.6]]},
+{s:"alkali",a:["WT-DU",0.5],b:["WT-20",1.3],r:0.04,code:"SJ-13101/13102/13103-15-CE1 (PAC, PAM, NaClO → смеситель)",p3:[[5262.01,2458.54,0.2],[5261.7,2458.54,0.2],[5261.7,2458.54,0.5],[5261.7,2462.8,0.5],[5243.6,2462.8,0.5],[5243.6,2460.4,0.5],[5243.6,2460.4,1.18]]},
+{s:"alkali",a:["WT-DU",0.5],b:["WT-26",1.6],r:0.03,code:"SJ-13104-15-CE1 (NaClO → бак хозпитьевой воды)",p3:[[5262.01,2456.3,0.2],[5261.7,2456.3,0.2],[5261.7,2456.3,2.6],[5261.7,2455.25,2.6],[5251.65,2455.25,2.6],[5251.65,2455.25,1.6],[5251.65,2454.52,1.6]]},
 {s:"water",a:["PP-13102A/B",-3],b:["DM-01",3],e:5.7,w:[[5238.6,2482.16],[5264.06,2482.16],[5264.06,2508.41],[5300.55,2508.41]],r:0.08,via:"RN"},
  {s:"water",a:["PP-13102A/B",-3],b:["VE-11301",5.5],e:5.7,dashed:1,w:[[5238.6,2482.32],[5264.22,2482.32],[5264.22,2393.88],[5291.95,2393.88],[5291.95,2373.45],[5304.3,2373.45]],r:0.08,via:"RN>RE>RB"},
  {s:"water",a:["PP-13102A/B",-3],b:["CT-13301A/B",8],e:5.7,dashed:1,w:[[5238.6,2482.47],[5264.37,2482.47],[5264.37,2405.36],[5298.92,2405.36]],r:0.08,via:"RN"},
@@ -2167,17 +2212,29 @@ function start(){
      for(let h=.3;h<B0+H;h+=.3)pipe([[-.25,3.8,h],[-.25,4.3,h]],.015,M.crane);
      g.position.copy(C)}
    else if(o.k==='dose3'){
-     // Chemical dosing skid (SJY-GY-09): NaClO, PAC, PAM dissolving/dosing tanks with agitators, dosing pumps,
-     // local control cabinet, on one frame 1450 × 3350 (long side along plan Y).
+     // Chemical dosing skid per SJY-GY-09 (Sichuan Shengjiuyuan): one open steel frame 3350 × 1450 × 1550 (long side along plan Y),
+     // three PE dosing tanks 1000 л (NaClO, PAC, PAM; Ø1180 × 1300 by list, drawn ≈ Ø1080 in the top view — taken from the view so the
+     // tanks fit the 1117 mm bays) with 0,55 kW agitators on a top beam, three metering pumps (60/60/15 л/ч) in the 250 mm front strip,
+     // local control cabinet between bays 1 and 2, level gauges MD-UK221 on the tank tops. Front (pumps) faces plan −X.
      const C=P(o.X,o.Y,0),L=(dx,dy,h)=>P(o.X+dx,o.Y+dy,h).sub(C);
-     const fr=new THREE.Mesh(new THREE.BoxGeometry(3.35,.12,1.45),M.steelDark);fr.position.set(0,.06,0);g.add(fr);
+     const W=3.35,D=1.45,H=1.55,bay=W/3,fz=.125;   // fz — centre of the 1200 tank zone (front strip 250 at −X)
+     const st=M.steelDark,bx=(w,h,d,m,c,y)=>{const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);b.position.set(c.x,y,c.z);g.add(b);return b};
+     // frame: base plate, corner and bay posts, top and bottom rails (local x = plan Y, z = −plan X)
+     bx(W,.06,D,st,L(0,0,0),.03);
+     [-W/2+.03,-bay/2,bay/2,W/2-.03].forEach(dy=>[-D/2+.03,D/2-.03].forEach(dx=>bx(.05,H,.05,st,L(dx,dy,0),H/2)));
+     [-D/2+.03,D/2-.03].forEach(dx=>bx(W,.05,.05,st,L(dx,0,0),H-.025));
+     [-W/2+.03,W/2-.03].forEach(dy=>bx(.05,.05,D,st,L(0,dy,0),H-.025));
      const tk=new THREE.MeshStandardMaterial({color:0xE9E7DD,roughness:.6});mats.push(tk);
-     [[-1.1,0x2E8B57],[0,0x3F7FBF],[1.1,0xC8932E]].forEach(([dy,col])=>{const c=L(.15,dy,0);
-       const t=cyl(.95,.95,1.3,tk,24);t.position.set(c.x,.12+.65,c.z);g.add(t);edges(t);
-       const band=cyl(.97,.97,.12,new THREE.MeshStandardMaterial({color:col}),24);band.position.set(c.x,1.1,c.z);g.add(band);
-       const mo=cyl(.22,.22,.35,M.steel,12);mo.position.set(c.x,1.6,c.z);g.add(mo);const sh_=cyl(.04,.04,.35,M.steelDark,8);sh_.position.set(c.x,1.33,c.z);g.add(sh_);
-       const p=L(-.5,dy,0);const pu=new THREE.Mesh(new THREE.BoxGeometry(.28,.25,.3),M.steel);pu.position.set(p.x,.25,p.z);g.add(pu)});
-     const cb=L(-.55,1.6,0);const cab=new THREE.Mesh(new THREE.BoxGeometry(.6,1.4,.3),new THREE.MeshStandardMaterial({color:0xD8DCDA}));cab.position.set(cb.x,.82,cb.z);g.add(cab);edges(cab);
+     [[-bay,0x2E8B57],[0,0x3F7FBF],[bay,0xC8932E]].forEach(([dy,col])=>{const c=L(fz,dy,0);
+       const t=cyl(1.08,1.08,1.3,tk,32);t.position.set(c.x,.06+.65,c.z);g.add(t);edges(t);
+       const band=cyl(1.1,1.1,.1,new THREE.MeshStandardMaterial({color:col}),32);band.position.set(c.x,1.12,c.z);g.add(band);
+       bx(.06,.06,D-.1,st,L(0,dy,0),H-.025);   // agitator beam across the frame
+       const mo=cyl(.2,.2,.32,M.steel,12);mo.position.set(c.x,H+.19,c.z);g.add(mo);
+       const gb=cyl(.14,.14,.1,M.steelDark,12);gb.position.set(c.x,H+.03,c.z);g.add(gb);
+       const sh_=cyl(.035,.035,H-1.36-.03,M.steelDark,8);sh_.position.set(c.x,(H+1.36)/2-.015,c.z);g.add(sh_);
+       const lg=L(fz+.3,dy+.25,0);const lv=cyl(.08,.08,.12,new THREE.MeshStandardMaterial({color:0x2F6FC0}),10);lv.position.set(lg.x,1.42,lg.z);g.add(lv);
+       const pp=L(-D/2+.13,dy+.3,0);bx(.3,.22,.18,M.steel,pp,.17);const pm=cyl(.12,.12,.2,M.steelDark,10);pm.rotation.z=Math.PI/2;pm.position.set(pp.x-.24,.2,pp.z);g.add(pm)});
+     const cb=L(-D/2+.12,-bay/2+.25,0);const cab=bx(.4,.9,.2,new THREE.MeshStandardMaterial({color:0x6FA86F}),cb,.06+.45+.35);edges(cab);
      g.position.copy(C)}
    else if(o.k==='dtank'){
      // Domestic / regulating water tank (SJY-GY-10): stainless Ø1800 × H 2000, DN20 flanges, Ø100 reserved hole,
@@ -2608,7 +2665,7 @@ function start(){
    scene.add(tube);
    const n=Math.max(2,Math.round(len/7)); const dots=[];
    if(!f.dashed){for(let i=0;i<n;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(r*1.35,10,8),SM[f.s].dot);scene.add(d);dots.push(d)}}
-   flowObjs.push({s:f.s,tube,dots,path,len,off:Math.random()});
+   flowObjs.push({s:f.s,f,tube,dots,path,len,segs:Math.max(8,Math.round(len/2)),rev:1,off:Math.random()});
  });
 
  // labels
@@ -2619,7 +2676,7 @@ function start(){
  const ray=new THREE.Raycaster(); const mouse=new THREE.Vector2(); const tip=$('tip');
  let selected=[]; let isolated=null; let lockedTag=null;
  function meshes(o){const a=[];o.traverse(c=>{if(c.isMesh)a.push(c)});return a}
- function clearSel(){selected.forEach(c=>{c.material=c.userData.dimmed?dimMat(c.userData.base):c.userData.base});selected=[]}
+ function clearSel(){selected.forEach(c=>{c.material=c.userData.dimmed?dimMat(c.userData.base):(c.userData.cold?coldMat(c.userData.base):c.userData.base)});selected=[]}
  function select(tag){clearSel();(byTag[tag]||[]).forEach(o=>meshes(o).forEach(c=>{if(!c.userData.base)c.userData.base=c.material;c.material=selMat;selected.push(c)}))}
  function owner(obj){while(obj&&!(obj.userData&&obj.userData.info))obj=obj.parent;return obj}
  function pick(ev){const r=renderer.domElement.getBoundingClientRect();mouse.x=((ev.clientX-r.left)/r.width)*2-1;mouse.y=-((ev.clientY-r.top)/r.height)*2+1;ray.setFromCamera(mouse,camera);
@@ -2712,7 +2769,7 @@ function start(){
      else if(k==='extline')dims=tag==='EXT-B0'?(currentLang==='uz'?'Ø219×5, yer osti':'Ø219×5, подземно'):(currentLang==='uz'?'2 × 3 × APvPu-1×300, 2 × 1,97 km':'2 × 3 × АПвПу-1×300, 2 × 1,97 км');
      else if(k==='fpress')dims=currentLang==='uz'?'4615 × 1570 × 1320 mm, plitalar 1000×1000 (31+2)':'4615 × 1570 × 1320 мм, плиты 1000×1000 (31+2)';
      else if(k==='wpur')dims='14,0 × 4,58 × H 4,25 м (+ сифоны), 200 м³/ч';
-     else if(k==='dose3')dims='рама 3,35 × 1,45 м, 3 бака Ø0,95';
+     else if(k==='dose3')dims='рама 3,35 × 1,45 × 1,55 м, 3 бака 1000 л';
      else if(k==='dtank')dims=`Ø${o.d} × H ${o.h} м, 5 м³`;
      else if(k==='domro')dims='рама 1,9 × 0,65 × H 1,73 м';
      else if(k==='cpws')dims='≈ 1,1 × 0,7 × H 1,1 м, 2 насоса';
@@ -2784,7 +2841,7 @@ function start(){
  }
  const dimCache=new Map();
  function dimMat(m){if(dimCache.has(m))return dimCache.get(m);const d=m.clone();d.transparent=true;d.opacity=Math.min(m.opacity??1,.12);d.depthWrite=false;dimCache.set(m,d);return d}
- function setDim(o,dim){o.traverse(c=>{if(c.isMesh){if(!c.userData.base)c.userData.base=c.material;c.userData.dimmed=dim;if(c.material===selMat)return;c.material=dim?dimMat(c.userData.base):c.userData.base}else if(c.isLine){c.visible=!dim}});o.userData.dim=dim}
+ function setDim(o,dim){o.traverse(c=>{if(c.isMesh){if(!c.userData.base)c.userData.base=c.material;c.userData.dimmed=dim;if(c.material===selMat)return;c.material=dim?dimMat(c.userData.base):(c.userData.cold?coldMat(c.userData.base):c.userData.base)}else if(c.isLine){c.visible=!dim}});o.userData.dim=dim}
  function unIso(){isolated=null;secSel.value='';allObj.forEach(o=>setDim(o,false));flyTo(HOME.tgt,null,HOME.pos);lockedTag=null;unlockCamera();cutObjSearch.value='';fillCutObj()}
  // camera tween
  let tw=null;
@@ -2806,6 +2863,7 @@ function start(){
  // view tabs: model / section
  const tabModel=$('tabModel'), tabCut=$('tabCut'), cutbarEl=$('cutbar'), bCutFab=$('bCutFab');
  function setTab(showCut){
+   if(typeof setStart==='function')setStart(false);
    tabModel.setAttribute('aria-pressed',!showCut);tabModel.setAttribute('aria-selected',!showCut);
    tabCut.setAttribute('aria-pressed',showCut);tabCut.setAttribute('aria-selected',showCut);
    cutbarEl.hidden=!showCut;
@@ -2818,6 +2876,216 @@ function start(){
  // hidden there along with the rest of the chrome) — same panel, toggled by
  // pressing the button again rather than switching back to the Модель tab.
  bCutFab.onclick=()=>setTab(cutbarEl.hidden);
+ // ---- имитация пуска завода (вкладка «Пуск») ----
+ // Последовательность — по схемам «Логическая последовательность ввода объектов и пуска сернокислотного
+ // производства» (BFD, BFD 2): 137 → 136 → водоснабжение 131/101/132/133-134 → 135 → 114.1/114 →
+ // технология 121-111-122-112-113-123/124 → 115. Длительности считаются ниже из паспортных данных
+ // оборудования (перечни, чертежи поставщиков); принятые допущения подписаны в тексте расчёта.
+ const SUP=(()=>{
+   const QRAW=165.88;                                  // сырая вода по BFD, м³/ч
+   const f1=(v,d=1)=>fmtN(v,d), h=v=>f1(v,2)+' ч';
+   const V_RW=600, V_WT21=14*4.58*4.25, V_FIRE=2*320, V_DM01=150, V_DNW=150;
+   const V_B133=22*16.2*2.3, V_B134=26.4*16.2*2.3;
+   const air={V:6+10+1+3+5,Q:2*17.1}; air.free=air.V*(0.7+0.1)/0.1; air.t=air.free/air.Q;   // м³, м³/мин, мин
+   const ngV=Math.PI/4*0.209*0.209*8810, ngN=ngV*(0.3+0.1)/0.1, ngT=(3*ngV+ngN)/3000;
+   const daQ=33*4.19*115/1000, daS=3*2.217;           // ГДж; ГДж/ч от 3 т/ч пара 1,25 МПа
+   const sCharge=2*110*0.8*1.80, crane=(16/33+9/31+37/83)*2+0.5, craneQ=10*60/crane, steamQ=6*2015*0.85/141;
+   const filtV=50.6*0.8*2+11.85*3+50.6*0.8, v122=Math.PI*81*1.5+31.5*0.8;
+   const catE=160*0.9*400/1000+400*0.5*350/1000, catP=11.63*3.6*0.6;
+   const EV=[
+    {id:'p137',st:1,dep:[],dur:2*10/60+30/60+20/60,n:'Подача 10 кВ, подстанция 137',nu:'10 kV berish, 137-podstansiya',
+     c:`КЛ-10 кВ 2 × 1,97 км от ГПП «Электрохимия» → РП-10 кВ: 2 ввода × 10 мин; включение трансформаторов ТП-1 на холостой ход с выдержкой 30 мин; сборка схемы 0,4 кВ и питание всех объектов — 20 мин.`},
+    {id:'a136',st:2,dep:['p137'],dur:(air.t+10+15)/60,n:'Компрессорная 136, воздух КИПиА',nu:'136-kompressor, KIPiA havosi',
+     c:`Ресиверы VE-13601 6 м³ + VE-13602 10 м³ + DM-36/37 4 м³ + сеть ≈ 5 м³ = ${f1(air.V,0)} м³. До 0,7 МПа нужно ${f1(air.free,0)} м³ свободного воздуха; CO-13601A/B 2 × 17,1 м³/мин → ${f1(air.t)} мин. Выход осушителей DR-13601A/B на точку росы — цикл ≈ 10 мин, проверка сети 15 мин.`},
+    {id:'w_rw',st:3,dep:['a136'],dur:V_RW/QRAW,n:'Приём сырой воды, резервуар 131',nu:'Xom suvni qabul qilish, 131-rezervuar',
+     c:`Резервуар исходной воды 600 м³ (насосная 131.2) ÷ 165,88 м³/ч сырой воды по водоводу 1,7 км = ${h(V_RW/QRAW)}.`},
+    {id:'w131',st:3,dep:['w_rw'],dur:V_WT21/QRAW+1,n:'Водоочистка 131 → производственная вода',nu:'131 suv tozalash → ishlab chiqarish suvi',
+     c:`Заполнение установки WT-21 14 × 4,58 × 4,25 м = ${f1(V_WT21,0)} м³ ÷ 165,88 м³/ч = ${h(V_WT21/QRAW)}; выход осветлителя на режим (взвешенный слой, дозирование реагентов) — 1 ч.`},
+    {id:'w101',st:3,dep:['w131'],dur:V_FIRE/QRAW,n:'Пожарные резервуары 101',nu:'101 yong‘in rezervuarlari',
+     c:`2 × 320 м³ = 640 м³ ÷ 165,88 м³/ч = ${h(V_FIRE/QRAW)}. Подача производственной воды ограничена расходом сырой воды.`},
+    {id:'w132',st:3,dep:['w101'],dur:V_DM01/QRAW+0.5+V_DNW/60,n:'Деминерализация 132 → обессоленная вода',nu:'132 demineralizatsiya → tuzsizlangan suv',
+     c:`Бак DM-01 150 м³ ÷ 165,88 = ${h(V_DM01/QRAW)}; промывка УФ и ОО 0,5 ч; бак TK-13205 150 м³ ÷ 60 т/ч (2 ФСД × 30 т/ч) = 2,5 ч.`},
+    {id:'w133',st:3,dep:['w101'],off:V_DM01/QRAW,dur:V_B133/QRAW+0.5,n:'Оборотная вода 133',nu:'133 aylanma suv',
+     c:`Чаша градирни CT-13301 22 × 16,2 × 2,3 м = ${f1(V_B133,0)} м³ ÷ 165,88 = ${h(V_B133/QRAW)} (начинается после бака DM-01); пуск насосов PP-13301 и заполнение сети — 0,5 ч.`},
+    {id:'w134',st:3,dep:['w133'],dur:V_B134/QRAW+0.5,n:'Оборотная вода 134 (электростанция)',nu:'134 aylanma suv (elektr stansiyasi)',
+     c:`Чаша CT-13401 26,4 × 16,2 × 2,3 м = ${f1(V_B134,0)} м³ ÷ 165,88 = ${h(V_B134/QRAW)}; пуск насосов PP-13401 — 0,5 ч.`},
+    {id:'ng',st:4,dep:['a136'],dur:ngT+0.5,n:'Газопровод Г2: продувка и заполнение',nu:'G2 gaz quvuri: puflash va to‘ldirish',
+     c:`Г2 Ø219 × 5, 8,81 км: объём ${f1(ngV,0)} м³, при 0,3 МПа — ${f1(ngN,0)} нм³. Продувка 3 объёма + заполнение при 3000 нм³/ч = ${h(ngT)}; проверка ГРПШ и узлов учёта 0,5 ч.`},
+    {id:'b135',st:4,dep:['ng','w132'],dur:20/85+18/12+(194-20)/60,n:'Пусковой котёл 135, пар 1,25 МПа',nu:'135 ishga tushirish qozoni, 1,25 MPa bug‘',
+     c:`Бак VE-13503 20 м³ ÷ 85 т/ч = 0,24 ч; заполнение котла (≈ 18 м³) насосом PP-13501 12 м³/ч = 1,5 ч; розжиг горелки XX-13501 и подъём давления до 1,25 МПа (194 °C) со скоростью 60 °C/ч = ${h((194-20)/60)}. Котёл 10 т/ч.`},
+    {id:'d1141',st:5,dep:['b135'],dur:33/85+daQ/daS,n:'Деаэратор 114.1',nu:'114.1 deaerator',
+     c:`Бак DA-114.101 33 м³ ÷ 85 т/ч = 0,39 ч; нагрев 20 → 135 °C: 33 т × 4,19 × 115 = ${f1(daQ)} ГДж ÷ ${f1(daS,2)} ГДж/ч (3 т/ч пара от котла 135) = ${h(daQ/daS)}.`},
+    {id:'b114',st:5,dep:['d1141'],dur:80/115,n:'Котёл-утилизатор 114: заполнение',nu:'114 utilizator qozon: to‘ldirish',
+     c:`EX-11201 57,6 м³ + экономайзеры EX-11205/11207 ≈ 22 м³ = 80 м³ ÷ 115 м³/ч (PP-114.101) = ${h(80/115)}.`},
+    {id:'lsdist',st:6,dep:['b135'],dur:1,n:'Пар НД на 111, 122, 112: прогрев спутников',nu:'111, 122, 112 ga PB bug‘i: yo‘ldoshlarni qizdirish',
+     c:`Прогрев паровых спутников, змеевиков TK-111xx и VE-12201, рубашек насосов и фильтров — 1 ч.`},
+    {id:'m121',st:6,dep:['lsdist'],dur:sCharge/70,n:'121 → 111: подача и плавление серы',nu:'121 → 111: oltingugurtni uzatish va eritish',
+     c:`Загрузка TK-11101A/B 2 × 110 м³ × 0,8 × 1,8 т/м³ = ${f1(sCharge,0)} т. Кран LR-12101 (грейфер 10 т, цикл ${f1(crane)} мин) даёт ${f1(craneQ,0)} т/ч, пар на плавление (6 т/ч × 2015 кДж/кг × 0,85 ÷ 141 кДж/кг) — ${f1(steamQ,0)} т/ч; ограничивает конвейер CV-12101 70 т/ч → ${h(sCharge/70)}.`},
+    {id:'f111',st:6,dep:['m121'],off:sCharge/2/70,rel:'start',dur:filtV/25,n:'111: намыв и фильтрация серы',nu:'111: oltingugurtni filtrlash',
+     c:`Начинается, когда заполнен первый резервуар (${h(sCharge/2/70)} после начала загрузки); намыв подложки в TK-11104 — параллельно. TK-11102 и TK-11103 по 40 м³, фильтры 3 × 11,85 м³, TK-11105 40 м³ = ${f1(filtV,0)} м³ ÷ 25 м³/ч (PP-11101) = ${h(filtV/25)}.`},
+    {id:'v122',st:6,dep:['f111'],dur:v122/25,n:'122: склад жидкой серы',nu:'122: suyuq oltingugurt ombori',
+     c:`VE-12201 Ø18 м до минимального уровня 1,5 м (змеевики под серой) = 382 м³ + бак VE-12202 25 м³ = ${f1(v122,0)} м³ ÷ 25 м³/ч = ${h(v122/25)}.`},
+    {id:'a113',st:6,dep:['w133'],dur:150/50+0.5,n:'113: заполнение кислотой, циркуляция',nu:'113: kislota bilan to‘ldirish, sirkulyatsiya',
+     c:`Серная кислота из 123/124 (на этап пуска): VE-11301 93 м³ + задержка в башнях и трубах ≈ 57 м³ = 150 м³ ÷ 50 м³/ч (PP-12301) = 3 ч; пуск PP-11301/02/03 и холодильников — 0,5 ч.`},
+    {id:'bl113',st:6,dep:['a113','b114'],dur:1,n:'Воздуходувка BO-11301',nu:'BO-11301 puflagich',
+     c:`Маслосистема 160 л/мин — 0,5 ч; пуск двигателя 3350 кВт, 10 кВ, выход на обороты и продувка тракта — 0,5 ч.`},
+    {id:'h112',st:6,dep:['b114','ng'],dur:(1000-20)/40+3,n:'112: разогрев печи FU-11201',nu:'112: FU-11201 pechini qizdirish',
+     c:`Пусковая горелка SM-11202 (газ 720 нм³/ч). Футеровка LZ-65 до 1000 °C со скоростью 40 °C/ч = ${h(980/40)} + выдержки при 150, 400, 700 °C по 1 ч. Газы — через котёл EX-11201 на свечу.`},
+    {id:'hc112',st:6,dep:['bl113'],dur:400/20+6,n:'112: разогрев катализатора',nu:'112: katalizatorni qizdirish',
+     c:`Воздухонагреватель SM-11203 10 Гкал/ч → EX-11208. Тепло: катализатор ≈ 160 т + металл ≈ 400 т = ${f1(catE,0)} ГДж ÷ ${f1(catP,1)} ГДж/ч = ${h(catE/catP)}; ограничивает скорость 20 °C/ч до 420 °C = 20 ч + выравнивание слоёв до 400 °C 6 ч.`},
+    {id:'ign',st:6,dep:['h112','hc112','v122'],dur:7,n:'Подача серы в печь, выход на 100 %',nu:'Pechga oltingugurt berish, 100 % ga chiqish',
+     c:`Форсунки SM-11201 по 4 м³/ч: одна (30 %) → две (60 %) → три (100 %, 11,4 м³/ч серы = 62,5 т/ч H₂SO₄). Подъём нагрузки 10 %/ч: 30 → 100 % = 7 ч.`},
+    {id:'prod',st:6,dep:['ign'],off:1,rel:'start',dur:0.5,n:'123/124: приём продукционной кислоты',nu:'123/124: tayyor kislotani qabul qilish',
+     c:`Кислота на склад — после выхода концентрации в норму, ≈ 1 ч после подачи серы.`},
+    {id:'hus',st:5,dep:['ign'],rel:'start',dur:3,n:'114: перегретый пар 6,3 МПа, 435 °C',nu:'114: o‘ta qizigan bug‘ 6,3 MPa, 435 °C',
+     c:`Параметры пара для турбины достигаются при ≈ 60 % нагрузки: (60 − 30) % ÷ 10 %/ч = 3 ч после подачи серы.`},
+    {id:'oil115',st:7,dep:['ign','w134'],off:2,rel:'start',dur:1,n:'115: маслосистема, валоповорот',nu:'115: moy tizimi, val aylantirish',
+     c:`Бак TK-11504 9 м³, пусковой насос PP-11504 40 м³/ч, подъём ротора PP-11507 — 1 ч до подачи пара.`},
+    {id:'t115',st:7,dep:['hus','oil115','w134'],dur:1+1.5+20.6/0.3/60,n:'115: пуск турбины, синхронизация',nu:'115: turbinani ishga tushirish, sinxronlash',
+     c:`Прогрев паропровода 1 ч; разворот ST-11501 до 3000 об/мин с выдержками 1,5 ч; синхронизация и набор 20,6 МВт со скоростью 0,3 МВт/мин = ${h(20.6/0.3/60)}. Пар НД берётся из отбора 0,9 МПа, котёл 135 переводят в резерв.`},
+   ];
+   const by={};EV.forEach((e,i)=>{e.i=i;by[e.id]=e});
+   EV.forEach(e=>{let t=0;e.dep.forEach(d=>{const p=by[d];t=Math.max(t,e.rel==='start'?p.t0:p.t0+p.dur)});e.t0=Math.max(0,t+(e.off||0));e.t1=e.t0+e.dur});
+   const total=Math.max(...EV.map(e=>e.t1));
+   const STEPS=[[1,'Электроснабжение · 137','Elektr ta’minoti · 137'],[2,'Воздух КИПиА · 136','KIPiA havosi · 136'],[3,'Водоснабжение · 131, 101, 132, 133/134','Suv ta’minoti · 131, 101, 132, 133/134'],
+     [4,'Газоснабжение · 135','Gaz ta’minoti · 135'],[5,'Пар, рекуперация тепла · 114.1, 114','Bug‘, issiqlik utilizatsiyasi · 114.1, 114'],
+     [6,'Технология · 121-111-122-112-113-123/124','Texnologiya · 121-111-122-112-113-123/124'],[7,'Выработка электроэнергии · 115','Elektr energiyasi ishlab chiqarish · 115']]
+     .map(([n,t,tu])=>{const ev=EV.filter(e=>e.st===n);return {n,t,tu,ev,t0:Math.min(...ev.map(e=>e.t0)),t1:Math.max(...ev.map(e=>e.t1))}});
+   return {EV,by,total,STEPS};
+ })();
+ // events of equipment tags and flows
+ const T135=/^(FU|PP|VE|XX|SK|EX)-1350/, T136=/^(CO|VE|DR|XX)-1360/;
+ function tagEvt(t){
+   if(!t)return null;
+   if(t==='EXT-KL10')return 'p137'; if(t==='EXT-B0'||t==='WT-RW')return 'w_rw'; if(t==='EXT-G2')return 'ng';
+   if(T136.test(t))return 'a136'; if(T135.test(t))return 'b135';
+   const s=eqSec(t);
+   if(s==='W131')return 'w131'; if(s==='W132')return 'w132'; if(s==='W133')return /134/.test(t)?'w134':'w133';
+   if(s==='R114')return /^(DA|PP-114|MZ)/.test(t)?'d1141':'hus';
+   if(s==='R115'){if(t==='XX-11502')return 'lsdist';if(/^(TK-1150[24]|PP-1150[4-7]|EX-11504|FR-11503)/.test(t))return 'oil115';return 't115'}
+   if(s==='Hg121'||t==='TK-11101A/B'||t==='AG-11101A/B')return 'm121';
+   if(s==='G111')return 'f111'; if(s==='G122')return 'v122';
+   if(s==='G112'){if(/^(FU-11201|EX-11201|SM-11202|XX-11201|EX-1120[57])/.test(t))return 'b114';if(/^SM-11201/.test(t))return 'ign';if(/^EX-11206/.test(t))return 'hus';return 'hc112'}
+   if(s==='G113')return /^(BO-11301|SM-11301|TW-11301)/.test(t)?'bl113':(/^(TW-11304|VE-1130[45]|BO-11302)/.test(t)?'ign':'a113');
+   if(s==='G123')return /^SM-12303/.test(t)?'prod':'a113';
+   return null;
+ }
+ const SUo=SUP.by;
+ function flowEvt(fo){
+   const f=fo.f, s=f.s, d=fo.tube.userData.flow, a=(d.a||'').replace(/^~/,''), b=(d.b||'').replace(/^~/,'');
+   const ab=a+'>'+b, has=re=>re.test(a)||re.test(b), sa=eqSec(a), sb=eqSec(b);
+   if(s==='kipair')return 'a136'; if(s==='oil')return 'oil115'; if(s==='fuel')return 'b135'; if(s==='chem')return 'b114';
+   if(s==='gas'){if(has(/SM-11203/))return 'hc112';if(/^(FU-11201|EX-11201|XX-11201|SM-11202)$/.test(a)&&/^(FU-11201|EX-11201|XX-11201|SM-11202)$/.test(b))return 'h112';return 'ign'}
+   if(s==='air'){if(a==='EX-11208')return 'hc112';if(a==='BO-11301'&&b==='FU-11201')return 'ign';if(has(/BO-11302/))return 'ign';if(sa==='G113'||sb==='G113')return 'bl113'}
+   if(s==='sulfur'&&(sb==='G112'||sa==='G112'))return 'ign';
+   if(s==='steam'){if(/^FU-13501/.test(a))return 'b135';if(a==='XX-11502'&&b==='DA-114.101')return 'd1141';if(a==='XX-11502'&&sb!=='R115')return 'lsdist';
+     if(has(/SM-1120[12]/))return 'h112';if(sa==='G112'||sb==='G112'||a==='VE-11401')return 'hus';return 't115'}
+   if(s==='water'){if(has(/SM-1120[12]/))return 'h112';if((sa==='W133'||sb==='W133')&&(sa==='G113'||sb==='G113'))return 'w133';
+     if((sa==='W133'||sb==='W133')&&(sa==='R115'||sb==='R115'))return 'w134';if(has(/^EX-11201$/)&&has(/^(VE-1140|SC-1140)/))return 'hus'}
+   if(s==='acid'){if(sa==='G113'&&sb==='G123')return 'prod';if(has(/^SM-12303/))return 'prod';return 'a113'}
+   if(s==='alkali'&&sa==='G113')return 'ign';
+   const ea=tagEvt(a), eb=tagEvt(b);
+   if(ea&&eb)return SUo[ea].i>=SUo[eb].i?ea:eb;
+   return ea||eb||'ign';
+ }
+ const SUlbl={Hg121:['m121'],G111:['f111'],G122:['v122'],G112:['h112','hc112','ign'],G113:['a113','bl113'],G123:['prod'],R114:['d1141','b114','hus'],R115:['p137','oil115','t115'],
+   W131:['w_rw','w131'],W132:['w132'],W133:['w133','w134'],UT:['a136','ng','b135']};
+ const SUextLbl={'Г2':['ng'],'В0':['w_rw'],'КЛ-10 кВ':['p137']};
+ const SU={on:false,t:0,play:false,spd:.5,inited:false,ext:[],cold:new Set()};
+ function suInit(){
+   if(SU.inited)return;SU.inited=true;
+   // flows: event + order inside the event by the a→b chain depth
+   const groups={};flowObjs.forEach(fo=>{fo.ev=flowEvt(fo);(groups[fo.ev]=groups[fo.ev]||[]).push(fo)});
+   Object.entries(groups).forEach(([ev,list])=>{
+     const EVo=SUo[ev];const nd=fo=>{const u=fo.tube.userData.flow;return [u.a||'',u.b||'']};
+     list.forEach(fo=>fo.dp=0);
+     for(let it=0;it<12;it++){let ch=false;list.forEach(fo=>{const [a]=nd(fo);list.forEach(p=>{if(p!==fo&&nd(p)[1]===a&&a&&p.dp+1>fo.dp&&p.dp<20){fo.dp=p.dp+1;ch=true}})});if(!ch)break}
+     const D=Math.max(...list.map(fo=>fo.dp))+1, slot=EVo.dur/D;
+     list.forEach(fo=>{fo.st0=EVo.t0+fo.dp*slot;fo.sdur=Math.max(.05,slot)});
+   });
+   // external networks: dots along the routes (the line itself stays as built)
+   const EXTD=[['EXT-KL10','p137',0xE8B330,.3,true,.2],['EXT-B0','w_rw',null,1.6,true,.45],['EXT-G2','ng',null,.6,false,.2]];   // газ — по оси надземной трубы
+   EXTD.forEach(([t,ev,col,hh,rev,dr])=>{const o=E.find(q=>q.t===t);if(!o)return;let pl=o.pts.slice();if(rev)pl.reverse();
+     if(t==='EXT-KL10'){pl[pl.length-1]=[5230.8,2425.5];   // кабель в земле: точки идут над трассой до стены подстанции 137 (здание 115),
+       const s0=pl[0],s1=pl[1],L0=Math.hypot(s1[0]-s0[0],s1[1]-s0[1]),c=[[s0[0]+(s1[0]-s0[0])*.8/L0,s0[1]+(s1[1]-s0[1])*.8/L0]];for(let i=1;i<pl.length-1;i++){const [a,b,n]=[pl[i-1],pl[i],pl[i+1]],k=u=>{const L=Math.hypot(u[0]-b[0],u[1]-b[1]);return [b[0]+(u[0]-b[0])*.8/L,b[1]+(u[1]-b[1])*.8/L]};c.push(k(a),k(n))}   // углы срезаны — мимо столбиков-указателей
+       c.push(pl[pl.length-1]);pl=c}
+     const pts=pl.map(([X,Y])=>P(X,Y,hh));const path=new THREE.CurvePath();for(let i=1;i<pts.length;i++)path.add(new THREE.LineCurve3(pts[i-1],pts[i]));
+     const len=path.getLength(),n=Math.max(4,Math.round(len/14)),mat=col?new THREE.MeshBasicMaterial({color:col}):(t==='EXT-B0'?SM.water.dot:SM.fuel.dot),dots=[];
+     for(let i=0;i<n;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(dr,10,8),mat);d.visible=false;scene.add(d);dots.push(d)}
+     SU.ext.push({ev,path,len,dots,off:0,hide:t==='EXT-KL10'?[[5216.2,5223.4,2582,2586]]:[],st0:SUo[ev].t0,sdur:Math.max(.2,SUo[ev].dur*.5)})});
+   // equipment → event (grey until its event starts)
+   SU.eqEv=[];Object.entries(byTag).forEach(([t,objs])=>{const ev=tagEvt(t);if(!ev)return;objs.forEach(o=>{if(o.userData&&o.userData.info&&(o.userData.info.kind==='eq'||/^EXT-/.test(t)))SU.eqEv.push({o,ev})})});
+   suBuildPanel();
+ }
+ const coldCache=new Map(), grey=new THREE.Color(0x9aa3a0);
+ function coldMat(m){if(coldCache.has(m))return coldCache.get(m);let c=m;if(m.color){c=m.clone();c.color=m.color.clone().lerp(grey,.75);if(c.emissive)c.emissive.setRGB(0,0,0)}coldCache.set(m,c);return c}
+ function setCold(o,on){o.traverse(c=>{if(!c.isMesh)return;if(!c.userData.base)c.userData.base=c.material;if(!!c.userData.cold===on)return;c.userData.cold=on;if(c.material===selMat||c.userData.dimmed)return;c.material=on?coldMat(c.userData.base):c.userData.base})}
+ function evState(id){const e=SUo[id];return SU.t<e.t0?0:(SU.t<e.t1?1:2)}
+ function suApply(){
+   const t=SU.t;
+   flowObjs.forEach(fo=>{fo.rev=Math.max(0,Math.min(1,(t-fo.st0)/fo.sdur));const g=fo.tube.geometry;g.setDrawRange(0,fo.rev>=1?Infinity:Math.ceil(fo.rev*fo.segs)*48)});
+   SU.ext.forEach(x=>{x.rev=Math.max(0,Math.min(1,(t-x.st0)/x.sdur))});
+   SU.eqEv.forEach(({o,ev})=>setCold(o,t<SUo[ev].t0));
+   LB.forEach(l=>{const ids=SUlbl[l.sec]&&l.sec!=='EXT'?SUlbl[l.sec]:SUextLbl[(l.d.querySelector('b')||{}).textContent];l.d.classList.remove('su0','su1','su2');if(!ids)return;
+     const st=ids.map(evState);l.d.classList.add(st.every(s=>s===2)?'su2':(st.some(s=>s>0)?'su1':'su0'))});
+   applyFlow();suPaint();
+ }
+ function suRestore(){
+   SU.play=false;
+   flowObjs.forEach(fo=>{fo.rev=1;fo.tube.geometry.setDrawRange(0,Infinity)});
+   SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
+   (SU.eqEv||[]).forEach(({o})=>setCold(o,false));
+   LB.forEach(l=>l.d.classList.remove('su0','su1','su2'));
+   applyFlow();
+ }
+ const fmtT=t=>{const d=Math.floor(t/24),hh=Math.floor(t%24),mm=Math.floor((t*60)%60);const uz=currentLang==='uz';return 'Т+ '+(d?d+(uz?' kun ':' сут '):'')+hh+(uz?' soat ':' ч ')+String(mm).padStart(2,'0')+(uz?' daq':' мин')};
+ const subar=$('subar');
+ function suBuildPanel(){
+   const uz=currentLang==='uz';
+   $('suList').innerHTML=SUP.STEPS.map(s=>`<li data-st="${s.n}"><button type="button" class="su-step" data-t="${s.t0}"><span class="su-n">${s.n}</span><span class="su-nm">${esc(uz?s.tu:s.t)}</span><span class="su-tm">${fmtN(s.t0,1)}–${fmtN(s.t1,1)} ${uz?'soat':'ч'}</span></button>
+     <ul>${s.ev.map(e=>`<li data-ev="${e.id}"><button type="button" class="su-ev" data-e="${e.id}"><i></i><span>${esc(uz?e.nu:e.n)}</span><span class="su-tm">${fmtN(e.t0,1)} + ${fmtN(e.dur,1)}</span></button></li>`).join('')}</ul></li>`).join('');
+   $('suList').querySelectorAll('.su-step').forEach(b=>b.onclick=()=>{SU.t=+b.dataset.t;suApply()});
+   $('suList').querySelectorAll('.su-ev').forEach(b=>b.onclick=()=>{const e=SUo[b.dataset.e];SU.t=e.t0;suApply();suShowEv(e)});
+   $('suR').max=SUP.total.toFixed(2);
+   $('suTot').textContent=(uz?'To‘liq ishga tushirish: ':'Полный пуск: ')+fmtN(SUP.total,1)+(uz?' soat':' ч');
+ }
+ function suShowEv(e){const uz=currentLang==='uz';openD(`<div class="eyebrow">${uz?'Ishga tushirish · ':'Пуск · '}${uz?'bosqich ':'этап '}${e.st}</div><h3>${esc(uz?e.nu:e.n)}</h3>
+   <table class="regmini"><tr><td>${uz?'Boshlanish':'Начало'}</td><td>${esc(fmtT(e.t0))}</td></tr><tr><td>${uz?'Davomiyligi':'Длительность'}</td><td>${fmtN(e.dur,2)} ${uz?'soat':'ч'}</td></tr><tr><td>${uz?'Tugash':'Окончание'}</td><td>${esc(fmtT(e.t1))}</td></tr></table>
+   <div class="eyebrow" style="margin-top:12px">${uz?'Hisob':'Расчёт'}</div><p class="note">${esc(e.c)}</p>`)}
+ function suShowCalc(){const uz=currentLang==='uz';openD(`<div class="eyebrow">${uz?'Ishga tushirish':'Пуск завода'}</div><h3>${uz?'Ishga tushirish vaqtining hisobi':'Расчёт времени пуска'}</h3>
+   <p class="note">${uz?'Ketma-ketlik — BFD sxemalari bo‘yicha. Davomiylik uskunalar pasport ma’lumotlaridan hisoblangan; sig‘imlar bo‘sh holatdan.':'Последовательность — по схемам BFD «Логическая последовательность ввода объектов». Длительности посчитаны из паспортных данных оборудования, ёмкости — с пустого состояния. Начало этапа — по окончании тех этапов, от которых он зависит.'}</p>
+   <table class="regmini">${SUP.EV.map(e=>`<tr><td><b>${fmtN(e.t0,1)}–${fmtN(e.t1,1)} ч</b><br>${esc(uz?e.nu:e.n)}</td><td>${esc(e.c)}</td></tr>`).join('')}</table>
+   <p class="note"><b>${uz?'Jami':'Итого'}: ${fmtN(SUP.total,1)} ${uz?'soat':'ч'} (${esc(fmtT(SUP.total))})</b></p>`)}
+ function suPaint(){
+   const t=SU.t;$('suClock').textContent=fmtT(t);$('suR').value=t.toFixed(2);
+   const cur=SUP.STEPS.filter(s=>t>=s.t0).pop();const uz=currentLang==='uz';
+   $('suNow').textContent=t>=SUP.total?(uz?'Zavod ishga tushirildi, rejimda':'Завод пущен, работает на режиме'):(cur?(uz?'Bosqich ':'Этап ')+cur.n+' · '+(uz?cur.tu:cur.t):'');
+   $('suPlay').textContent=SU.play?'⏸':'▶';$('suPlay').setAttribute('aria-label',SU.play?(uz?'Pauza':'Пауза'):(uz?'Boshlash':'Пуск'));
+   $('suList').querySelectorAll('[data-ev]').forEach(li=>li.dataset.s=evState(li.dataset.ev));
+   $('suList').querySelectorAll('[data-st]').forEach(li=>{const s=SUP.STEPS[li.dataset.st-1];li.dataset.s=t<s.t0?0:(t<s.t1?1:2)});
+   const act=[...$('suList').querySelectorAll('li[data-ev][data-s="1"]')].pop();if(act&&act!==SU.lastAct){SU.lastAct=act;const L=$('suList');L.scrollTop=Math.max(0,act.offsetTop-L.offsetTop-L.clientHeight/2)}
+ }
+ function suTick(dt){
+   if(!SU.on)return;
+   if(SU.play){SU.t=Math.min(SUP.total,SU.t+dt*SU.spd);if(SU.t>=SUP.total)SU.play=false;suApply()}
+   if(anim)SU.ext.forEach(x=>{const on=x.rev>0;x.off=(x.off+dt*8/x.len)%1;const n=x.dots.length;x.dots.forEach((d,i)=>{const u=((i/n)+x.off)%1;d.visible=on&&u<=x.rev;if(d.visible){d.position.copy(x.path.getPointAt(Math.min(u,.9995)));const X=X0-d.position.z,Y=d.position.x+Y0;if(x.hide.some(r=>X>r[0]&&X<r[1]&&Y>r[2]&&Y<r[3]))d.visible=false}})});
+   else SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
+ }
+ function setStart(on){
+   if(on===SU.on)return;
+   const tabStart=$('tabStart');tabStart.setAttribute('aria-pressed',on);tabStart.setAttribute('aria-selected',on);
+   subar.hidden=!on;
+   if(on){suInit();SU.on=true;tabModel.setAttribute('aria-pressed',false);tabModel.setAttribute('aria-selected',false);
+     if(isolated)unIso();else flyTo(HOME.tgt,null,HOME.pos);
+     if(SU.t>=SUP.total)SU.t=0;SU.play=SU.t<SUP.total;suApply()}
+   else{SU.on=false;suRestore()}
+ }
+ $('tabStart').onclick=()=>{if(!SU.on){setTab(false);setStart(true)}};
+ $('suPlay').onclick=()=>{if(SU.t>=SUP.total)SU.t=0;SU.play=!SU.play;suApply()};
+ $('suReset').onclick=()=>{SU.t=0;SU.play=false;suApply()};
+ $('suR').oninput=e=>{SU.t=+e.target.value;suApply()};
+ $('suSpd').onchange=e=>{SU.spd=+e.target.value};
+ $('suCalc').onclick=suShowCalc;
  // chips
  const chips=$('chips'); const active=new Set();
  const lbl=document.createElement('span');lbl.className='eyebrow';lbl.textContent=L().streamsLbl;chips.appendChild(lbl);
@@ -2829,7 +3097,7 @@ function start(){
    Object.entries(STREAMS).forEach(([k,v])=>{const s=chips.querySelector(`[data-k="${k}"] .chiptxt`);if(s)s.textContent=currentLang==='uz'?(v.nu||v.n):v.n});
  }
  function applyFlow(){chips.querySelectorAll('.chip').forEach(c=>{const on=active.has(c.dataset.k);c.setAttribute('aria-pressed',on);c.classList.toggle('dim',active.size>0&&!on)});
-   flowObjs.forEach(f=>{const on=!active.size||active.has(f.s);f.tube.visible=on;f.dots.forEach(d=>d.visible=on&&anim)})}
+   flowObjs.forEach(f=>{const on=(!active.size||active.has(f.s))&&(!SU.on||f.rev>0);f.tube.visible=on;f.dots.forEach(d=>d.visible=on&&anim)})}
  // toggles
  let anim=!matchMedia('(prefers-reduced-motion: reduce)').matches; $('bAnim').setAttribute('aria-pressed',anim);
  $('bAnim').onclick=()=>{anim=!anim;$('bAnim').setAttribute('aria-pressed',anim);applyFlow()};
@@ -3290,7 +3558,8 @@ function start(){
      const L=o.L[0]+(o.L[1]-o.L[0])*(.5-.5*Math.cos(tt*wh+c.ph));
      c.rope.scale.y=L;c.rope.position.y=c.hookY-L/2;c.hk.position.y=c.hookY-L;
      if(c.hk.userData.jaws){const a=.25+.35*Math.max(0,(L-o.L[0])/(o.L[1]-o.L[0])-.5);c.hk.userData.jaws.forEach((j,i)=>{j.rotation.x=(i?-1:1)*a})}});
-   if(anim){flowObjs.forEach(f=>{if(!f.tube.visible)return;f.off=(f.off+dt*6/f.len)%1;const n=f.dots.length;f.dots.forEach((d,i)=>{const q=f.path.getPointAt(Math.min(((i/n)+f.off)%1,.9995));if(q)d.position.copy(q)})})}
+   if(anim){flowObjs.forEach(f=>{if(!f.tube.visible)return;f.off=(f.off+dt*6/f.len)%1;const n=f.dots.length,lim=SU.on?f.rev:1;f.dots.forEach((d,i)=>{const u=((i/n)+f.off)%1;if(SU.on)d.visible=u<=lim;const q=f.path.getPointAt(Math.min(u,.9995));if(q)d.position.copy(q)})})}
+   suTick(dt);
    renderer.render(scene,camera);
    const w=view.clientWidth,h=view.clientHeight;
    LB.forEach(l=>{tmp.copy(l.p).project(camera);const vis=showL&&tmp.z<1&&Math.abs(tmp.x)<1.1&&Math.abs(tmp.y)<1.1&&(!isolated||l.sec===isolated);l.d.classList.toggle('hide',!vis);if(vis){l.d.style.left=((tmp.x+1)/2*w)+'px';l.d.style.top=((1-tmp.y)/2*h)+'px'}});
@@ -3302,7 +3571,7 @@ function start(){
    $('tEyebrow').textContent=T.eyebrow; $('tH1').textContent=T.h1;
    $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim; $('bLbl').textContent=T.bLbl;$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
    $('bHelp').title=T.bHelpTitle;
-   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut;
+   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода'; if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
    bCutFab.title=T.tabCut; bCutFab.setAttribute('aria-label',T.tabCut);
    $('tCutEyebrow').textContent=T.cutEyebrow; $('tCutOnly').textContent=T.cutOnly;
    $('cutSegOff').textContent=T.cutOff;
