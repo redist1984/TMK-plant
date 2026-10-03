@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Завод TMK</title>
+<meta name="theme-color" content="#0B6E66">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    display:flex;flex-direction:column;
+    background:#0F1614;color:#E3ECE9;
+    font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    padding-top:env(safe-area-inset-top,0px);
+  }
+  header{
+    display:flex;align-items:center;gap:8px;padding:10px 14px;
+    border-bottom:1px solid #2C3A36;background:#16201D;flex:0 0 auto;
+  }
+  header .logo{font-weight:700;font-size:14px}
+  header .logo b{color:#3FC1B3}
+  main{flex:1 1 auto;position:relative;min-height:0}
+  main iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#0F1614;display:none}
+  main iframe.on{display:block}
+  nav.tabs{
+    display:flex;flex:0 0 auto;border-top:1px solid #2C3A36;background:#16201D;
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  nav.tabs button{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    background:transparent;border:0;color:#7F908B;padding:9px 4px 8px;font:500 11px system-ui,sans-serif;cursor:pointer;
+  }
+  nav.tabs button .ic{font-size:19px;line-height:1}
+  nav.tabs button[aria-selected="true"]{color:#3FC1B3}
+  #offline{
+    position:fixed;left:50%;bottom:64px;transform:translateX(-50%);
+    background:#3FC1B3;color:#06201C;font:600 12px system-ui,sans-serif;
+    padding:6px 12px;border-radius:999px;display:none;z-index:20;white-space:nowrap;
+  }
+  #offline.show{display:block}
+  header .sync{
+    margin-left:auto;background:transparent;border:1px solid #2C3A36;color:#7F908B;
+    border-radius:8px;width:30px;height:30px;font-size:17px;line-height:1;cursor:pointer;display:none;flex:0 0 auto;
+  }
+  header .sync.show{display:block}
+  header .sync.spin{animation:tmkspin 1s linear infinite}
+  @keyframes tmkspin{to{transform:rotate(360deg)}}
+  body.fs-mode header,body.fs-mode nav.tabs{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo" id="tLogo">Сернокислотный завод <b>TMK</b></span>
+  <button id="btnSync" class="sync" type="button" title="Проверить обновления">⟳</button>
+</header>
+
+<main>
+  <iframe id="f-model" class="on" src="model.html" title="3D-модель"></iframe>
+  <iframe id="f-flow" src="flow.html" title="Схема потоков"></iframe>
+  <iframe id="f-docs" src="docs.html" title="Документы"></iframe>
+  <iframe id="f-settings" src="settings.html" title="Настройки"></iframe>
+  <iframe id="f-help" src="help.html" title="Помощь"></iframe>
+</main>
+
+<div id="offline">Автономный режим — часть данных может не загрузиться</div>
+
+<nav class="tabs" role="tablist" aria-label="Разделы приложения" id="tabs">
+  <button data-t="model" role="tab" aria-selected="true"><span class="ic">◧</span><span class="lbl">3D-модель</span></button>
+  <button data-t="flow" role="tab" aria-selected="false"><span class="ic">⌁</span><span class="lbl">Схема потоков</span></button>
+  <button data-t="docs" role="tab" aria-selected="false"><span class="ic">▤</span><span class="lbl">Документы</span></button>
+  <button data-t="settings" role="tab" aria-selected="false"><span class="ic">⚙</span><span class="lbl">Настройки</span></button>
+  <button data-t="help" role="tab" aria-selected="false"><span class="ic">?</span><span class="lbl">Помощь</span></button>
+</nav>
+
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script>
+const btns = document.querySelectorAll('nav.tabs button');
+const frames = { model: document.getElementById('f-model'), flow: document.getElementById('f-flow'), docs: document.getElementById('f-docs'), settings: document.getElementById('f-settings'), help: document.getElementById('f-help') };
+btns.forEach(b=>b.addEventListener('click',()=>{
+  btns.forEach(x=>x.setAttribute('aria-selected', x===b ? 'true':'false'));
+  Object.entries(frames).forEach(([k,f])=>f.classList.toggle('on', k===b.dataset.t));
+}));
+
+if(!navigator.onLine){document.getElementById('offline').classList.add('show')}
+window.addEventListener('online',()=>document.getElementById('offline').classList.remove('show'));
+window.addEventListener('offline',()=>document.getElementById('offline').classList.add('show'));
+
+// Язык интерфейса (RU ⇄ UZ): этот документ — "родитель" для всех 4 вкладок,
+// хранит выбранный язык и рассылает его в каждую <iframe> (см. lang.js).
+const UI = {
+  ru: {
+    logo: 'Сернокислотный завод <b>TMK</b>',
+    sync: 'Проверить обновления',
+    offline: 'Автономный режим — часть данных может не загрузиться',
+    tabs: 'Разделы приложения',
+    model: '3D-модель', flow: 'Схема потоков', docs: 'Документы', settings: 'Настройки', help: 'Помощь',
+    helpTitle: 'Помощь',
+  },
+  uz: {
+    logo: 'Oltingugurt kislotasi zavodi «<b>TMK</b>»',
+    sync: 'Yangilanishlarni tekshirish',
+    offline: 'Oflayn rejim — ba’zi ma’lumotlar yuklanmasligi mumkin',
+    tabs: 'Ilova bo‘limlari',
+    model: '3D-model', flow: 'Oqim sxemasi', docs: 'Hujjatlar', settings: 'Sozlamalar', help: 'Yordam',
+    helpTitle: 'Yordam',
+  }
+};
+function paintUI(lang){
+  const L = UI[lang] || UI.ru;
+  document.getElementById('tLogo').innerHTML = L.logo;
+  document.getElementById('btnSync').title = L.sync;
+  document.getElementById('offline').textContent = L.offline;
+  document.getElementById('tabs').setAttribute('aria-label', L.tabs);
+  document.querySelector('[data-t="model"] .lbl').textContent = L.model;
+  document.querySelector('[data-t="flow"] .lbl').textContent = L.flow;
+  document.querySelector('[data-t="docs"] .lbl').textContent = L.docs;
+  document.querySelector('[data-t="settings"] .lbl').textContent = L.settings;
+  document.querySelector('[data-t="help"] .lbl').textContent = L.help;
+  document.getElementById('f-model').title = L.model;
+  document.getElementById('f-flow').title = L.flow;
+  document.getElementById('f-docs').title = L.docs;
+  document.getElementById('f-settings').title = L.settings;
+  document.getElementById('f-help').title = L.helpTitle;
+}
+const tmkLangParent = TmkLang.initParent(Object.values(frames));
+paintUI(tmkLangParent.getLang());
+// The RU/UZ toggle now lives on the "Настройки" tab (settings.html), which
+// changes the language the same way a child page always did — via
+// TmkLang.initChild().setLang(), posting __tmkLangChange up to us. This
+// document no longer has its own toggle button, only the repaint below.
+// initParent() (in lang.js) already listens for __tmkLangChange and
+// rebroadcasts it to every iframe; we additionally repaint THIS document's
+// own header/tabs, since initParent only updates its internal getLang().
+window.addEventListener('message', e=>{ const d=e.data; if(d && d.__tmkLangChange) paintUI(d.lang==='uz'?'uz':'ru'); });
+
+// Theme (light/dark/system), set from the "Настройки" tab: same relay
+// pattern as language above (theme.js is TmkLang's twin). This top-level
+// document's own header/tabs are always dark (see body{background:#0F1614}
+// above) — only the content pages themselves switch — so there is nothing
+// of index.html's own to repaint here, initParent() alone is enough.
+TmkTheme.initParent(Object.values(frames));
+
+// Fullscreen (model.html / flow.html "во весь экран" button): those pages
+// can only hide their OWN content — this top-level document is the one that
+// owns the app's header + tab bar, so the request comes up here via
+// postMessage, we hide/show that chrome, tell the native Android side to
+// hide/show the system status/navigation bars too (if that bridge exists —
+// harmless no-op in a plain browser/PWA), and echo the new state back down
+// to every tab so a tab's own button/icon stays in sync even when the
+// toggle was triggered elsewhere (e.g. the hardware Back button exiting
+// fullscreen from the native side).
+window.addEventListener('message', e=>{
+  const d=e.data; if(!d || !d.__tmkFullscreen) return;
+  const on = !!d.on;
+  document.body.classList.toggle('fs-mode', on);
+  try{
+    if(window.TmkNative){
+      if(on && TmkNative.enterFullscreen) TmkNative.enterFullscreen();
+      else if(!on && TmkNative.exitFullscreen) TmkNative.exitFullscreen();
+    }else{
+      // Plain web build (no Android bridge): ask the browser itself to go
+      // fullscreen, hiding its own address bar/chrome too. Best-effort —
+      // some browsers refuse this outside a direct user gesture, so the
+      // fs-mode CSS above (hides header/tabs, fills the viewport) is the
+      // part that always works regardless.
+      if(on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
+      else if(!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(()=>{});
+    }
+  }catch(err){}
+  Object.values(frames).forEach(f=>{ if(f.contentWindow && f.contentWindow!==e.source) f.contentWindow.postMessage({__tmkFullscreen:true, on}, '*'); });
+});
+// Called by MainActivity (native) when the hardware Back button exits
+// fullscreen while the app is in that mode, so the web layer (chrome +
+// every tab's own button) can catch up with what the system bars already did.
+window.tmkExitFullscreen = function(){
+  window.postMessage({__tmkFullscreen:true, on:false}, '*');
+};
+// Web build: if the person exits the browser's real fullscreen themselves
+// (Esc key, browser UI) rather than our own button, bring our own fs-mode
+// chrome back in sync instead of leaving the header/tabs hidden forever.
+document.addEventListener('fullscreenchange', ()=>{
+  if(!document.fullscreenElement && document.body.classList.contains('fs-mode')){
+    window.tmkExitFullscreen();
+  }
+});
+
+// "Подробная справка по приложению →" inside a tab's own short help card
+// (model.html / flow.html) asks this top-level document to switch to the
+// "Помощь" tab, the same way it already switches on a direct tap of that
+// tab button.
+window.addEventListener('message', e=>{
+  const d=e.data; if(!d || !d.__tmkOpenHelp) return;
+  const helpBtn = document.querySelector('[data-t="help"]');
+  if(!helpBtn) return;
+  btns.forEach(x=>x.setAttribute('aria-selected', x===helpBtn ? 'true':'false'));
+  Object.entries(frames).forEach(([k,f])=>f.classList.toggle('on', k==='help'));
+});
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('service-worker.js',{updateViaCache:'none'}).then(r=>{r.update();
+    setInterval(()=>r.update(),30*60*1000);}).catch(()=>{});
+  let swR=!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(swR)return;swR=true;location.reload();});
+}
+
+// "Обновить данные" — only meaningful inside the Android app (TmkNative bridge),
+// hidden in the plain PWA/browser where there is nothing for it to call.
+const btnSync = document.getElementById('btnSync');
+if (window.TmkNative && TmkNative.checkForUpdates) {
+  btnSync.classList.add('show');
+  btnSync.addEventListener('click', ()=>{
+    btnSync.classList.add('spin');
+    try{ TmkNative.checkForUpdates(); }catch(e){}
+  });
+}
+// Called by MainActivity (native) once a sync attempt finishes, whether or
+// not anything changed, so the button stops spinning and (if content was
+// actually updated) the page reloads to show it.
+window.tmkSyncDone = function(changed){
+  btnSync.classList.remove('spin');
+  if (changed) location.reload();
+};
+
+// Native's webView.evaluateJavascript(...) always runs in THIS top-level
+// document, never inside a child <iframe> — so browseDriveFolder() /
+// downloadAndOpenDriveFile()'s async result (window.tmkDriveEvent, expected
+// by drive.html) has to be relayed into the "Архив" iframe by hand here,
+// otherwise it silently lands on an object that doesn't exist and the
+// spinner inside drive.html waits forever.
+// WebView treats each file:// document as its own isolated origin, so this
+// top-level document is NOT allowed to reach into the iframe's window
+// directly (that throws SecurityError, even though it's the same app/folder).
+// postMessage is the one channel that's allowed to cross that boundary.
+window.tmkDriveEvent = function(kind, requestId, payload){
+  try{
+    const w = frames.drive && frames.drive.contentWindow;
+    console.log('tmkDriveEvent relay: kind=' + kind + ' requestId=' + requestId + ' haveFrame=' + !!w);
+    if (w) w.postMessage({__tmkDriveEvent: true, kind: kind, requestId: requestId, payload: payload}, '*');
+  }catch(e){ console.log('tmkDriveEvent relay error: ' + e); }
+};
+</script>
+</body>
+</html>

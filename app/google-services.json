@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "39545222694",
+    "project_id": "tmkz-4d3e4",
+    "storage_bucket": "tmkz-4d3e4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:39545222694:android:b775737d6b9886babfd8e7",
+        "android_client_info": {
+          "package_name": "com.tmkplant.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuy37lp73ldUoza-lpLJLjgAvNJrNRrAI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

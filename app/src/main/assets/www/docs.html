@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Документы проекта</title>
+<script>try{var __t=localStorage.getItem('tmk_theme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
+  --line:#CBD5D2; --accent:#0B6E66;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; }
+}
+:root[data-theme="dark"]{ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:16px 16px 40px}
+h1{font-size:20px;margin:6px 0 4px}
+.sub{color:var(--ink2);margin:0 0 18px;max-width:70ch}
+h2{font-size:15px;margin:28px 0 8px;color:var(--ink)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.card a{color:var(--accent);text-decoration:none;font-weight:600}
+.card a:hover{text-decoration:underline}
+.card .meta{color:var(--ink3);font-size:12.5px;margin-top:3px}
+.eyebrow{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+table{border-collapse:collapse;width:100%;font-size:13px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--panel2);font-size:12px;color:var(--ink2)}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;font-size:12px}
+footer{margin-top:26px;font-size:12px;color:var(--ink3)}
+.appinfo{font-size:12px;color:var(--ink3);margin:2px 0 14px}
+body{position:relative}
+</style>
+</head>
+<body>
+<div class="eyebrow" id="tEyebrow">Проект 3147 · TMK Chemical LLC</div>
+<h1 id="tH1">Документы и исходные чертежи проекта</h1>
+<div class="appinfo" id="appinfo"></div>
+<p class="sub" id="tSub">Исходные листы (PDF) технологических планов и P&amp;ID, по которым построены схема потоков, 3D-модель и галереи чертежей оборудования. Открываются системным просмотрщиком PDF на устройстве.</p>
+
+<h2 id="tH2a">Планы размещения оборудования и P&amp;ID по отделениям</h2>
+<div id="pdflist"></div>
+
+<h2 id="tH2b">Перечень отделений завода</h2>
+<table id="sectbl"><thead><tr><th id="thCode">Код</th><th id="thSec">Отделение</th><th id="thDoc">Документы-основания</th></tr></thead><tbody></tbody></table>
+
+<footer id="tFooter">Массу и характеристики оборудования, нормы технологического режима и полный перечень позиций см. во вкладке «Схема потоков». Источник данных — технологические схемы 3147-5G111…5R115, перечни оборудования и временный технологический регламент проекта. Часть исходных PDF (например, чертежи в архивах .rar) в это приложение не вошла — см. пояснение в чате.</footer>
+
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script>
+// Known documents get a readable title + drawing number. Any file present
+// in docs_pdf/ that ISN'T in this list (e.g. dropped into the Google Drive
+// sync folder later, without a code change / app update) still shows up,
+// just with its filename as the title — see renderPdfList() below.
+// title: [ru, uz]; doc (drawing number) doesn't need translating.
+const KNOWN = {
+ "docs_pdf/GP-plant-render.pdf": {title:["Генплан завода — визуализация с экспликацией зданий","Zavod bosh rejasi — binolar eksplikatsiyasi bilan vizualizatsiya"],doc:"рендер генплана"},
+ "docs_pdf/Hg121-raised-track-06-P-2025-14-AS.pdf": {title:["121 · Повышенный путь № 6 в складе серы (АС, 12 листов)","121 · Oltingugurt omboridagi 6-sonli ko‘tarilgan yo‘l (AS, 12 varaq)"],doc:"06-П/2025-14.00-01-АС"},
+ "docs_pdf/Hg121-grab-crane-QZ10t-36m.pdf": {title:["121 · Грейферный мостовой кран 10 т, пролёт 36 м (LR-12101)","121 · 10 t greyferli ko‘prikli kran, oraliq 36 m (LR-12101)"],doc:"26030624 (Henan Sinoko)"},
+ "docs_pdf/Hg121-05-oborud-plan.pdf": {title:["121 · Склад серы — план размещения оборудования","121 · Oltingugurt ombori — jihozlarni joylashtirish rejasi"],doc:"3147-5Hg121-00-11, лист 05"},
+ "docs_pdf/Hg121-07-hopper.pdf": {title:["121 · Приёмный бункер серы и известковый бункер","121 · Oltingugurt va ohak qabul bunkerlari"],doc:"3147-5Hg121-00-11, лист 07"},
+ "docs_pdf/Hg121-06-conveyor.pdf": {title:["121 · Ленточный питающий конвейер, заказной чертёж","121 · Lentali uzatuvchi konveyer, buyurtma chizmasi"],doc:"3147-5Hg121-00-11, лист 06"},
+ "docs_pdf/G111-leaf-filter-80m2-WYB-YL-TY80-F.pdf": {title:["111 · Горизонтальный фильтр жидкой серы 80 м² (FR-11101A/B, FR-11102)","111 · Suyuq oltingugurt gorizontal filtri 80 m² (FR-11101A/B, FR-11102)"],doc:"WYB-YL-TY80-F (Jiangsu Juneng)"},
+ "docs_pdf/G111-agitators-Nanjing-Lanao.pdf": {title:["111 · Мешалки резервуаров плавления и баков фильтров (AG-11101…11103)","111 · Eritish rezervuarlari va filtr baklari aralashtirgichlari (AG-11101…11103)"],doc:"Nanjing Lanao"},
+ "docs_pdf/G111-07-plan-000.pdf": {title:["111 · Фильтрация серы — план оборудования EL±0.000","111 · Oltingugurtni filtrlash — jihozlar rejasi EL±0.000"],doc:"3147-5G111-07"},
+ "docs_pdf/G111-08-plan-5500.pdf": {title:["111 · Фильтрация серы — план оборудования EL+5.500","111 · Oltingugurtni filtrlash — jihozlar rejasi EL+5.500"],doc:"3147-5G111-08"},
+ "docs_pdf/G112-sulfur-gun-XHQ-1.pdf": {title:["112 · Серная форсунка XHQ-1 (SM-11201ABC)","112 · XHQ-1 oltingugurt forsunkasi (SM-11201ABC)"],doc:"XHQ-1-WX-00 (XCC)"},
+ "docs_pdf/G112-05-plan.pdf": {title:["112 · Сжигание и конверсия серы — план оборудования","112 · Oltingugurtni yoqish va konversiya — jihozlar rejasi"],doc:"3147-5G112-05"},
+ "docs_pdf/G112-superheater-1B-14SCG2504-2.pdf": {title:["112 · Пароперегреватель 1B (EX-11202) — общий вид","112 · 1B bug‘ni qayta qizdirgich (EX-11202) — umumiy ko‘rinish"],doc:"14SCG2504-2-0 (SOPO CERE)"},
+ "docs_pdf/G112-superheater-4A-14SCG2504-1.pdf": {title:["112 · Пароперегреватель 4A (EX-11206) — общий вид","112 · 4A bug‘ni qayta qizdirgich (EX-11206) — umumiy ko‘rinish"],doc:"14SCG2504-1-0 (SOPO CERE)"},
+ "docs_pdf/G112-economizer-3A-15SCG2504-2.pdf": {title:["112 · Экономайзер 3A (EX-11205) — общий вид","112 · 3A ekonomayzeri (EX-11205) — umumiy ko‘rinish"],doc:"15SCG2504-2-0 (SOPO CERE)"},
+ "docs_pdf/G112-economizer-4A-15SCG2504-1.pdf": {title:["112 · Экономайзер 4A (EX-11207) — общий вид","112 · 4A ekonomayzeri (EX-11207) — umumiy ko‘rinish"],doc:"15SCG2504-1-0 (SOPO CERE)"},
+ "docs_pdf/G113-tail-gas-scrubber-vol2-excerpt.pdf": {title:["113 · Очистка хвостовых газов: башня TW-11304, труба 57,2 м, насосы, воздуходувка, баки (выборка из Тома 2)","113 · Chiqindi gazlarni tozalash: TW-11304 minorasi, 57,2 m mo‘ri, nasoslar, puflagich, baklar (2-jilddan tanlov)"],doc:"Hunan Jisheng, Том 2 (2026.05)"},
+ "docs_pdf/G113-crane-LD16t-13.5m.pdf": {title:["113 · Однобалочный кран LD 16 т, пролёт 13,5 м (LR-11301)","113 · LD 16 t bir bolkali kran, oraliq 13,5 m (LR-11301)"],doc:"LD16t-13.5m (Henan Sinoko)"},
+ "docs_pdf/G113-05-plan.pdf": {title:["113 · Сушка и абсорбция — план оборудования","113 · Quritish va absorbsiya — jihozlar rejasi"],doc:"3147-5G113-05"},
+ "docs_pdf/G123-03-pid.pdf": {title:["123 · Склад серной кислоты — технологическая схема (P&ID)","123 · Kislota ombori — texnologik sxema (P&ID)"],doc:"3147-5G123-03"},
+ "docs_pdf/G123-loading-arm-HCL26040.pdf": {title:["123 · Налив кислоты в ж/д цистерны — наливное устройство AL1402 DN150","123 · Kislotani t/y sisternalariga quyish — AL1402 DN150 quyish qurilmasi"],doc:"HCL26040-00, HCL26040-03"},
+ "docs_pdf/R1141-04-plan.pdf": {title:["114.1 · Станция деаэрации воды — план оборудования","114.1 · Suv deaeratsiya stansiyasi — jihozlar rejasi"],doc:"3147-5R114.1-04"},
+ "docs_pdf/R114-deaerator-HD25LD003-40.pdf": {title:["114.1 · Деаэратор DA-114.101 — сборочный чертёж (бак Ø2200 × 11 200, колонка Ø1416)","114.1 · DA-114.101 deaeratori — yig‘ish chizmasi (bak Ø2200 × 11 200, kolonka Ø1416)"],doc:"HD25LD003-40 · HDPEC / Lianyungang Lide, 2025"},
+ "docs_pdf/R114-sampling-coolers-35SCG2504-9-2.pdf": {title:["114 · Пробоотборные холодильники SC-11401A~D (комплект 4 шт.)","114 · SC-11401A~D namuna oluvchi sovutgichlari (4 dona to‘plam)"],doc:"35SCG2504-9-2-0 (SOPO CERE)"},
+ "docs_pdf/UT-compressed-air-Langair.pdf": {title:["136 · Компрессорная: компрессор, фильтры, осушитель, ресиверы (Langair)","136 · Kompressor xonasi: kompressor, filtrlar, quritgich, resiverlar (Langair)"],doc:"Langair, 2025.12"},
+ "docs_pdf/R115-crane-32-5t-19.5m.pdf": {title:["115 · Мостовой кран машзала 32/5 т, пролёт 19,5 м (LR-11501)","115 · Mashina zali ko‘prikli krani 32/5 t, oraliq 19,5 m (LR-11501)"],doc:"CXSM32051950 (Henan Sinoko)"},
+ "docs_pdf/R115-TG-01.pdf": {title:["115 · Турбина — Общий компоновочный чертёж","115 · Turbina — Общий компоновочный чертёж"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-02.pdf": {title:["115 · Турбина — Чертёж патрубков основного оборудования","115 · Turbina — Чертёж патрубков основного оборудования"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-03.pdf": {title:["115 · Турбина — Цилиндр турбины","115 · Turbina — Цилиндр турбины"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-04.pdf": {title:["115 · Турбина — Ротор","115 · Turbina — Ротор"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-05.pdf": {title:["115 · Турбина — Аварийный отсечной масляный клапан","115 · Turbina — Аварийный отсечной масляный клапан"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-06.pdf": {title:["115 · Турбина — Валоповоротное устройство","115 · Turbina — Валоповоротное устройство"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-07.pdf": {title:["115 · Турбина — Главный паровой клапан","115 · Turbina — Главный паровой клапан"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-08.pdf": {title:["115 · Турбина — Заднее паровое уплотнение","115 · Turbina — Заднее паровое уплотнение"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-09.pdf": {title:["115 · Турбина — Задний корпус подшипника","115 · Turbina — Задний корпус подшипника"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-10.pdf": {title:["115 · Турбина — Маслопривод (гидравлический сервопривод)","115 · Turbina — Маслопривод (гидравлический сервопривод)"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-11.pdf": {title:["115 · Турбина — Маслопривод №2","115 · Turbina — Маслопривод №2"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-12.pdf": {title:["115 · Турбина — Паровое уплотнение диафрагмы","115 · Turbina — Паровое уплотнение диафрагмы"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-13.pdf": {title:["115 · Турбина — Переднее уплотнение вала (паровое уплотнение)","115 · Turbina — Переднее уплотнение вала (паровое уплотнение)"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-14.pdf": {title:["115 · Турбина — Передний корпус подшипника","115 · Turbina — Передний корпус подшипника"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-15.pdf": {title:["115 · Турбина — Передняя опорная плита","115 · Turbina — Передняя опорная плита"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-16.pdf": {title:["115 · Турбина — Предохранительный (аварийный) отключающий механизм","115 · Turbina — Предохранительный (аварийный) отключающий механизм"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-17.pdf": {title:["115 · Турбина — Привод (управляющий механизм) клапана отбора пара","115 · Turbina — Привод (управляющий механизм) клапана отбора пара"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-18.pdf": {title:["115 · Турбина — Пусковой клапан","115 · Turbina — Пусковой клапан"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-19.pdf": {title:["115 · Турбина — Регулирующий паровой клапан и тяга","115 · Turbina — Регулирующий паровой клапан и тяга"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-20.pdf": {title:["115 · Турбина — Регулирующий паровой клапан и тяга №2","115 · Turbina — Регулирующий паровой клапан и тяга №2"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-21.pdf": {title:["115 · Турбина — Трубопровод дренажа (отвода конденсата)","115 · Turbina — Трубопровод дренажа (отвода конденсата)"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-22.pdf": {title:["115 · Турбина — Упорный подшипник (передний подшипник)","115 · Turbina — Упорный подшипник (передний подшипник)"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-23.pdf": {title:["115 · Турбина — Чертёж деталей регулирующего парового клапана и тяги","115 · Turbina — Чертёж деталей регулирующего парового клапана и тяги"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-24.pdf": {title:["115 · Турбина — Шкаф управления валоповоротным устройством","115 · Turbina — Шкаф управления валоповоротным устройством"],doc:"Qingdao Jieneng"},
+ "docs_pdf/R115-TG-25.pdf": {title:["115 · Генератор — схема соединений статора","115 · Generator — схема соединений статора"],doc:"T1802-1-000定子接线图 (Dongfeng)"},
+ "docs_pdf/R115-TG-26.pdf": {title:["115 · Генератор — расположение термодатчиков","115 · Generator — расположение термодатчиков"],doc:"T237-1-1-000测温元件布置图 (Dongfeng)"},
+ "docs_pdf/R115-TG-27.pdf": {title:["115 · Генератор — термометрическое устройство","115 · Generator — термометрическое устройство"],doc:"T237-1-1-5测温装置 (Dongfeng)"},
+ "docs_pdf/R115-TG-28.pdf": {title:["115 · Генератор — статор","115 · Generator — статор"],doc:"T237-1定子 (Dongfeng)"},
+ "docs_pdf/R115-TG-29.pdf": {title:["115 · Генератор — удлинитель вала для выемки ротора","115 · Generator — удлинитель вала для выемки ротора"],doc:"T237-8抽装转子接长轴  (Dongfeng)"},
+ "docs_pdf/R115-TG-30.pdf": {title:["115 · Генератор — соединения возбуждения","115 · Generator — соединения возбуждения"],doc:"T243-0-000-3励磁连接线 (Dongfeng)"},
+ "docs_pdf/R115-TG-31.pdf": {title:["115 · Генератор — расположение подкладок","115 · Generator — расположение подкладок"],doc:"T243-0-000-4垫铁布置图 (Dongfeng)"},
+ "docs_pdf/R115-TG-32.pdf": {title:["115 · Генератор — ротор","115 · Generator — ротор"],doc:"T243-2转子 (Dongfeng)"},
+ "docs_pdf/R115-TG-33.pdf": {title:["115 · Генератор — стояковый подшипник","115 · Generator — стояковый подшипник"],doc:"T243-3座式轴承 (Dongfeng)"},
+ "docs_pdf/R115-TG-34.pdf": {title:["115 · Генератор — воздушный фильтр","115 · Generator — воздушный фильтр"],doc:"T3001-6空气过滤器 (Dongfeng)"},
+ "docs_pdf/R115-TG-35.pdf": {title:["115 · Генератор — монтажный чертёж","115 · Generator — монтажный чертёж"],doc:"T332-0-000-1汽轮发电机安装图 (Dongfeng)"},
+ "docs_pdf/R115-TG-36.pdf": {title:["115 · Генератор — воздухоохладитель 500 кВт","115 · Generator — воздухоохладитель 500 кВт"],doc:"T332-10空气冷却器装配 (Dongfeng)"},
+ "docs_pdf/R115-TG-37.pdf": {title:["115 · Генератор — вспомогательные соединения","115 · Generator — вспомогательные соединения"],doc:"T332-7辅助接线 (Dongfeng)"},
+ "docs_pdf/R115-TG-38.pdf": {title:["115 · Генератор — сборочный чертёж","115 · Generator — сборочный чертёж"],doc:"T332汽轮发电机总装配图 (Dongfeng)"},
+ "docs_pdf/R115-TG-39.pdf": {title:["115 · Турбина — чертёж 0-0631-1125-0000-00","115 · Turbina — чертёж 0-0631-1125-0000-00"],doc:"0-0631-1125-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-40.pdf": {title:["115 · Турбина — чертёж 0-0701-0212-0000-00","115 · Turbina — чертёж 0-0701-0212-0000-00"],doc:"0-0701-0212-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-41.pdf": {title:["115 · Турбина — чертёж 0-0703-0260-0000-03","115 · Turbina — чертёж 0-0703-0260-0000-03"],doc:"0-0703-0260-0000-03 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-42.pdf": {title:["115 · Турбина — чертёж 0-0720-0275-0000-03","115 · Turbina — чертёж 0-0720-0275-0000-03"],doc:"0-0720-0275-0000-03 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-43.pdf": {title:["115 · Турбина — чертёж 0-0731-0209-586C-01","115 · Turbina — чертёж 0-0731-0209-586C-01"],doc:"0-0731-0209-586C-01 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-44.pdf": {title:["115 · Турбина — чертёж 0-0741-586C-0000-00","115 · Turbina — чертёж 0-0741-586C-0000-00"],doc:"0-0741-586C-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-45.pdf": {title:["115 · Турбина — чертёж 0-0801-2220-8400-81","115 · Turbina — чертёж 0-0801-2220-8400-81"],doc:"0-0801-2220-8400-81 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-46.pdf": {title:["115 · Турбина — чертёж 0-0801-2220-8400-81(2)","115 · Turbina — чертёж 0-0801-2220-8400-81(2)"],doc:"0-0801-2220-8400-81(2) (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-47.pdf": {title:["115 · Турбина — чертёж 0-0804-1136-173D-00","115 · Turbina — чертёж 0-0804-1136-173D-00"],doc:"0-0804-1136-173D-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-48.pdf": {title:["115 · Турбина — чертёж 0-0814-0018-0000-00","115 · Turbina — чертёж 0-0814-0018-0000-00"],doc:"0-0814-0018-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-49.pdf": {title:["115 · Турбина — чертёж 0-0829-5040-586C-01","115 · Turbina — чертёж 0-0829-5040-586C-01"],doc:"0-0829-5040-586C-01 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-50.pdf": {title:["115 · Турбина — чертёж 0-0831-2110-0000-00","115 · Turbina — чертёж 0-0831-2110-0000-00"],doc:"0-0831-2110-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-51.pdf": {title:["115 · Турбина — чертёж 0-0833-0008-0000-00","115 · Turbina — чертёж 0-0833-0008-0000-00"],doc:"0-0833-0008-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-52.pdf": {title:["115 · Турбина — чертёж 0-0924-0027-0000-00","115 · Turbina — чертёж 0-0924-0027-0000-00"],doc:"0-0924-0027-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-53.pdf": {title:["115 · Турбина — чертёж 0-0925-3001-0000-20","115 · Turbina — чертёж 0-0925-3001-0000-20"],doc:"0-0925-3001-0000-20 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-54.pdf": {title:["115 · Турбина — чертёж 0-0991-2005-0000-00","115 · Turbina — чертёж 0-0991-2005-0000-00"],doc:"0-0991-2005-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-55.pdf": {title:["115 · Турбина — чертёж 0-1010-5834-0000-00","115 · Turbina — чертёж 0-1010-5834-0000-00"],doc:"0-1010-5834-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-56.pdf": {title:["115 · Турбина — чертёж 0-2004-586C-0000-00","115 · Turbina — чертёж 0-2004-586C-0000-00"],doc:"0-2004-586C-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/R115-TG-57.pdf": {title:["115 · Турбина — чертёж 0-2016-586C-0000-00","115 · Turbina — чертёж 0-2016-586C-0000-00"],doc:"0-2016-586C-0000-00 (Qingdao Jieneng)"},
+ "docs_pdf/UT135-boiler-layout.pdf": {title:["135 · Пусковая котельная — схема размещения котла, экономайзера и дымовой трубы","135 · Ishga tushirish qozonxonasi — qozon, ekonomayzer va mo‘rini joylashtirish sxemasi"],doc:"1:60"},
+ "docs_pdf/UT135-boiler-platforms-U10-1-4-0.pdf": {title:["135 · Пусковой котёл — площадки и лестницы","135 · Ishga tushirish qozoni — maydonchalar va zinalar"],doc:"U10-1-4-0"},
+ "docs_pdf/UT135-boiler-flue-duct.pdf": {title:["135 · Пусковой котёл — наклонный газоход","135 · Ishga tushirish qozoni — qiya gaz yo‘li"],doc:"Q235B"},
+ "docs_pdf/UT135-boiler-stack.pdf": {title:["135 · Пусковой котёл — дымовая труба и газоход","135 · Ishga tushirish qozoni — mo‘ri va gaz yo‘li"],doc:""},
+ "docs_pdf/UT135-blowdown-expander.pdf": {title:["135 · Расширитель непрерывной продувки VE-13502","135 · Uzluksiz puflash kengaytirgichi VE-13502"],doc:"NJ-2025-305"},
+ "docs_pdf/UT135-water-tank-20m3.pdf": {title:["135 · Бак воды 20 м³ VE-13503","135 · 20 m³ suv baki VE-13503"],doc:"Nanjing Industrial Boiler"},
+ "docs_pdf/UT135-sampling-cooler.pdf": {title:["135 · Пробоотборный холодильник котла EX-13501","135 · Qozon namuna oluvchi sovutgichi EX-13501"],doc:"81-66"},
+ "docs_pdf/R115-17-plan-1.pdf": {title:["115 · Выработка электроэнергии — план оборудования, лист 1","115 · Elektr energiyasi ishlab chiqarish — jihozlar rejasi, 1-varaq"],doc:"3147-5R115-17"},
+ "docs_pdf/R115-17-plan-2.pdf": {title:["115 · Выработка электроэнергии — план оборудования, лист 2","115 · Elektr energiyasi ishlab chiqarish — jihozlar rejasi, 2-varaq"],doc:"3147-5R115-17"},
+ "docs_pdf/R115-17-plan-3.pdf": {title:["115 · Выработка электроэнергии — план оборудования, лист 3","115 · Elektr energiyasi ishlab chiqarish — jihozlar rejasi, 3-varaq"],doc:"3147-5R115-17"},
+ "docs_pdf/W131-water-station.pdf": {title:["131 · Водоочистная станция — технологическая схема и план","131 · Suv tozalash stansiyasi — texnologik sxema va reja"],doc:"净水站工艺施工图"},
+ "docs_pdf/W133-134-cooling-towers.pdf": {title:["133/134 · Градирни и насосная оборотной воды — план, фундаменты, трубопроводы, разрезы","133/134 · Gradirnyalar va aylanma suv nasos xonasi — reja, poydevorlar, quvurlar, kesimlar"],doc:"3147-4S133/134-03…06"},
+ "docs_pdf/G111-filter-press-XMYZ50-1000-U.pdf": {title:["111 · Камерный фильтр-пресс FR-11103 XMYZ50-1000-U — общий вид","111 · FR-11103 kamerali filtr-press XMYZ50-1000-U — umumiy ko‘rinish"],doc:"20190604-1"},
+ "docs_pdf/UT141-roof-solar-hot-water-5S141.pdf": {title:["141 · АБК — гелиосистема горячего водоснабжения на кровле","141 · Ma’muriy bino — tomdagi quyosh issiq suv tizimi"],doc:"3147-5S141-01/-05"},
+ "docs_pdf/W131-water-station-SJY-2026-02.pdf": {title:["131 · Водоочистная станция — схема, планы оборудования и трубопроводов, водоочиститель 200 м³/ч (ред. 2026.02)","131 · Suv tozalash stansiyasi — sxema, jihozlar va quvurlar rejasi, 200 m³/soat tozalagich (2026.02)"],doc:"SJY-GY-01…09 · SJY202602"},
+ "docs_pdf/EXT-gas-supply-12-792.pdf": {title:["Внешние сети · Подводящий газопровод среднего давления Ø219 (ГСН), 8,8 км от ГРС «Навои-1»","Tashqi tarmoqlar · O‘rta bosimli gaz quvuri Ø219 (GSN), «Navoiy-1» GTS dan 8,8 km"],doc:"Шифр 12/792 · SAMANDAR IDEAL GAZ, 2025"},
+ "docs_pdf/EXT-water-B0.pdf": {title:["Внешние сети · Наружный водопровод В0 Ø219×5 от насосной станции","Tashqi tarmoqlar · Tashqi suv quvuri V0 Ø219×5 nasos stansiyasidan"],doc:"НВ · SAMANDAR IDEAL GAZ, 2025"},
+ "docs_pdf/EXT-power-KL-10kV.pdf": {title:["Внешние сети · Внешнее электроснабжение: КЛ-10 кВ 2 × 3 × АПвПу-1×300 от ГПП «Электрохимия», 1,97 км","Tashqi tarmoqlar · Tashqi elektr ta’minoti: KL-10 kV 2 × 3 × APvPu-1×300 «Elektroximiya» GPP dan, 1,97 km"],doc:"/2026-07-ЭС · SCRIBER ENGINEERING ARTS"},
+};
+
+const UI = {
+  ru: {
+    eyebrow:'Проект 3147 · TMK Chemical LLC',
+    h1:'Документы и исходные чертежи проекта',
+    sub:'Исходные листы (PDF) технологических планов и P&ID, по которым построены схема потоков, 3D-модель и галереи чертежей оборудования. Открываются системным просмотрщиком PDF на устройстве.',
+    h2a:'Планы размещения оборудования и P&ID по отделениям',
+    h2b:'Перечень отделений завода',
+    thCode:'Код', thSec:'Отделение', thDoc:'Документы-основания',
+    footer:'Массу и характеристики оборудования, нормы технологического режима и полный перечень позиций см. во вкладке «Схема потоков». Источник данных — технологические схемы 3147-5G111…5R115, перечни оборудования и временный технологический регламент проекта. Часть исходных PDF (например, чертежи в архивах .rar) в это приложение не вошла — см. пояснение в чате.',
+    emptyPdf:'Пока нет ни одного PDF — они появятся после первой синхронизации с Google Диском.',
+    fromDrive:'добавлено с Google Диска',
+    drawingPrefix:'черт. ',
+    appVersion:'Версия приложения: ',
+    dataUpdated:'данные обновлены: ',
+  },
+  uz: {
+    eyebrow:'3147-loyiha · TMK Chemical LLC',
+    h1:'Loyihaning hujjatlari va asl chizmalari',
+    sub:'Oqim sxemasi, 3D-model va jihozlar chizmalari galereyalari asos qilib olingan texnologik rejalar va P&ID varaqlari (PDF). Qurilmadagi tizim PDF ko‘ruvchisida ochiladi.',
+    h2a:'Bo‘limlar bo‘yicha jihozlarni joylashtirish rejalari va P&ID',
+    h2b:'Zavod bo‘limlari ro‘yxati',
+    thCode:'Kod', thSec:'Bo‘lim', thDoc:'Asos hujjatlar',
+    footer:'Jihozlarning massasi va tavsiflari, texnologik rejim normalari va to‘liq ro‘yxat — «Oqim sxemasi» bo‘limida. Ma’lumotlar manbai — 3147-5G111…5R115 texnologik sxemalari, jihozlar ro‘yxatlari va loyihaning vaqtinchalik texnologik reglamenti. Ba’zi asl PDF fayllar (masalan, .rar arxividagi chizmalar) ilovaga kiritilmagan.',
+    emptyPdf:'Hozircha bitta ham PDF yo‘q — ular Google Disk bilan birinchi sinxronlashdan so‘ng paydo bo‘ladi.',
+    fromDrive:'Google Diskdan qo‘shilgan',
+    drawingPrefix:'chizma ',
+    appVersion:'Ilova versiyasi: ',
+    dataUpdated:'ma’lumotlar yangilangan: ',
+  }
+};
+
+function niceName(path){
+  return path.replace(/^docs_pdf\//,'').replace(/\.pdf$/i,'').replace(/[_-]+/g,' ');
+}
+
+function cardHtml(path, title, doc){
+  return `<div class="card"><a href="${path}" target="_blank" rel="noopener">${title}</a><div class="meta">${doc}</div></div>`;
+}
+
+let currentPaths = null;
+function renderPdfList(lang, paths){
+  const L = UI[lang] || UI.ru;
+  // known files first, in the curated order above; then anything extra
+  // (e.g. newly synced from Google Drive) alphabetically, marked as such
+  const known = Object.keys(KNOWN).filter(p => paths.includes(p));
+  const extra = paths.filter(p => !KNOWN[p]).sort();
+  const html = known.map(p => cardHtml(p, (KNOWN[p].title[lang==='uz'?1:0]), L.drawingPrefix + KNOWN[p].doc))
+    .concat(extra.map(p => cardHtml(p, niceName(p), L.fromDrive)));
+  document.getElementById('pdflist').innerHTML = html.length
+    ? html.join('')
+    : `<p class="sub">${L.emptyPdf}</p>`;
+}
+
+// Ask the native side (Android app) what's actually in docs_pdf/ right now.
+// Falls back to the built-in list when running as a plain web page (no
+// TmkNative bridge) or if something goes wrong.
+try {
+  if (window.TmkNative && TmkNative.listDocsPdf) {
+    currentPaths = JSON.parse(TmkNative.listDocsPdf());
+  }
+} catch (e) { /* fall through to static list below */ }
+if (!currentPaths || !currentPaths.length) currentPaths = Object.keys(KNOWN);
+// Note: when a sync from Google Drive actually changes anything, index.html
+// reloads the whole app (see tmkSyncDone in index.html), which re-runs this
+// script and picks up any newly downloaded PDFs automatically.
+
+const SECTIONS = [
+ ["121","Склад серы и подача сырья","Oltingugurt ombori va xomashyo uzatish","3147-5Hg121-02/04"],
+ ["111","Плавление и фильтрация серы","Oltingugurtni eritish va filtrlash","3147-5G111-03…05, 06 (перечень)"],
+ ["122","Резервуары жидкой серы","Suyuq oltingugurt rezervuarlari","3147-5G122-06 (перечень)"],
+ ["112","Сжигание серы и конверсия","Oltingugurtni yoqish va konversiya","3147-5G112-03 (P&ID), 04 (перечень)"],
+ ["113","Сушка и абсорбция","Quritish va absorbsiya","3147-5G113-03 (P&ID), 04 (перечень)"],
+ ["123","Склад серной кислоты","Kislota ombori","3147-5G123-04 (перечень); HCL26040-00/-03 (налив)"],
+ ["114 / 114.1","Утилизация тепла и деаэрация","Issiqlikni utilizatsiya qilish va deaeratsiya","3147-5R114-01/02; 5R114.1-02; деаэратор HD25LD003-40"],
+ ["115","Выработка электроэнергии","Elektr energiyasi ishlab chiqarish","3147-5R115-02 (перечень)"],
+ ["136 · 135 · 101 · 141 · 142","Вспомогательные службы","Yordamchi xizmatlar","3147-5G136-04, 5R135-02"],
+ ["131","Водоочистная станция","Suv tozalash stansiyasi","Sichuan Shengjiuyuan, SJY-GY-01…14"],
+ ["132","Станция деминерализации воды","Suvni demineralizatsiya qilish stansiyasi","Sichuan Shengjiuyuan, Rev.A 2026.5.29"],
+ ["133 · 134","Оборотное водоснабжение","Aylanma suv ta’minoti","3147-4S133/134-03…06 (градирни, насосная); регламент §4.2.10–4.2.11"],
+ ["—","Внешние сети: газ, вода, электроснабжение","Tashqi tarmoqlar: gaz, suv, elektr ta’minoti","ГСН 12/792; НВ (В0 Ø219); КЛ-10 кВ /2026-07-ЭС"],
+];
+
+function paintUI(lang){
+  const L = UI[lang] || UI.ru;
+  document.getElementById('tEyebrow').textContent = L.eyebrow;
+  document.getElementById('tH1').textContent = L.h1;
+  document.getElementById('tSub').innerHTML = L.sub.replace('P&ID','P&amp;ID');
+  document.getElementById('tH2a').innerHTML = L.h2a.replace('P&ID','P&amp;ID');
+  document.getElementById('tH2b').textContent = L.h2b;
+  document.getElementById('thCode').textContent = L.thCode;
+  document.getElementById('thSec').textContent = L.thSec;
+  document.getElementById('thDoc').textContent = L.thDoc;
+  document.getElementById('tFooter').textContent = L.footer;
+  document.querySelector('#sectbl tbody').innerHTML = SECTIONS.map(([c,n,nu,d])=>
+    `<tr><td class="mono">${c}</td><td>${lang==='uz'?nu:n}</td><td>${d}</td></tr>`
+  ).join('');
+  renderPdfList(lang, currentPaths);
+  paintAppInfo(lang);
+}
+
+// Show the app's own version and when the on-device data was last actually
+// updated (either an app update or a successful "⟳" sync) — useful for
+// support/diagnostics without needing to dig through Android settings.
+function paintAppInfo(lang){
+  const L = UI[lang] || UI.ru;
+  try {
+    if (window.TmkNative && TmkNative.getDataInfo) {
+      const info = JSON.parse(TmkNative.getDataInfo());
+      const parts = [L.appVersion + (info.appVersionName || '?')];
+      if (info.lastSyncMillis) {
+        const d = new Date(info.lastSyncMillis);
+        const locale = lang==='uz' ? 'ru-RU' : 'ru-RU'; // no built-in uz-UZ Latin date formatting in WebView; keep numeric
+        parts.push(L.dataUpdated + d.toLocaleDateString(locale) + ' ' + d.toLocaleTimeString(locale, {hour:'2-digit', minute:'2-digit'}));
+      }
+      document.getElementById('appinfo').textContent = parts.join(' · ');
+    }
+  } catch (e) { /* not running inside the app — leave it empty */ }
+}
+
+const tmkLang = TmkLang.initChild(paintUI);
+paintUI(tmkLang.getLang());
+TmkTheme.initChild();
+</script>
+</body>
+</html>

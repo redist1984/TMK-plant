@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- app-private cache dir, used to stage a copy of a PDF pulled out of assets/ so it can be
+         handed to an external PDF-viewer app via a content:// URI -->
+    <cache-path name="docs_pdf_cache" path="docs_pdf/" />
+    <!-- files downloaded on demand from the "Архив чертежей" Google Drive browser —
+         permanent app storage (not cache), so Android never clears it under storage
+         pressure the way it may clear the cache dir -->
+    <files-path name="drive_files_perm" path="drive_files/" />
+</paths>

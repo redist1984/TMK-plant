@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Помощь</title>
+<script>try{var __t=localStorage.getItem('tmk_theme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
+  --line:#CBD5D2; --accent:#0B6E66;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; }
+}
+:root[data-theme="dark"]{ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:16px 16px 40px}
+h1{font-size:20px;margin:6px 0 4px}
+.sub{color:var(--ink2);margin:0 0 18px;max-width:70ch}
+.sec{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.sec>summary{list-style:none;cursor:pointer;padding:13px 14px;display:flex;align-items:center;gap:10px;font:600 14.5px system-ui,sans-serif;color:var(--ink)}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary .ic{font-size:18px;width:24px;text-align:center;flex:0 0 auto;color:var(--accent)}
+.sec>summary .car{margin-left:auto;color:var(--ink3);font-size:13px;transition:transform .15s ease}
+.sec[open]>summary .car{transform:rotate(180deg)}
+.sec .body{padding:2px 16px 14px 50px}
+.row{display:flex;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:none}
+.row .g{flex:0 0 30px;font-size:17px;text-align:center;color:var(--accent);line-height:1.4}
+.row .t{flex:1}
+.row .t b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
+.row .t span{color:var(--ink2);font-size:13px}
+.note{background:var(--panel2);border:1px dashed var(--line);border-radius:9px;padding:10px 12px;color:var(--ink3);font-size:12.5px;margin:10px 0 0}
+.tabsdemo{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
+.tabsdemo span{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12.5px;color:var(--ink2);display:flex;align-items:center;gap:5px}
+.tabsdemo span i{font-size:14px;color:var(--accent);font-style:normal}
+</style>
+</head>
+<body>
+
+<div class="eyebrow" id="tEyebrow" style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)">Завод TMK</div>
+<h1 id="tH1">Помощь по приложению</h1>
+<p class="sub" id="tSub">Как пользоваться приложением: куда нажимать и что это даёт. Разделы ниже можно раскрывать по очереди.</p>
+
+<div class="tabsdemo" id="tabsdemo">
+  <span><i>◧</i><b id="tdModel">3D-модель</b></span>
+  <span><i>⌁</i><b id="tdFlow">Схема потоков</b></span>
+  <span><i>▤</i><b id="tdDocs">Документы</b></span>
+  <span><i>⚙</i><b id="tdSettings">Настройки</b></span>
+  <span><i>?</i><b id="tdHelp">Помощь</b></span>
+</div>
+
+<details class="sec" id="secModel" open>
+  <summary><span class="ic">◧</span><span id="h3dT">3D-модель завода</span><span class="car">▾</span></summary>
+  <div class="body" id="h3dBody"></div>
+</details>
+
+<details class="sec" id="secCard">
+  <summary><span class="ic">▣</span><span id="hCardT">Карточка оборудования и здания</span><span class="car">▾</span></summary>
+  <div class="body" id="hCardBody"></div>
+</details>
+
+<details class="sec" id="secImg">
+  <summary><span class="ic">🔍</span><span id="hImgT">Чертежи и фото: увеличение</span><span class="car">▾</span></summary>
+  <div class="body" id="hImgBody"></div>
+</details>
+
+<details class="sec" id="secCut">
+  <summary><span class="ic">✂</span><span id="hCutT">Разрез оборудования</span><span class="car">▾</span></summary>
+  <div class="body" id="hCutBody"></div>
+</details>
+
+<details class="sec" id="secFlow">
+  <summary><span class="ic">⌁</span><span id="hFlowT">Схема потоков</span><span class="car">▾</span></summary>
+  <div class="body" id="hFlowBody"></div>
+</details>
+
+<details class="sec" id="secDocs">
+  <summary><span class="ic">▤</span><span id="hDocsT">Документы и архив чертежей</span><span class="car">▾</span></summary>
+  <div class="body" id="hDocsBody"></div>
+</details>
+
+<details class="sec" id="secSettings">
+  <summary><span class="ic">⚙</span><span id="hSetT">Настройки</span><span class="car">▾</span></summary>
+  <div class="body" id="hSetBody"></div>
+</details>
+
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script>
+function row(g,b,s){return `<div class="row"><div class="g">${g}</div><div class="t"><b>${b}</b><span>${s}</span></div></div>`}
+
+const UI = {
+ru: {
+  eyebrow:'Завод TMK', h1:'Помощь по приложению',
+  sub:'Как пользоваться приложением: куда нажимать и что это даёт. Разделы ниже можно раскрывать по очереди.',
+  tdModel:'3D-модель', tdFlow:'Схема потоков', tdDocs:'Документы', tdSettings:'Настройки', tdHelp:'Помощь',
+  h3dT:'3D-модель завода', hCardT:'Карточка оборудования и здания', hImgT:'Чертежи и фото: увеличение',
+  hCutT:'Разрез оборудования', hFlowT:'Схема потоков', hDocsT:'Документы и архив чертежей', hSetT:'Настройки',
+  h3dBody: [
+    row('👆','Один палец — провести по экрану','По умолчанию палец сдвигает (двигает) камеру в сторону — «панорамирование». Если нужно именно вращать сцену одним пальцем, включите режим вращения кнопкой ⟳ внизу экрана.'),
+    row('⟳','Кнопка со стрелкой по кругу (внизу экрана)','Переключает, что делает один палец: вращать сцену вокруг объекта или сдвигать камеру в сторону. Нажатая (подсвеченная) кнопка — включено вращение.'),
+    row('🤏','Сдвинуть два пальца вместе/врозь (щипок)','Приближает и отдаляет камеру — масштабирование сцены.'),
+    row('👆','Короткое касание по аппарату или зданию','Выделяет объект цветом и приближает к нему камеру, карточка при этом не открывается.'),
+    row('👆⏱','Нажать и удержать (около секунды) на аппарате или здании','Открывает справа карточку с названием, характеристиками, нормами режима, чертежами и фото этого объекта.'),
+    row('✕','Крестик в углу карточки','Закрывает карточку и снимает выделение с объекта.'),
+    row('⛶','Кнопка «Во весь экран» (вверху/в углу сцены)','Убирает все панели управления, оставляя только 3D-сцену — удобно для детального осмотра. Чтобы выйти, нажмите эту же кнопку ещё раз или аппаратную кнопку «Назад».'),
+    row('▦','Выпадающий список «Все отделения»','Выбор отделения завода — камера показывает только его, остальное скрывается или становится прозрачным.'),
+    row('⌂','Кнопка «Общий вид»','Сбрасывает выделение и возвращает камеру к виду на весь завод.'),
+    row('▢','Кнопка «Здания прозрачные»','Включает/выключает прозрачность стен зданий, чтобы видеть оборудование внутри.'),
+    row('➤','Кнопка «Движение потоков»','Включает/выключает анимацию движения по трубопроводам (точки, бегущие по линиям).'),
+    row('Aa','Кнопка «Подписи»','Показывает/скрывает текстовые подписи оборудования над сценой.'),
+    row('🎨','Цветные «таблетки» потоков (вверху)','Нажмите на цвет потока, чтобы показать на схеме только его (можно выбрать несколько). Кнопка «Все потоки» снимает все фильтры и возвращает показ всех линий.'),
+    row('?','Кнопка «?» (подсказка)','Короткая версия этой же справки прямо на экране модели.'),
+  ].join(''),
+  hCardBody: [
+    row('📋','Основные данные','Название, количество, масса и краткое техническое описание аппарата или параметры здания.'),
+    row('📐','Нормы технологического режима','Таблица показателей (температура, давление, расход и т.п.), если они заданы для отделения или конкретного аппарата.'),
+    row('🖼','Галерея чертежей и фото','Миниатюры внизу карточки — нажмите на любую, чтобы открыть её на весь экран (см. раздел «Чертежи и фото: увеличение» ниже).'),
+    row('✂','Кнопка «Разрез аппарата в 3D» / «Всё отделение →»','Переключает 3D-сцену в режим разреза именно этого объекта или показывает всё отделение целиком.'),
+  ].join(''),
+  hImgBody: [
+    row('👆','Нажмите на миниатюру чертежа или фото в карточке','Изображение откроется на весь экран, в отдельном окне просмотра с перелистыванием.'),
+    row('🤏','Сведите или разведите два пальца на открытом изображении','Увеличивает и уменьшает картинку — удобно рассмотреть мелкие надписи и размеры на чертеже.'),
+    row('👆👆','Двойное касание по изображению','Быстро приближает в это место (повторное двойное касание возвращает исходный масштаб).'),
+    row('✋','Провести пальцем по увеличенному изображению','Перемещает (панорамирует) увеличенную картинку, чтобы рассмотреть нужную часть.'),
+    row('◀ ▶','Стрелки по бокам окна просмотра','Переключают между всеми чертежами/фото этого объекта, не закрывая просмотр.'),
+    row('✕','Кнопка «Закрыть» или касание вне картинки','Закрывает полноэкранный просмотр изображения.'),
+  ].join(''),
+  hCutBody: [
+    row('✂','Кнопка «Разрез» (вкладка над 3D-сценой, вне полноэкранного режима)','Открывает панель разреза: выбранный в данный момент объект сразу подставляется в разрез — искать его заново не нужно.'),
+    row('⛶✂','В полноэкранном режиме — отдельная круглая кнопка «Разрез» внизу экрана','Нажатие показывает панель разреза поверх 3D-сцены, повторное нажатие — убирает её с экрана.'),
+    row('🔎','Поле поиска в панели разреза','Начните вводить название или код аппарата/здания — список внизу сузится; разделы, где сейчас выбран объект, показываются первыми.'),
+    row('▤','Переключатель «С–Ю / З–В / План»','Выбирает направление секущей плоскости.'),
+    row('⇄','Слайдер и кнопка «⇄ сторона»','Слайдер двигает плоскость разреза, кнопка меняет, какая половина объекта показывается.'),
+    row('☑','Флажок «только объект»','Показывает в разрезе только выбранный аппарат/здание, без остального завода вокруг.'),
+  ].join(''),
+  hFlowBody: [
+    row('✋','Провести пальцем по схеме','Прокручивает (панорамирует) схему потоков в любую сторону.'),
+    row('🤏','Сведите/разведите два пальца на схеме','Увеличивает и уменьшает масштаб схемы.'),
+    row('+ − ⤾','Кнопки масштаба внизу схемы','«+» и «−» приближают/отдаляют схему по шагам, «⤾» возвращает масштаб 100%.'),
+    row('👆','Нажмите на аппарат или название отделения на схеме','Открывает справа карточку с его характеристиками, нормами режима и чертежами (как в 3D-модели) и подсвечивает строку в таблице ниже.'),
+    row('🎨','Цветные «таблетки» потоков вверху схемы','Показывают на схеме только нажатые потоки; «Показать все» снимает фильтр.'),
+    row('📊','Кнопка «Нормы режима на схеме»','Подписывает прямо на схеме значения технологического режима рядом с точками контроля.'),
+    row('🔍','Поиск и фильтры над таблицей внизу','Находят позицию по коду/названию, отделению или наличию в 3D-модели; нажатие на строку таблицы открывает ту же карточку и прокручивает к схеме.'),
+    row('⛶','Кнопка «Во весь экран»','Скрывает фильтры и таблицу, оставляя только схему потоков.'),
+  ].join(''),
+  hDocsBody: [
+    row('📄','Вкладка «Документы»','Список готовых PDF-чертежей и схем проекта по отделениям. Нажмите на документ — он откроется для просмотра.'),
+  ].join(''),
+  hSetBody: [
+    row('🌐','Язык интерфейса','Переключает приложение между русским и узбекским языком.'),
+    row('🎨','Тема оформления','Системная, светлая или тёмная — меняет цвета всего приложения.'),
+    row('☀','Яркость экрана','Ползунок меняет яркость экрана телефона прямо из приложения; флажок «как в системе» возвращает управление яркостью самому телефону.'),
+  ].join(''),
+  appHint:'Это же краткое объяснение управления 3D-сценой доступно прямо на экране модели по кнопке «?».',
+},
+uz: {
+  eyebrow:'TMK zavodi', h1:'Ilova bo‘yicha yordam',
+  sub:'Ilovadan qanday foydalanish: qayerga bosish va bu nimaga olib kelishi. Quyidagi bo‘limlarni birma-bir ochish mumkin.',
+  tdModel:'3D-model', tdFlow:'Oqim sxemasi', tdDocs:'Hujjatlar', tdSettings:'Sozlamalar', tdHelp:'Yordam',
+  h3dT:'Zavodning 3D-modeli', hCardT:'Jihoz va bino kartochkasi', hImgT:'Chizmalar va fotolar: kattalashtirish',
+  hCutT:'Jihoz kesimi', hFlowT:'Oqim sxemasi', hDocsT:'Hujjatlar va chizmalar arxivi', hSetT:'Sozlamalar',
+  h3dBody: [
+    row('👆','Bitta barmoq — ekranda yurgizish','Odatda barmoq kamerani yon tomonga siljitadi («panoramalash»). Agar bitta barmoq bilan aylantirish kerak bo‘lsa, ekran pastidagi ⟳ tugmasi bilan aylantirish rejimini yoqing.'),
+    row('⟳','Doira shaklidagi strelka tugmasi (ekran pastida)','Bitta barmoq nima qilishini almashtiradi: obyekt atrofida aylantirish yoki kamerani yon tomonga siljitish. Yoqilgan (yorqin) tugma — aylantirish rejimi faol.'),
+    row('🤏','Ikki barmoqni bir-biriga yaqinlashtirish/uzoqlashtirish (siqish)','Kamerani yaqinlashtiradi va uzoqlashtiradi — sahna masshtabini o‘zgartiradi.'),
+    row('👆','Jihoz yoki bino ustiga qisqa bosish','Obyektni rang bilan ajratadi va kamerani unga yaqinlashtiradi, lekin kartochka ochilmaydi.'),
+    row('👆⏱','Jihoz yoki bino ustida bosib turish (tахminan bir soniya)','O‘ngda shu obyektning nomi, tavsiflari, rejim normalari, chizmalari va fotolari bilan kartochkani ochadi.'),
+    row('✕','Kartochka burchagidagi xoch belgisi','Kartochkani yopadi va obyektdan ajratishni olib tashlaydi.'),
+    row('⛶','«To‘liq ekran» tugmasi (sahna burchagida)','Barcha boshqaruv panellarini olib tashlab, faqat 3D-sahnani qoldiradi — batafsil ko‘rish uchun qulay. Chiqish uchun shu tugmani yana bosing yoki qurilmaning «Orqaga» tugmasini bosing.'),
+    row('▦','«Barcha bo‘limlar» ro‘yxati','Zavod bo‘limini tanlash — kamera faqat uni ko‘rsatadi, qolgani yashiriladi yoki shaffof bo‘ladi.'),
+    row('⌂','«Umumiy ko‘rinish» tugmasi','Tanlovni bekor qiladi va kamerani butun zavod ko‘rinishiga qaytaradi.'),
+    row('▢','«Binolar shaffof» tugmasi','Binolar devorlarining shaffofligini yoqadi/o‘chiradi — ichidagi jihozlarni ko‘rish uchun.'),
+    row('➤','«Oqimlar harakati» tugmasi','Quvurlar bo‘ylab harakat animatsiyasini (chiziqlar bo‘ylab yuguruvchi nuqtalar) yoqadi/o‘chiradi.'),
+    row('Aa','«Yozuvlar» tugmasi','Sahna ustidagi jihoz nomlarini ko‘rsatadi/yashiradi.'),
+    row('🎨','Yuqoridagi rangli oqim «tabletkalari»','Oqim rangini bosing — sxemada faqat shu oqim ko‘rinadi (bir nechtasini tanlash mumkin). «Barcha oqimlar» tugmasi barcha filtrlarni olib tashlaydi.'),
+    row('?','«?» yordam tugmasi','Model ekranida ushbu ma’lumotnomaning qisqa varianti.'),
+  ].join(''),
+  hCardBody: [
+    row('📋','Asosiy ma’lumotlar','Jihoz yoki bino nomi, soni, massasi va qisqacha texnik tavsifi.'),
+    row('📐','Texnologik rejim normalari','Agar bo‘lim yoki aniq jihoz uchun berilgan bo‘lsa — harorat, bosim, sarf va h.k. jadvali.'),
+    row('🖼','Chizmalar va fotolar galereyasi','Kartochka pastidagi kichik rasmlar — istalganini bosing, u butun ekranga ochiladi (pastdagi «Chizmalar va fotolar: kattalashtirish» bo‘limiga qarang).'),
+    row('✂','«Jihoz kesimi 3D-da» / «Butun bo‘lim →» tugmasi','3D-sahnani shu obyektning kesimi rejimiga o‘tkazadi yoki butun bo‘limni ko‘rsatadi.'),
+  ].join(''),
+  hImgBody: [
+    row('👆','Kartochkadagi chizma yoki foto rasmchasini bosing','Rasm butun ekranga, varaqlab ko‘rish mumkin bo‘lgan alohida oynada ochiladi.'),
+    row('🤏','Ochilgan rasmda ikki barmoqni yaqinlashtiring yoki uzoqlashtiring','Rasmni kattalashtiradi va kichiklashtiradi — chizmadagi mayda yozuv va o‘lchamlarni ko‘rish uchun qulay.'),
+    row('👆👆','Rasmga ikki marta bosish','Shu joyga tezda kattalashtiradi (yana ikki marta bosilsa — asl masshtabga qaytadi).'),
+    row('✋','Kattalashtirilgan rasmda barmoqni yurgizish','Kattalashtirilgan rasmni suradi (panoramalaydi) — kerakli qismini ko‘rish uchun.'),
+    row('◀ ▶','Oyna yon tomonidagi strelkalar','Shu obyektning barcha chizma/fotolari orasida, oynani yopmasdan, almashtiradi.'),
+    row('✕','«Yopish» tugmasi yoki rasmdan tashqariga bosish','Rasmni butun ekranda ko‘rishni yopadi.'),
+  ].join(''),
+  hCutBody: [
+    row('✂','«Kesim» tugmasi (3D-sahna ustidagi yorliq, to‘liq ekran rejimidan tashqarida)','Kesim panelini ochadi: hozir tanlangan obyekt darhol kesimga qo‘yiladi — uni qayta qidirish shart emas.'),
+    row('⛶✂','To‘liq ekran rejimida — ekran pastidagi alohida dumaloq «Kesim» tugmasi','Bosilganda kesim paneli 3D-sahna ustida ko‘rinadi, yana bosilganda — ekrandan olib tashlanadi.'),
+    row('🔎','Kesim panelidagi qidiruv maydoni','Jihoz yoki bino nomi/kodini yoza boshlang — pastdagi ro‘yxat qisqaradi; hozir obyekt tanlangan bo‘lim birinchi ko‘rsatiladi.'),
+    row('▤','«Sh–J / G‘–Sh / Reja» tugmalari','Kesuvchi tekislik yo‘nalishini tanlaydi.'),
+    row('⇄','Slayder va «⇄ tomon» tugmasi','Slayder kesim tekisligini suradi, tugma obyektning qaysi yarmi ko‘rsatilishini almashtiradi.'),
+    row('☑','«faqat obyekt» katakchasi','Kesimda faqat tanlangan jihoz/binoni ko‘rsatadi, atrofdagi zavodsiz.'),
+  ].join(''),
+  hFlowBody: [
+    row('✋','Sxemada barmoqni yurgizish','Oqim sxemasini istalgan tomonga suradi (panoramalaydi).'),
+    row('🤏','Sxemada ikki barmoqni yaqinlashtirish/uzoqlashtirish','Sxema masshtabini kattalashtiradi va kichiklashtiradi.'),
+    row('+ − ⤾','Sxema pastidagi masshtab tugmalari','«+» va «−» sxemani bosqichma-bosqich yaqinlashtiradi/uzoqlashtiradi, «⤾» 100% masshtabga qaytaradi.'),
+    row('👆','Sxemada jihoz yoki bo‘lim nomini bosish','O‘ngda uning tavsiflari, rejim normalari va chizmalari bilan kartochkani ochadi (3D-modeldagidek) va pastdagi jadvalda qatorni ajratadi.'),
+    row('🎨','Sxema tepasidagi rangli oqim «tabletkalari»','Sxemada faqat bosilgan oqimlarni ko‘rsatadi; «Hammasini ko‘rsatish» filtrni olib tashlaydi.'),
+    row('📊','«Sxemada rejim normalari» tugmasi','Nazorat nuqtalari yonida texnologik rejim qiymatlarini sxemaning o‘ziga yozib qo‘yadi.'),
+    row('🔍','Pastdagi jadval ustidagi qidiruv va filtrlar','Pozitsiyani kod/nomi, bo‘limi yoki 3D-modelda borligi bo‘yicha topadi; jadval qatorini bosish xuddi shu kartochkani ochadi va sxemaga aylantiradi.'),
+    row('⛶','«To‘liq ekran» tugmasi','Filtrlar va jadvalni yashirib, faqat oqim sxemasini qoldiradi.'),
+  ].join(''),
+  hDocsBody: [
+    row('📄','«Hujjatlar» bo‘limi','Loyihaning bo‘limlar bo‘yicha tayyor PDF-chizmalari va sxemalari ro‘yxati. Hujjatni bosing — u ko‘rish uchun ochiladi.'),
+  ].join(''),
+  hSetBody: [
+    row('🌐','Interfeys tili','Ilovani rus va o‘zbek tili orasida almashtiradi.'),
+    row('🎨','Ko‘rinish mavzusi','Tizim kabi, yorug‘ yoki tungi — butun ilova ranglarini o‘zgartiradi.'),
+    row('☀','Ekran yorqinligi','Slayder telefon ekrani yorqinligini to‘g‘ridan-to‘g‘ri ilovadan o‘zgartiradi; «tizimdagidek» katakchasi yorqinlikni telefonning o‘ziga qaytaradi.'),
+  ].join(''),
+  appHint:'3D-sahnani boshqarish bo‘yicha xuddi shu qisqacha tushuntirish model ekranida «?» tugmasi orqali ham mavjud.',
+}
+};
+
+function paintUI(lang){
+  const L = UI[lang] || UI.ru;
+  document.getElementById('tEyebrow').textContent = L.eyebrow;
+  document.getElementById('tH1').textContent = L.h1;
+  document.getElementById('tSub').textContent = L.sub;
+  document.getElementById('tdModel').textContent = L.tdModel;
+  document.getElementById('tdFlow').textContent = L.tdFlow;
+  document.getElementById('tdDocs').textContent = L.tdDocs;
+  document.getElementById('tdSettings').textContent = L.tdSettings;
+  document.getElementById('tdHelp').textContent = L.tdHelp;
+  document.getElementById('h3dT').textContent = L.h3dT;
+  document.getElementById('hCardT').textContent = L.hCardT;
+  document.getElementById('hImgT').textContent = L.hImgT;
+  document.getElementById('hCutT').textContent = L.hCutT;
+  document.getElementById('hFlowT').textContent = L.hFlowT;
+  document.getElementById('hDocsT').textContent = L.hDocsT;
+  document.getElementById('hSetT').textContent = L.hSetT;
+  document.getElementById('h3dBody').innerHTML = L.h3dBody;
+  document.getElementById('hCardBody').innerHTML = L.hCardBody;
+  document.getElementById('hImgBody').innerHTML = L.hImgBody;
+  document.getElementById('hCutBody').innerHTML = L.hCutBody;
+  document.getElementById('hFlowBody').innerHTML = L.hFlowBody;
+  document.getElementById('hDocsBody').innerHTML = L.hDocsBody;
+  document.getElementById('hSetBody').innerHTML = L.hSetBody;
+}
+const tmkLang = TmkLang.initChild(paintUI);
+paintUI(tmkLang.getLang());
+TmkTheme.initChild(()=>{});
+</script>
+</body>
+</html>
