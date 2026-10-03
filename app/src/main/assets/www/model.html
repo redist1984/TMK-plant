@@ -515,10 +515,10 @@ const E = [
  {t:'VE-11101',k:'pit111',dims:'4,5 × 4,5 × H 2,2 м (подземный)',X:5362.2,Y:2330.7,sx:4.5,sz:4.5,h:2.2,y0:-2.2,plan:'3147-5G111-03',nso:'3147-5H111-03-01'},
  {t:'MZ-11101',k:'dose111',dims:'1,9 × 1,3 × H 1,45 м',X:5337.3,Y:2329.3,sx:1.9,sz:1.3,h:1.45,plan:'3147-5G111-07'},
  {t:'CV-12101AB',k:'conv',a:[5354.4,2308.42],b:[5354.4,2334],h0:1.2,h1:8.1,plan:'3147-5Hg121-05'},
- {t:'VE-12101AB',k:'hopper',X:5354.4,Y:2309.52,w:3.87,h:3.87,top:4.8,plan:'3147-5Hg121-05'},
- {t:'VE-12101AB',k:'hopper',X:5342.2,Y:2309.52,w:3.87,h:3.87,top:4.8,plan:'3147-5Hg121-05'},
- {t:'VE-12102AB',k:'hopper',X:5356.9,Y:2312.52,w:2,h:2,top:4.8,plan:'3147-5Hg121-05'},
- {t:'VE-12102AB',k:'hopper',X:5344.7,Y:2312.52,w:2,h:2,top:4.8,plan:'3147-5Hg121-05'},
+ {t:'VE-12101AB',k:'hopper',X:5354.4,Y:2309.52,w:3.48,h:2.9,top:4.8,collar:.95,ox:.4,oz:.4,spout:.42,dims:'3,48 × 3,48 × H 4,27 м, V=20 м³ (3147-5Hg121-08)',plan:'3147-5Hg121-05'},
+ {t:'VE-12101AB',k:'hopper',X:5342.2,Y:2309.52,w:3.48,h:2.9,top:4.8,collar:.95,ox:.4,oz:.4,spout:.42,dims:'3,48 × 3,48 × H 4,27 м, V=20 м³ (3147-5Hg121-08)',plan:'3147-5Hg121-05'},
+ {t:'VE-12102AB',k:'hopper',X:5356.9,Y:2312.52,w:.812,h:.72,top:3.77,collar:.12,ox:.3,oz:.1,spout:.2,dims:'0,812 × 0,812 × H 1,04 м, V=0,23 м³ (3147-5Hg121-09)',plan:'3147-5Hg121-05'},
+ {t:'VE-12102AB',k:'hopper',X:5344.7,Y:2312.52,w:.812,h:.72,top:3.77,collar:.12,ox:.3,oz:.1,spout:.2,dims:'0,812 × 0,812 × H 1,04 м, V=0,23 м³ (3147-5Hg121-09)',plan:'3147-5Hg121-05'},
  {t:'LR-12101',k:'bcrane',type:'grab',X:5353.3,Y:2276.42,axis:'y',span:34.8,rail:12.0,travel:31,L:[2,7.5],v:[1.38,.52,.55],gauge:2.0,wb:4.4,plan:'3147-5Hg121-05',vend:'Henan Sinoko 26030624 (QZ10t-36m)'},
  {t:'LR-11301',k:'bcrane',type:'single',X:5288.9,Y:2327.65,axis:'y',span:14.2,rail:10.5,travel:7.5,L:[1.8,6.2],v:[.33,.33,.06],wb:2.4,plan:'3147-5G113-05',vend:'Henan Sinoko LD16t-13.5m'},
  {t:'LR-11501',k:'bcrane',type:'hook',X:5247.25,Y:2410.5,axis:'x',span:19.8,rail:15.5,travel:12,L:[1.5,5.5],v:[1.0,.5,.083],gauge:2.5,wb:4.8,plan:'3147-5G115',vend:'Henan Sinoko CXSM32/5t-19.5m A3'},
@@ -681,8 +681,8 @@ const E = [
  {t:'XX-13601…13603',k:'pfilt1',X:5236.49,Y:2258.75,base:0.2,plan:'3147-5G136-05',vend:'Langair C-018'},
  {t:'XX-13601…13603',k:'pfilt1',X:5234.52,Y:2258.75,base:0.2,plan:'3147-5G136-05',vend:'Langair T-018'},
  {t:'XX-13601…13603',k:'pfilt1',X:5232.62,Y:2258.75,base:0.2,plan:'3147-5G136-05',vend:'Langair A-018'},
- {t:'LR-12102AB',k:'hcylY',X:5356.9,Y:2312.42,d:0.35,L:1.6,yc:2.75,approx:1},
- {t:'LR-12102AB',k:'hcylY',X:5344.7,Y:2312.42,d:0.35,L:1.6,yc:2.75,approx:1},
+ {t:'LR-12102AB',k:'hcylY',X:5356.9,Y:2312.42,d:0.16,L:1.0,yc:2.75,dims:'шнек D=100 мм, L=1000 мм, Q≈50 кг/ч',approx:1},
+ {t:'LR-12102AB',k:'hcylY',X:5344.7,Y:2312.42,d:0.16,L:1.0,yc:2.75,dims:'шнек D=100 мм, L=1000 мм, Q≈50 кг/ч',approx:1},
  {t:'SM-12101AB',k:'box',X:5354.4,Y:2318.5,sx:0.6,sz:0.8,h:0.4,y0:5.9,approx:1},
  {t:'SM-12101AB',k:'box',X:5342.2,Y:2318.5,sx:0.6,sz:0.8,h:0.4,y0:5.9,approx:1},
  {t:'WT-OW',k:'box',X:5240,Y:2470,sx:2,sz:2,h:4,y0:-4,approx:1},
@@ -2753,12 +2753,17 @@ function start(){
      const b=new THREE.Mesh(new THREE.BoxGeometry(1.6,1.0,len),mat);b.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),B.clone().sub(A).normalize());g.add(b);
      for(let t=.12;t<1;t+=.2){const q=A.clone().lerp(B,t).sub(mid);const hh=q.y+mid.y-.5;if(hh<=.3)continue;const c=new THREE.Mesh(new THREE.BoxGeometry(.3,hh,.3),M.steelDark);c.position.set(q.x,q.y-.5-hh/2,q.z);g.add(c)}
      g.position.copy(mid)}
-   else if(o.k==='hopper'){const r=o.w/Math.SQRT2;const collar=o.collar??o.h*.26,spout=o.spout??Math.max(.3,o.w*.08);
-     const c=new THREE.Mesh(new THREE.CylinderGeometry(r,.35,o.h,4,1),mat);c.rotation.y=Math.PI/4;c.position.y=o.top-o.h/2;g.add(c);
-     const wall=new THREE.Mesh(new THREE.CylinderGeometry(r,r,collar,4,1),mat);wall.rotation.y=Math.PI/4;wall.position.y=o.top+collar/2;g.add(wall);
-     const rim=new THREE.Mesh(new THREE.CylinderGeometry(r*1.04,r*1.04,.12,4,1),M.steelDark);rim.rotation.y=Math.PI/4;rim.position.y=o.top+collar;g.add(rim);
-     const st=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,spout,16,1),M.steelDark);st.position.y=o.top-o.h-spout/2;g.add(st);
-     [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a,b])=>{const l=new THREE.Mesh(new THREE.BoxGeometry(.25,o.top-o.h,.25),M.steelDark);l.position.set(a*o.w/2*.8,(o.top-o.h)/2,b*o.w/2*.8);g.add(l)});
+   else if(o.k==='hopper'){
+     // Square receiving hopper (3147-5Hg121-08/09): pyramid, straight collar with rim angle, rectangular outlet sleeve, top grate, support lugs
+     const sq=(w0,w1,h,y,m,dz=w0)=>{const gm=new THREE.CylinderGeometry(Math.SQRT1_2,Math.SQRT1_2,1,4,1);gm.rotateY(Math.PI/4);const t=gm.attributes.position;
+       for(let i=0;i<t.count;i++){const top=t.getY(i)>0,k=top?w0:w1,kz=top?dz:(o.oz??w1);t.setX(i,t.getX(i)*k);t.setZ(i,t.getZ(i)*kz)}gm.computeVertexNormals();const me=new THREE.Mesh(gm,m);me.scale.y=h;me.position.y=y;g.add(me);return me};
+     const W=o.w,col=o.collar??.95,ox=o.ox??.4,oz=o.oz??.4,sp=o.spout??.42,top=o.top;
+     sq(W,ox,o.h,top-o.h/2,mat); sq(W,W,col,top+col/2,mat); sq(W+.16,W+.16,.1,top+col-.05,M.steelDark);
+     sq(ox,ox,sp,top-o.h-sp/2,M.steelDark);
+     if(W>2){for(let i=-15;i<=15;i+=3){const b1=new THREE.Mesh(new THREE.BoxGeometry(.02,.15,W-.1),M.steelDark);b1.position.set(i*.11,top+col-.08,0);g.add(b1);const b2=b1.clone();b2.rotation.y=Math.PI/2;g.add(b2)}
+       [-1.2,0,1.2].forEach(u=>[1,-1].forEach(sg=>{const l1=new THREE.Mesh(new THREE.BoxGeometry(.24,.3,.22),M.steelDark);l1.position.set(u,top+.08,sg*(W/2+.11));g.add(l1);const l2=l1.clone();l2.rotation.y=Math.PI/2;l2.position.set(sg*(W/2+.11),top+.08,u);g.add(l2)}));
+       [-1.2,0,1.2].forEach(u=>{const v=new THREE.Mesh(new THREE.BoxGeometry(.3,.38,.06),M.steelDark);v.position.set(u,top+col*.45,W/2+.03);g.add(v)})}
+     const ly=top-o.h,lw=Math.max(W*.4,.35);[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a,b])=>{const l=new THREE.Mesh(new THREE.BoxGeometry(.2,ly+(W>2?.1:o.h*.5),.2),M.steelDark);l.position.set(a*lw,(ly+(W>2?.1:o.h*.5))/2,b*lw);g.add(l)});
      g.position.copy(P(o.X,o.Y,0))}
    else return null;
    g.traverse(c=>{if(c.isMesh)edges(c)});
