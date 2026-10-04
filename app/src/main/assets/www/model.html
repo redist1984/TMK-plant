@@ -2277,7 +2277,20 @@ function start(){
      const cn=cyl(3.84,2.03,1.1,mat,48);cn.position.y=18.6+.55;g.add(cn);
      const nk=cyl(2.03,2.03,.4,mat,32);nk.position.y=19.9;g.add(nk);
      [6.2,10.4].forEach(h=>{const r=cyl(4.0,4.0,.12,M.steelDark,48);r.position.y=h;g.add(r)});
-     const inl=cyl(1.82,1.82,1.2,mat,24);inl.rotation.x=Math.PI/2;inl.position.set(0,5.0,2.4);g.add(inl);
+     const inl=cyl(1.82,1.82,1.2,mat,24);inl.rotation.x=Math.PI/2;inl.position.set(0,7.3,2.4);g.add(inl);
+     // nozzles per SBJS-SB-20260401-02-001: angle θ from plan north (0°) clockwise, h above grade
+     const noz=(th,h,d,l)=>{const a=th*Math.PI/180,r=1.9+l/2,n=cyl(d,d,l,mat,16);n.position.set(Math.cos(a)*r,h,-Math.sin(a)*r);n.rotation.set(0,0,0);
+       n.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(Math.cos(a),0,-Math.sin(a)));g.add(n);
+       const f=cyl(d+.12,d+.12,.04,M.steelDark,16);f.quaternion.copy(n.quaternion);f.position.set(Math.cos(a)*(1.9+l),h,-Math.sin(a)*(1.9+l));g.add(f)};
+     [1.9,9.1,12.0,14.1,16.0,17.1].forEach(h=>noz(180,h,.62,.25));            // manholes m1–m6 DN600
+     [-28,28].forEach(t=>noz(t,1.0,.32,.3));                                  // c1/c2 DN300 to circulation pumps
+     [[11.8,-18],[14.2,10]].forEach(([h,t])=>noz(t,h,.16,.3));                 // K1/K2 spray inlets DN150
+     [[-60,1.2],[-90,.9],[60,.9]].forEach(([t,h])=>noz(t,h,.07,.25));         // d/e/f small nozzles
+     noz(-120,.8,.16,.3);                                                     // h overflow/drain DN150
+     // cage ladder on the south side up to the top
+     const lx=-2.15;[-.25,.25].forEach(z=>{const r=cyl(.05,.05,19.4,M.steel,6);r.position.set(lx,.6+9.7,z);g.add(r)});
+     for(let h=1.2;h<20;h+=.3){const r=cyl(.025,.025,.5,M.steel,4);r.rotation.x=Math.PI/2;r.position.set(lx,h,0);g.add(r)}
+     for(let h=3;h<20;h+=1.5){const t=new THREE.Mesh(new THREE.TorusGeometry(.4,.02,4,12,Math.PI),M.steel);t.rotation.set(Math.PI/2,0,Math.PI/2);t.position.set(lx,h,0);g.add(t)}
      g.position.copy(P(o.X,o.Y,0))}
    else if(o.k==='chimney'){
      // 57.2 m four-column lattice chimney tower (SBJS-ZT-01-01-001): 8 m square base, straight to 18 m,
