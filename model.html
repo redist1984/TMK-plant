@@ -199,6 +199,14 @@ body.su-mode.fs-mode #view,body.su-mode.fs-mode .labels{bottom:var(--suH,0px)}
 .su-list .su-tm{margin-left:auto;font:500 11px var(--mono);color:var(--ink3);white-space:nowrap}
 .su-n{flex:none;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font:700 11px var(--mono);background:var(--line);color:var(--ink2)}
 .su-step{font-weight:600!important}
+/* текущий этап пуска — карточка в правом верхнем углу модели */
+.suinfo{position:absolute;z-index:5;right:12px;top:12px;width:min(340px,calc(100% - 24px));padding:10px 12px;border-radius:12px;border:1px solid var(--line);
+  background:color-mix(in srgb,var(--panel) 90%,transparent);box-shadow:var(--shadow);color:var(--ink);pointer-events:none;font-size:13px;line-height:1.35}
+body.fs-mode .suinfo{right:64px;width:min(340px,calc(100% - 140px))}
+.suinfo .si-st{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#6b7a76)}
+.suinfo .si-nm{font-weight:700;font-size:15px;margin:2px 0 4px;color:#B86E00}
+.suinfo .si-why{color:var(--ink)}
+@media (max-width:760px){.suinfo{width:min(250px,calc(100% - 84px));padding:7px 9px;font-size:11.5px}.suinfo .si-nm{font-size:13px}body.fs-mode .suinfo{width:min(230px,calc(100% - 140px))}}
 .su-ev i{flex:none;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ink3)}
 .su-list li[data-s="1"]>button .su-n{background:#E3A008;color:#1b1300}
 .su-list li[data-s="2"]>button .su-n{background:var(--accent);color:var(--panel)}
@@ -250,6 +258,7 @@ body.su-mode.fs-mode #view,body.su-mode.fs-mode .labels{bottom:var(--suH,0px)}
     </div>
   </div>
   <div class="tip" id="tip" hidden></div>
+  <div class="suinfo" id="suInfo" hidden aria-live="polite"><div class="si-st" id="siSt"></div><div class="si-nm" id="siNm"></div><div class="si-why" id="siWhy"></div></div>
   <button class="rotate-fab" type="button" id="bRotateMode" aria-pressed="false"
     title="Включить вращение пальцем (иначе палец перемещает камеру)" aria-label="Режим вращения пальцем">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1432,7 +1441,7 @@ function start(){
  am('door',{color:0xAEB4B8,roughness:.6}); am('gate',{color:0xffffff,roughness:.6,map:TX.gate}); am('canopy',{color:0xDCDFE1,roughness:.6});
  am('concW',{color:0xE4E3DE,roughness:.9}); am('bronze',{color:0x8C6A56,roughness:.45,metalness:.45}); am('lattice',{color:0xffffff,roughness:.7,map:TX.lattice});
  am('cwall',{color:0xffffff,roughness:.2,metalness:.35,map:TX.cwall}); am('fasciaW',{color:0xF4F5F4,roughness:.6}); am('stairD',{color:0x3E4346,roughness:.6,metalness:.3});
- mk('frameW',{color:0xEEF0EF,roughness:.85}); mk('bldgG',{color:0xDDE4E6,transparent:true,opacity:.16,depthWrite:false,roughness:.4}); // store 121: open structure in the render → see-through shell mk('frameC',{color:0x35AFCF,roughness:.5}); mk('railY',{color:0xE6BE1E,roughness:.5,metalness:.2});
+ mk('frameW',{color:0x9DA29D,roughness:.85}); // etagere columns and beams: concrete grey, not white (they blended into the light ground) mk('bldgG',{color:0xDDE4E6,transparent:true,opacity:.16,depthWrite:false,roughness:.4}); // store 121: open structure in the render → see-through shell mk('frameC',{color:0x35AFCF,roughness:.5}); mk('railY',{color:0xE6BE1E,roughness:.5,metalness:.2});
  // world-scaled UVs (1 texture tile = 1/s m) so ribs/bricks keep their real size on every wall
  function wuv(geo,s){s=s||1;const p=geo.attributes.position,n=geo.attributes.normal,uv=geo.attributes.uv;
    for(let i=0;i<p.count;i++){const ax=Math.abs(n.getX(i)),ay=Math.abs(n.getY(i)),az=Math.abs(n.getZ(i));
@@ -3310,6 +3319,43 @@ function start(){
  const SUlbl={Hg121:['m121'],G111:['f111'],G122:['v122'],G112:['h112','hc112','ign'],G113:['a113','bl113'],G123:['prod'],R114:['d1141','b114','hus'],R115:['p137','oil115','t115'],
    W131:['w_rw','w131'],W132:['w132'],W133:['w133','w134'],UT:['a136','ng','b135']};
  const SUextLbl={'Г2':['ng'],'В0':['w_rw'],'КЛ-10 кВ':['p137']};
+
+ // plain words for every start-up event: what is switched on and why it is needed at this moment
+ const SU_WHY={
+  p137:'Сначала на завод подают электричество 10 кВ: без него не работает ни один насос, компрессор или прибор.',
+  a136:'Компрессоры накачивают сухой сжатый воздух. Им управляются все клапаны и задвижки, поэтому он нужен раньше воды и пара.',
+  w_rw:'Сырая вода из водовода поступает в резервуар 131. Это исходная вода для всех водяных систем завода.',
+  w131:'Водоочистка осветляет сырую воду и делает из неё производственную воду для охлаждения и подпитки.',
+  w101:'Заполняются пожарные резервуары: до появления газа и огня завод должен иметь запас воды на тушение.',
+  w132:'Из производственной воды получают обессоленную. Только такой водой можно питать котлы, иначе в них будет накипь.',
+  w133:'Запускается оборотная вода с градирней 133. Она охлаждает кислоту и насосы цехов 111–113.',
+  w134:'Запускается оборотная вода 134 для электростанции: ею охлаждается конденсатор турбины.',
+  ng:'Газопровод продувают и заполняют природным газом. Газ нужен для розжига пускового котла и разогрева печи.',
+  b135:'Пусковой котёл на газе даёт первый пар. Пока сера не горит, это единственный источник пара на заводе.',
+  d1141:'Деаэратор паром нагревает питательную воду и удаляет из неё кислород, чтобы не ржавели трубы котла-утилизатора.',
+  b114:'Котёл-утилизатор заполняют горячей деаэрированной водой. Позже он будет получать пар от тепла горящей серы.',
+  lsdist:'Пар идёт в паровые спутники и змеевики 111, 122 и 112. Сера застывает ниже 120 °C, поэтому все её трубы и ёмкости сначала прогревают.',
+  m121:'Кран со склада 121 подаёт твёрдую серу в плавильники 111, где паром её расплавляют.',
+  f111:'Жидкую серу фильтруют от золы и примесей. Чистая сера не забивает форсунки печи и катализатор.',
+  v122:'Чистая жидкая сера заполняет резервуар 122. Это запас, из которого насосы будут подавать серу в печь.',
+  a113:'Отделение 113 заполняют серной кислотой со склада 123 и включают её циркуляцию по башням. Кислота сушит воздух и поглощает газ SO₃.',
+  bl113:'Воздуходувка BO-11301 подаёт воздух через сушильную башню. Сухой воздух нужен для горения серы и разогрева катализатора.',
+  h112:'Печь FU-11201 медленно разогревают газовой горелкой до 1000 °C, чтобы не треснула футеровка.',
+  hc112:'Горячий воздух прогревает катализатор в конвертере до 420 °C. При этой температуре начинается превращение SO₂ в SO₃.',
+  ign:'В горячую печь подают серу, и она загорается. Газ SO₂ идёт в конвертер, а нагрузку поднимают с одной форсунки до трёх.',
+  prod:'Когда кислота выходит на нужную концентрацию, продукционную кислоту направляют на склад 123 и в налив 124.',
+  hus:'Тепло горящей серы даёт в котле-утилизаторе перегретый пар 6,3 МПа. Теперь завод сам вырабатывает пар.',
+  b135off:'Своего пара хватает, поэтому пусковой котёл гасят и выводят в резерв.',
+  oil115:'Перед подачей пара в турбине включают маслосистему и медленно проворачивают вал, чтобы он прогрелся равномерно.',
+  t115:'Пар раскручивает турбину до 3000 об/мин, генератор подключают к сети, и завод начинает вырабатывать электричество.'};
+ function suInfoPaint(){const el=$('suInfo');if(!el)return;if(!SU.on){el.hidden=true;return}el.hidden=false;const uz=currentLang==='uz',t=SU.t;
+   const cur=SUP.STEPS.filter(x=>t>=x.t0).pop(),e=SU.focus&&SUo[SU.focus];
+   if(t>=SUP.total){$('siSt').textContent=uz?'Ishga tushirish tugadi':'Пуск завершён';$('siNm').textContent=uz?'Zavod rejimda ishlayapti':'Завод работает на режиме';$('siWhy').textContent='Все отделения пущены: сера горит, кислота идёт на склад, турбина даёт электричество.';return}
+   $('siSt').textContent=(cur?(uz?'Bosqich ':'Этап ')+cur.n+(uz?' / ':' из ')+SUP.STEPS.length+' · ':'')+fmtT(t);
+   $('siNm').textContent=e?(uz?e.nu:e.n):(uz?'Kutish':'Ожидание следующего шага');
+   $('siWhy').textContent=e?(SU_WHY[e.id]||''):'Идёт выдержка по времени: заполняются ёмкости и прогревается оборудование.'}
+ // the flows that are starting right now glow, so it is clear what has just been switched on
+ const suGlow={};function glowMat(s){if(!suGlow[s]){const m=SM[s].tube.clone();m.opacity=1;m.emissive=SM[s].tube.color.clone();m.emissiveIntensity=.9;suGlow[s]=m}else{suGlow[s].color.copy(SM[s].tube.color);suGlow[s].emissive.copy(SM[s].tube.color)}return suGlow[s]}
  const SU={on:false,t:0,play:false,spd:'auto',inited:false,ext:[],cold:new Set(),follow:true,focus:null};
  function suInit(){
    if(SU.inited)return;SU.inited=true;
@@ -3375,8 +3421,19 @@ function start(){
    suHL.box.copy(box).expandByScalar(.4);suHL.visible=true;
    // inside one department the camera stays put: a new event close to the current view only moves the highlight
    const near=SU.fc&&tgt.distanceTo(SU.fc)<28;if(!near)SU.fc=tgt.clone();
-   if(SU.follow&&!near){const dir=camera.position.clone().sub(controls.target);dir.y=0;if(dir.lengthSq()<1e-6)dir.set(1,0,1);dir.normalize().multiplyScalar(.82);dir.y=.57;dir.normalize();
-     flyTo(tgt,null,tgt.clone().add(dir.multiplyScalar(dist)))}
+   if(!SU.follow)return;
+   // the camera picks the side from which nothing big (a converter, a tower, a building) stands in front of
+   // the started equipment; inside one department it stays where it is unless its current view is blocked
+   if(!SU.occRoots)SU.occRoots=Object.entries(byTag).filter(([t])=>!/^b/.test(t)).flatMap(([t,a])=>a.map(o=>({t,o})));
+   const own=new Set((SU.eqEv||[]).filter(x=>x.ev===id).map(x=>x.o)),roots=SU.occRoots.filter(r=>!own.has(r.o)).map(r=>r.o);
+   const pts=[tgt,...[[1,1],[1,-1],[-1,1],[-1,-1]].map(([i,k])=>new THREE.Vector3(i<0?box.min.x:box.max.x,box.max.y,k<0?box.min.z:box.max.z))];
+   const blocked=pos=>{let n=0;pts.forEach(p=>{const d=p.clone().sub(pos),L=d.length();if(L<1)return;suRc.set(pos,d.normalize());suRc.far=L-1;const h=suRc.intersectObjects(roots,true);if(h.length)n+=1+Math.min(3,h.length*.2)});return n};
+   const cur=camera.position.clone().sub(controls.target);cur.y=0;if(cur.lengthSq()<1e-6)cur.set(1,0,1);cur.normalize();
+   const posFor=dh=>{const d=dh.clone().multiplyScalar(.7);d.y=.72;return tgt.clone().add(d.normalize().multiplyScalar(dist))};
+   if(near&&blocked(camera.position)<1)return;
+   let best=null,bs=1e9;for(let k=0;k<16;k++){const a=k/16*Math.PI*2,dh=new THREE.Vector3(Math.cos(a),0,Math.sin(a));
+     const sc=blocked(posFor(dh))*10+(1-dh.dot(cur))*1.5;if(sc<bs){bs=sc;best=dh}}
+   flyTo(tgt,null,posFor(best))
  }
  const coldCache=new Map(), grey=new THREE.Color(0x9aa3a0);
  function coldMat(m){if(coldCache.has(m))return coldCache.get(m);let c=m;if(m.color){c=m.clone();c.color=m.color.clone().lerp(grey,.75);if(c.emissive)c.emissive.setRGB(0,0,0)}coldCache.set(m,c);return c}
@@ -3384,7 +3441,8 @@ function start(){
  function evState(id){const e=SUo[id];return SU.t<e.t0?0:(SU.t<e.t1?1:2)}
  function suApply(){
    const t=SU.t;
-   flowObjs.forEach(fo=>{fo.rev=Math.max(0,Math.min(1,(t-fo.st0)/fo.sdur));if(fo.ev&&SUo[fo.ev]&&SUo[fo.ev].stop&&SUo[SUo[fo.ev].stop]&&t>=SUo[SUo[fo.ev].stop].t1)fo.rev=0;const g=fo.tube.geometry;g.setDrawRange(0,fo.rev>=1?Infinity:Math.ceil(fo.rev*fo.segs)*48)});
+   flowObjs.forEach(fo=>{fo.rev=Math.max(0,Math.min(1,(t-fo.st0)/fo.sdur));if(fo.ev&&SUo[fo.ev]&&SUo[fo.ev].stop&&SUo[SUo[fo.ev].stop]&&t>=SUo[SUo[fo.ev].stop].t1)fo.rev=0;const g=fo.tube.geometry;g.setDrawRange(0,fo.rev>=1?Infinity:Math.ceil(fo.rev*fo.segs)*48);
+     const hot=fo.rev>0&&fo.ev&&SUo[fo.ev]&&t>=SUo[fo.ev].t0&&t<SUo[fo.ev].t1;fo.tube.material=hot?glowMat(fo.s):SM[fo.s].tube;});
    SU.ext.forEach(x=>{x.rev=Math.max(0,Math.min(1,(t-x.st0)/x.sdur))});
    // equipment that only serves the start-up (boiler 135) goes cold again once its stop event is over
    const stopped=ev=>{const e=SUo[ev];return !!(e&&e.stop&&SUo[e.stop]&&t>=SUo[e.stop].t1)};
@@ -3393,12 +3451,12 @@ function start(){
      const st=ids.map(evState);l.d.classList.add(st.every(s=>s===2)?'su2':(st.some(s=>s>0)?'su1':'su0'))});
    const cur=SUP.EV.filter(e=>t>=e.t0&&t<e.t1).sort((a,b)=>b.t0-a.t0)[0];
    const fid=cur?cur.id:null;if(fid!==SU.focus){SU.focus=fid;if(fid)suFocus(fid);else suHL.visible=false}
-   applyFlow();suPaint();
+   applyFlow();suPaint();suInfoPaint();
  }
  function suRestore(){
    SU.focus=null;suOcclude();suHL.visible=false;SU.focus=null;SU.fc=null;SU.lastFo=null;
    SU.play=false;
-   flowObjs.forEach(fo=>{fo.rev=1;fo.tube.geometry.setDrawRange(0,Infinity)});
+   flowObjs.forEach(fo=>{fo.rev=1;fo.tube.geometry.setDrawRange(0,Infinity);fo.tube.material=SM[fo.s].tube});suInfoPaint();
    SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
    (SU.eqEv||[]).forEach(({o})=>setCold(o,false));
    LB.forEach(l=>l.d.classList.remove('su0','su1','su2'));
@@ -3453,11 +3511,12 @@ function start(){
    else if(c.userData.fade){const f=c.userData.fade,b=c.userData.base;c.material=(!b||f===selMat)?f:(c.userData.dimmed?dimMat(b):(c.userData.cold?coldMat(b):b));c.userData.fade=null}})}
  function suOcclude(){
    const want=new Set();
-   if(SU.on&&SU.focus){if(!SU.occRoots)SU.occRoots=Object.entries(byTag).filter(([t])=>!/^b/.test(t)).flatMap(([t,a])=>a.map(o=>({t,o})));
+   // buildings and racks count here too: a roof or a rack between the camera and the started equipment is faded
+   if(SU.on&&SU.focus){if(!SU.occAll)SU.occAll=Object.entries(byTag).flatMap(([t,a])=>a.map(o=>({t,o})));
      const tgt=controls.target,dir=tgt.clone().sub(camera.position),L=dir.length();
      if(L>3){suRc.set(camera.position,dir.normalize());suRc.far=L-3;
        const own=new Set(SU.eqEv.filter(x=>x.ev===SU.focus).map(x=>x.o));
-       const roots=SU.occRoots.filter(r=>!own.has(r.o)).map(r=>r.o);
+       const roots=SU.occAll.filter(r=>!own.has(r.o)).map(r=>r.o);
        suRc.intersectObjects(roots,true).forEach(h=>{let o=h.object;while(o&&!roots.includes(o))o=o.parent;if(o)want.add(o)})}}
    SU.faded.forEach(o=>{if(!want.has(o)){suFade(o,false);SU.faded.delete(o)}});
    want.forEach(o=>{if(!SU.faded.has(o)){suFade(o,true);SU.faded.add(o)}})}
@@ -3465,7 +3524,7 @@ function start(){
    if(!SU.on)return;
    if(SU.play){SU.t=Math.min(SUP.total,SU.t+dt*(SU.spd==='auto'?suRate(SU.t):SU.spd));if(SU.t>=SUP.total){SU.play=false;SU.fc=null;if(SU.follow)flyTo(HOME.tgt,null,HOME.pos)}suApply()}
    // the camera is driven only while the simulation plays; paused or finished, it belongs to the user
-   if(SU.play&&SU.follow&&SU.focus&&!tw)suCamFollow(dt);
+   // (the camera no longer rides along the growing flows: it settles once per department and stays still)
    SU.occT=(SU.occT||0)+dt;if(SU.occT>.25){SU.occT=0;suOcclude()}
    if(anim)SU.ext.forEach(x=>{const on=x.rev>0;x.off=(x.off+dt*8/x.len)%1;const n=x.dots.length;x.dots.forEach((d,i)=>{const u=((i/n)+x.off)%1;d.visible=on&&u<=x.rev;if(d.visible){d.position.copy(x.path.getPointAt(Math.min(u,.9995)));const X=X0-d.position.z,Y=d.position.x+Y0;if(x.hide.some(r=>X>r[0]&&X<r[1]&&Y>r[2]&&Y<r[3]))d.visible=false}})});
    else SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
