@@ -3171,7 +3171,7 @@ function start(){
      c:`Чаша CT-13401 26,4 × 16,2 × 2,3 м = ${f1(V_B134,0)} м³ ÷ 165,88 = ${h(V_B134/QRAW)}; пуск насосов PP-13401 — 0,5 ч.`},
     {id:'ng',st:4,dep:['a136'],dur:ngT+0.5,n:'Газопровод Г2: продувка и заполнение',nu:'G2 gaz quvuri: puflash va to‘ldirish',
      c:`Г2 Ø219 × 5, 8,81 км: объём ${f1(ngV,0)} м³, при 0,3 МПа — ${f1(ngN,0)} нм³. Продувка 3 объёма + заполнение при 3000 нм³/ч = ${h(ngT)}; проверка ГРПШ и узлов учёта 0,5 ч.`},
-    {id:'b135',st:4,dep:['ng','w132'],dur:20/85+18/12+(194-20)/60,n:'Пусковой котёл 135, пар 1,25 МПа',nu:'135 ishga tushirish qozoni, 1,25 MPa bug‘',
+    {id:'b135',st:4,stop:'b135off',dep:['ng','w132'],dur:20/85+18/12+(194-20)/60,n:'Пусковой котёл 135, пар 1,25 МПа',nu:'135 ishga tushirish qozoni, 1,25 MPa bug‘',
      c:`Бак VE-13503 20 м³ ÷ 85 т/ч = 0,24 ч; заполнение котла (≈ 18 м³) насосом PP-13501 12 м³/ч = 1,5 ч; розжиг горелки XX-13501 и подъём давления до 1,25 МПа (194 °C) со скоростью 60 °C/ч = ${h((194-20)/60)}. Котёл 10 т/ч.`},
     {id:'d1141',st:5,dep:['b135'],dur:33/85+daQ/daS,n:'Деаэратор 114.1',nu:'114.1 deaerator',
      c:`Бак DA-114.101 33 м³ ÷ 85 т/ч = 0,39 ч; нагрев 20 → 135 °C: 33 т × 4,19 × 115 = ${f1(daQ)} ГДж ÷ ${f1(daS,2)} ГДж/ч (3 т/ч пара от котла 135) = ${h(daQ/daS)}.`},
@@ -3199,10 +3199,12 @@ function start(){
      c:`Кислота на склад — после выхода концентрации в норму, ≈ 1 ч после подачи серы.`},
     {id:'hus',st:5,dep:['ign'],rel:'start',dur:3,n:'114: перегретый пар 6,3 МПа, 435 °C',nu:'114: o‘ta qizigan bug‘ 6,3 MPa, 435 °C',
      c:`Параметры пара для турбины достигаются при ≈ 60 % нагрузки: (60 − 30) % ÷ 10 %/ч = 3 ч после подачи серы.`},
+    {id:'b135off',st:5,dep:['hus'],dur:1,n:'Пусковой котёл 135 отключается',nu:'135 ishga tushirish qozoni o‘chiriladi',
+     c:`Котёл-утилизатор 114 выдаёт свой пар, коллектор пара переводят на него, горелку XX-13501 гасят, котёл 135 останавливают и выводят в резерв — 1 ч. Дальше он работает только на следующих пусках.`},
     {id:'oil115',st:7,dep:['ign','w134'],off:2,rel:'start',dur:1,n:'115: маслосистема, валоповорот',nu:'115: moy tizimi, val aylantirish',
      c:`Бак TK-11504 9 м³, пусковой насос PP-11504 40 м³/ч, подъём ротора PP-11507 — 1 ч до подачи пара.`},
     {id:'t115',st:7,dep:['hus','oil115','w134'],dur:1+1.5+20.6/0.3/60,n:'115: пуск турбины, синхронизация',nu:'115: turbinani ishga tushirish, sinxronlash',
-     c:`Прогрев паропровода 1 ч; разворот ST-11501 до 3000 об/мин с выдержками 1,5 ч; синхронизация и набор 20,6 МВт со скоростью 0,3 МВт/мин = ${h(20.6/0.3/60)}. Пар НД берётся из отбора 0,9 МПа, котёл 135 переводят в резерв.`},
+     c:`Прогрев паропровода 1 ч; разворот ST-11501 до 3000 об/мин с выдержками 1,5 ч; синхронизация и набор 20,6 МВт со скоростью 0,3 МВт/мин = ${h(20.6/0.3/60)}. Пар НД берётся из отбора 0,9 МПа.`},
    ];
    // «После ремонта»: ёмкости воды, кислоты и склад твёрдой серы заполнены, системы залиты водой; нет только пара и жидкой серы
    if(rep){const R={
@@ -3306,7 +3308,7 @@ function start(){
  function suFocus(id){
    // close-up on the equipment where the first flow of the event starts, so the flow can be seen appearing
    const evFl=flowObjs.filter(fo=>fo.ev===id).sort((a,b)=>a.dp-b.dp||a.st0-b.st0);
-   const eqB=new THREE.Box3();(SU.eqEv||[]).forEach(({o,ev})=>{if(ev===id)eqB.expandByObject(o)});
+   const eqB=new THREE.Box3();(SU.eqEv||[]).forEach(({o,ev})=>{if(ev===id||(SUo[ev]&&SUo[ev].stop===id))eqB.expandByObject(o)});
    let box=new THREE.Box3(),tgt=null,dist=30;
    const eqOk=!eqB.isEmpty()&&eqB.getSize(new THREE.Vector3()).length()<120;
    if(eqOk){
@@ -3323,7 +3325,9 @@ function start(){
      dist=Math.min(55,Math.max(19,box.getSize(new THREE.Vector3()).length()*1.6))}
    if(!tgt){suHL.visible=false;return}
    suHL.box.copy(box).expandByScalar(.4);suHL.visible=true;
-   if(SU.follow){const dir=camera.position.clone().sub(controls.target);dir.y=0;if(dir.lengthSq()<1e-6)dir.set(1,0,1);dir.normalize().multiplyScalar(.82);dir.y=.57;dir.normalize();
+   // inside one department the camera stays put: a new event close to the current view only moves the highlight
+   const near=SU.fc&&tgt.distanceTo(SU.fc)<28;if(!near)SU.fc=tgt.clone();
+   if(SU.follow&&!near){const dir=camera.position.clone().sub(controls.target);dir.y=0;if(dir.lengthSq()<1e-6)dir.set(1,0,1);dir.normalize().multiplyScalar(.82);dir.y=.57;dir.normalize();
      flyTo(tgt,null,tgt.clone().add(dir.multiplyScalar(dist)))}
  }
  const coldCache=new Map(), grey=new THREE.Color(0x9aa3a0);
@@ -3332,9 +3336,11 @@ function start(){
  function evState(id){const e=SUo[id];return SU.t<e.t0?0:(SU.t<e.t1?1:2)}
  function suApply(){
    const t=SU.t;
-   flowObjs.forEach(fo=>{fo.rev=Math.max(0,Math.min(1,(t-fo.st0)/fo.sdur));const g=fo.tube.geometry;g.setDrawRange(0,fo.rev>=1?Infinity:Math.ceil(fo.rev*fo.segs)*48)});
+   flowObjs.forEach(fo=>{fo.rev=Math.max(0,Math.min(1,(t-fo.st0)/fo.sdur));if(fo.ev&&SUo[fo.ev]&&SUo[fo.ev].stop&&SUo[SUo[fo.ev].stop]&&t>=SUo[SUo[fo.ev].stop].t1)fo.rev=0;const g=fo.tube.geometry;g.setDrawRange(0,fo.rev>=1?Infinity:Math.ceil(fo.rev*fo.segs)*48)});
    SU.ext.forEach(x=>{x.rev=Math.max(0,Math.min(1,(t-x.st0)/x.sdur))});
-   SU.eqEv.forEach(({o,ev})=>setCold(o,t<SUo[ev].t0));
+   // equipment that only serves the start-up (boiler 135) goes cold again once its stop event is over
+   const stopped=ev=>{const e=SUo[ev];return !!(e&&e.stop&&SUo[e.stop]&&t>=SUo[e.stop].t1)};
+   SU.eqEv.forEach(({o,ev})=>setCold(o,t<SUo[ev].t0||stopped(ev)));
    LB.forEach(l=>{const ids=SUlbl[l.sec]&&l.sec!=='EXT'?SUlbl[l.sec]:SUextLbl[(l.d.querySelector('b')||{}).textContent];l.d.classList.remove('su0','su1','su2');if(!ids)return;
      const st=ids.map(evState);l.d.classList.add(st.every(s=>s===2)?'su2':(st.some(s=>s>0)?'su1':'su0'))});
    const cur=SUP.EV.filter(e=>t>=e.t0&&t<e.t1).sort((a,b)=>b.t0-a.t0)[0];
@@ -3342,7 +3348,7 @@ function start(){
    applyFlow();suPaint();
  }
  function suRestore(){
-   suHL.visible=false;SU.focus=null;
+   suHL.visible=false;SU.focus=null;SU.fc=null;SU.lastFo=null;
    SU.play=false;
    flowObjs.forEach(fo=>{fo.rev=1;fo.tube.geometry.setDrawRange(0,Infinity)});
    SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
@@ -3386,14 +3392,17 @@ function start(){
  function suCamFollow(dt){
    const fl=flowObjs.filter(fo=>fo.ev===SU.focus);if(!fl.length)return;
    const fo=fl.filter(f=>f.rev>0&&f.rev<1).sort((a,b)=>a.dp-b.dp||a.st0-b.st0)[0];let tgt,dist;
+   // ride along only with flows that leave for another area; short in-department flows don't move the camera
+   if(fo&&SU.fc&&suDest(fo).c.distanceTo(SU.fc)<35)return;
    if(fo){SU.lastFo=fo;const k=fo.rev,tip=fo.path.getPointAt(Math.min(k,.999)),end=suDest(fo);tgt=tip.clone().lerp(end.c,k*k*.7);dist=20+Math.max(0,end.d-20)*Math.min(1,k*1.15)}
-   else if(SU.lastFo&&SU.lastFo.ev===SU.focus){const end=suDest(SU.lastFo);tgt=end.c;dist=end.d}else return;
+   else if(SU.lastFo&&SU.lastFo.ev===SU.focus&&!(SU.fc&&suDest(SU.lastFo).c.distanceTo(SU.fc)<35)){const end=suDest(SU.lastFo);tgt=end.c;dist=end.d}else return;
    const dir=camera.position.clone().sub(controls.target);dir.y=0;if(dir.lengthSq()<1e-6)dir.set(1,0,1);dir.normalize().multiplyScalar(.82);dir.y=.57;dir.normalize();
    const a=1-Math.exp(-dt*2.2);controls.target.lerp(tgt,a);camera.position.lerp(tgt.clone().add(dir.multiplyScalar(dist)),a)}
  function suTick(dt){
    if(!SU.on)return;
-   if(SU.play){SU.t=Math.min(SUP.total,SU.t+dt*(SU.spd==='auto'?suRate(SU.t):SU.spd));if(SU.t>=SUP.total)SU.play=false;suApply()}
-   if(SU.follow&&SU.focus&&!tw)suCamFollow(dt);
+   if(SU.play){SU.t=Math.min(SUP.total,SU.t+dt*(SU.spd==='auto'?suRate(SU.t):SU.spd));if(SU.t>=SUP.total){SU.play=false;SU.fc=null;if(SU.follow)flyTo(HOME.tgt,null,HOME.pos)}suApply()}
+   // the camera is driven only while the simulation plays; paused or finished, it belongs to the user
+   if(SU.play&&SU.follow&&SU.focus&&!tw)suCamFollow(dt);
    if(anim)SU.ext.forEach(x=>{const on=x.rev>0;x.off=(x.off+dt*8/x.len)%1;const n=x.dots.length;x.dots.forEach((d,i)=>{const u=((i/n)+x.off)%1;d.visible=on&&u<=x.rev;if(d.visible){d.position.copy(x.path.getPointAt(Math.min(u,.9995)));const X=X0-d.position.z,Y=d.position.x+Y0;if(x.hide.some(r=>X>r[0]&&X<r[1]&&Y>r[2]&&Y<r[3]))d.visible=false}})});
    else SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
  }
@@ -3414,15 +3423,16 @@ function start(){
    else{SU.on=false;suRestore();suLayout()}
  }
  $('tabStart').onclick=()=>{if(!SU.on){setTab(false);setStart(true)}};
- $('suPlay').onclick=()=>{if(SU.t>=SUP.total)SU.t=0;SU.play=!SU.play;suApply()};
- $('suReset').onclick=()=>{SU.t=0;SU.play=false;suApply()};
+ $('suPlay').onclick=()=>{if(SU.t>=SUP.total){SU.t=0;SU.fc=null;SU.lastFo=null}SU.play=!SU.play;suApply()};
+ $('suReset').onclick=()=>{SU.t=0;SU.play=false;SU.fc=null;SU.lastFo=null;suApply()};
  $('suR').oninput=e=>{SU.t=+e.target.value;suApply()};
  $('suSpd').onchange=e=>{SU.spd=e.target.value==='auto'?'auto':+e.target.value};
  $('suCalc').onclick=suShowCalc;
- $('suMode').onchange=e=>{suSetMode(e.target.value)};
+ // a new mode starts over from the beginning with the overall view, otherwise a finished run showed no change
+$('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=null;SU.focus=null;suHL.visible=false;flyTo(HOME.tgt,null,HOME.pos);SU.play=true;suApply()};
  const suFollowUI=()=>{const b=$('suFollow'),uz=currentLang==='uz';b.setAttribute('aria-pressed',SU.follow);b.textContent=SU.follow?(uz?'🎯 Kuzatish':'🎯 Следить'):(uz?'✋ Erkin':'✋ Свободно')};
  $('suFollow').onclick=()=>{SU.follow=!SU.follow;suFollowUI();if(SU.follow&&SU.focus)suFocus(SU.focus)};
- controls.addEventListener('start',()=>{if(SU.on&&SU.follow&&SU.play){SU.follow=false;suFollowUI()}});
+ controls.addEventListener('start',()=>{if(SU.on&&SU.follow){SU.follow=false;suFollowUI()}});
  $('suMore').onclick=()=>{const o=subar.classList.toggle('open');$('suMore').setAttribute('aria-expanded',o);$('suMore').textContent=(currentLang==='uz'?'Bosqichlar':'Этапы')+(o?' ▾':' ▴');if(o){SU.lastAct=null;suPaint()}};
  // chips
  const chips=$('chips'); const active=new Set();
@@ -3863,7 +3873,7 @@ function start(){
  // pushed forward ("dolly through").
  {const plane=new THREE.Plane(new THREE.Vector3(0,1,0),0),rc=new THREE.Raycaster(),mv=new THREE.Vector2();
   view.addEventListener('wheel',e=>{
-   if(WALK.on)return;e.preventDefault();e.stopImmediatePropagation();tw=null;
+   if(WALK.on)return;e.preventDefault();e.stopImmediatePropagation();tw=null;if(SU.on&&SU.follow&&SU.play){SU.follow=false;if(typeof suFollowUI==='function')suFollowUI()}
    const r=renderer.domElement.getBoundingClientRect();mv.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);rc.setFromCamera(mv,camera);
    let d=e.deltaY;if(e.deltaMode===1)d*=33;else if(e.deltaMode===2)d*=400;d=Math.max(-300,Math.min(300,d));
    const f=Math.pow(.9985,-d);                                   // d<0 (wheel up) → f<1 → closer
