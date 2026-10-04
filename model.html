@@ -3683,7 +3683,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function suApply(){
    const t=SU.t;
    flowObjs.forEach(fo=>{fo.rev=Math.max(0,Math.min(1,(t-fo.st0)/fo.sdur));if(fo.ev&&SUo[fo.ev]&&SUo[fo.ev].stop&&SUo[SUo[fo.ev].stop]&&t>=SUo[SUo[fo.ev].stop].t1)fo.rev=0;const g=fo.tube.geometry;g.setDrawRange(0,fo.rev>=1?Infinity:Math.ceil(fo.rev*fo.segs)*48);
-     const hot=fo.rev>0&&fo.ev&&SUo[fo.ev]&&t>=SUo[fo.ev].t0&&t<SUo[fo.ev].t1;fo.tube.material=hot?glowMat(fo.s):(SU.focus==='lsdist'||SU.focus==='t115'?suDimMat(fo.s):SM[fo.s].tube);});
+     const hot=fo.rev>0&&fo.ev&&SUo[fo.ev]&&t>=SUo[fo.ev].t0&&t<SUo[fo.ev].t1;fo.tube.material=hot&&!(SU.focus==='ign'&&fo.s!=='sulfur')?glowMat(fo.s):(/^(lsdist|t115|ign|bl113)$/.test(SU.focus)?suDimMat(fo.s):SM[fo.s].tube);});
    SU.ext.forEach(x=>{x.rev=Math.max(0,Math.min(1,(t-x.st0)/x.sdur))});
    // equipment that only serves the start-up (boiler 135) goes cold again once its stop event is over
    const stopped=ev=>{const e=SUo[ev];return !!(e&&e.stop&&SUo[e.stop]&&t>=SUo[e.stop].t1)};
@@ -3713,7 +3713,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  // bottom while their event runs, tanks already full (water and acid after a repair) show their medium from the start
  const SU_CUTX={ign:['FU-11201'],b114:['FU-11201']};
  const SU_VES=/^(mtank|cbox|pit111|pit122|pit114|stank|ctank|atank|frptank|deaer|wtank|ptank|dtank|chtank|ctbasin|tank)$/,
-   SU_VTAG=/^(TK-|VE-|WT-(OW|PW|RW|ST|WS)$|DA-|C-115|EX-11201$)/,SU_ROUND=/^(mtank|stank|ctank|atank|frptank|wtank|ptank|dtank|chtank|tank|vcyl)$/;
+   SU_VTAG=/^(TK-|VE-|WT-(OW|PW|RW|ST|WS)$|DA-|C-115|EX-11201$)/,SU_ROUND=/^(mtank|stank|atank|frptank|dtank|tank|vcyl)$/;
  function suMedium(ev,o){if(/^(m121|f111|v122)$/.test(ev))return M.liqS;if(/^(a113|prod)$/.test(ev))return /^VE-1130[45]|^TW/.test(o.t)?M.liqW:M.liqAcid;return M.liqW}
  function suMedName(m){const h=m.color.getHex(),uz=currentLang==='uz';return h===M.liqS.color.getHex()?(uz?'suyuq oltingugurt':'жидкая сера'):h===M.liqAcid.color.getHex()?(uz?'kislota':'кислота'):(uz?'suv':'вода')}
  function suAddLiq(){const seen=new Set();SU.ves=[];
@@ -3726,7 +3726,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
      if(sz.length()>60)return;
      const H=Math.min(sz.y,o.h||sz.y),y0=B.min.y+Math.max(.12,H*.04),hh=H*.9;let mesh;
      const mat=suMedium(ev,o).clone();mat.opacity=.92;mat.depthWrite=true;
-     if((o.k==='deaer'||o.whb||/^hcyl/.test(o.k))&&o.d&&o.L&&o.yc){const r=o.d/2*.95,alongX=o.k==='hcylY'||(o.k!=='hcylX'&&sz.x>=sz.z);
+     if((o.k==='deaer'||o.k==='ctank'||o.k==='chtank'||o.whb||/^hcyl/.test(o.k))&&o.d&&o.L&&o.yc){const r=o.d/2*.95,alongX=o.k==='hcylY'||(o.k!=='hcylX'&&sz.x>=sz.z);
        mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,o.L*.92,32),mat);mesh.rotation.set(alongX?0:Math.PI/2,0,alongX?Math.PI/2:0);
        const pc=P(o.X,o.Y,o.yc);if(o.whb)pc.x=c.x;mesh.position.copy(pc);mesh.userData.inner=true;mesh.userData.suLiq=true;mesh.visible=false;scene.add(mesh);
        SU.liq.push({c:mesh,ev,y0:pc.y,h:2*r,sy:1,keep:mat.color.getHex()!==M.liqS.color.getHex(),add:true,hz:true,tag:o.t,med:suMedName(mat)});SU.ves.push({g,ev});return}
@@ -3747,6 +3747,8 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    [...(SU.ves||[]).filter(v=>SU.t>=SUo[v.ev].t0||(SUP.mode==='repair'&&!/^(m121|f111|v122)$/.test(v.ev))).map(v=>v.g),...(SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.t==='FU-11201').map(x=>x.o)].forEach(g=>g.traverse(c=>{if(!c.isMesh||!c.material||c.userData.inner||Array.isArray(c.material))return;
      let m=suCutCache.get(c.material);if(!m){m=c.material.clone();m.transparent=true;m.opacity=.2;m.depthWrite=false;suCutCache.set(c.material,m)}
      c.userData.suPre=c.material;c.material=m;SU.cutObjs.push(c)}));
+   (SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.t==='FU-11201').forEach(x=>x.o.traverse(c=>{if(!c.isMesh||!c.userData.inner||c.userData.suPre||Array.isArray(c.material))return;
+     let m=suCutCache.get(c.material);if(!m){m=c.material.clone();m.transparent=true;m.opacity=.2;m.depthWrite=false;suCutCache.set(c.material,m)}c.userData.suPre=c.material;c.material=m;SU.cutObjs.push(c)}));
    const objs=(SU.eqEv||[]).filter(x=>(x.ev===id||(SU_CUTX[id]||[]).includes(x.o.userData.info.o.t))&&x.o.userData.info.kind==='eq'&&!(SU.ves||[]).some(v=>v.g===x.o)&&(!noCut||x.o.userData.info.o.k==='bcrane')).map(x=>x.o);if(!objs.length)return;
    const B=new THREE.Box3();objs.forEach(o=>B.expandByObject(o));if(B.isEmpty()||B.getSize(new THREE.Vector3()).length()>90)return;SU.cutBox=B;
    objs.forEach(o=>o.traverse(c=>{if(!c.isMesh||!c.material||c.userData.inner||Array.isArray(c.material))return;
@@ -3777,26 +3779,27 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  // lsdist: high view over all steam lines from the header to 111/122/112; m121: starts close on the melting tanks and
  // pulls back to show the sulfur coming from 121; ign: furnace close-up turning slowly; hc112: converter turning
  // slowly; t115: pan around the turbine hall (its roof and walls are faded by suOcclude)
+ const SU_SURR={ign:/^(FU-11201|SM-11201)/,bl113:/^(SM-11301|BO-11301)/};
  const SU_SHOT={lsdist:1,m121:1,ign:1,hc112:1,t115:1},SU_KEEP={lsdist:1,m121:1,ign:1};
  function suTagBox(re){const B=new THREE.Box3();(SU.eqEv||[]).forEach(({o})=>{const t=o.userData.info.o&&o.userData.info.o.t;if(t&&re.test(t))B.expandByObject(o)});return B}
  function suShotFor(id){const fl=flowObjs.filter(fo=>fo.ev===id),B=new THREE.Box3();
    if(id==='lsdist'){fl.forEach(fo=>{for(let u=0;u<=1;u+=.1)B.expandByPoint(fo.path.getPointAt(u))});if(B.isEmpty())return null;
      const sz=B.getSize(new THREE.Vector3()).length();return {tgt:B.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4,d0:Math.min(150,sz*.6),d1:Math.min(150,sz*.6),el:1.35}}
-   if(id==='m121'){const b0=suTagBox(/^(TK-11101|TK-11102)/),b1=suTagBox(/^(TK-1110|VE-1210|CV-121|LR-12101)/);if(b0.isEmpty())return null;
-     const c0=b0.getCenter(new THREE.Vector3()),c1=b1.isEmpty()?c0:b1.getCenter(new THREE.Vector3());
-     return {tgt:c0,tgt1:c0.clone().lerp(c1,.6),a0:Math.PI/4,a1:Math.PI/4+.35,d0:24,d1:Math.min(110,Math.max(45,b1.getSize(new THREE.Vector3()).length()*1.1)),el:.8}}
+   // first the lump sulfur on the 121 conveyors, then the camera moves to the 111 melting tanks and the filter feed tank
+   if(id==='m121'){const b0=suTagBox(/^(CV-121|VE-1210|ZR-121|SM-121)/),b1=suTagBox(/^(TK-11101|TK-11102)/);if(b0.isEmpty()||b1.isEmpty())return null;
+     return {tgt:b0.getCenter(new THREE.Vector3()),tgt1:b1.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4+.25,d0:Math.min(60,Math.max(30,b0.getSize(new THREE.Vector3()).length()*.9)),d1:26,el:.8,late:1}}
    const re={ign:/^(FU-11201|SM-11201)/,hc112:/^RE-11201/,t115:/^(ST-11501|HG-11501)/}[id];const b=suTagBox(re);if(b.isEmpty())return null;
    const d=Math.max(18,b.getSize(new THREE.Vector3()).length()*(id==='t115'?2.1:1.25));
    return {tgt:b.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4+(id==='t115'?Math.PI*2:.9),d0:d,d1:d*1.1,el:id==='t115'?1.1:.6}}
  function suShotAnim(){const sh=SU.shot;if(!sh||!SU.on||!SU.follow||SU.focus!==sh.id)return;const e=SUo[sh.id],p=Math.max(0,Math.min(1,(SU.t-e.t0)/Math.max(.05,e.dur)));
-   const k=p*p*(3-2*p),a=sh.a0+(sh.a1-sh.a0)*(sh.id==='t115'?p:k),d=sh.d0+(sh.d1-sh.d0)*k,tg=sh.tgt1?sh.tgt.clone().lerp(sh.tgt1,k):sh.tgt;
+   const q=sh.late?Math.max(0,Math.min(1,(p-.3)/.4)):p,k=q*q*(3-2*q),a=sh.a0+(sh.a1-sh.a0)*(sh.id==='t115'?p:k),d=sh.d0+(sh.d1-sh.d0)*k,tg=sh.tgt1?sh.tgt.clone().lerp(sh.tgt1,k):sh.tgt;
    const want=tg.clone().add(new THREE.Vector3(Math.cos(a),sh.el,Math.sin(a)).normalize().multiplyScalar(d));
    const now=performance.now(),dt=Math.min(.25,(now-(SU.shotT||now))/1000);SU.shotT=now;const al=1-Math.exp(-dt*2.5);
    camera.position.lerp(want,al);controls.target.lerp(tg,al);camera.lookAt(controls.target)}
  // furnace: a flame grows inside FU-11201 once the guns spray
  function suFlame(t){const G=suGuns();if(!G.length)return;if(!SU.flame){const q=G[0],fb=suTagBox(/^FU-11201/);if(fb.isEmpty())return;
-     const sz=fb.getSize(new THREE.Vector3()),L=Math.max(sz.x,sz.z)*.75,r=Math.min(sz.x,sz.z,sz.y)*.32;
-     const m=new THREE.MeshStandardMaterial({color:0xff7a1a,emissive:0xff5a00,emissiveIntensity:.9,transparent:true,opacity:.45,depthWrite:false});
+     const sz=fb.getSize(new THREE.Vector3()),L=Math.max(sz.x,sz.z)*.6,r=Math.min(sz.x,sz.z,sz.y)*.22;
+     const m=new THREE.MeshStandardMaterial({color:0xff7a1a,emissive:0xff5a00,emissiveIntensity:.9,transparent:true,opacity:.28,depthWrite:false});
      const f=new THREE.Mesh(new THREE.CylinderGeometry(r*.55,r,L,24,1,true),m);f.rotation.z=Math.PI/2;
      f.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),q.dir);SU.flame={f,L,q};f.visible=false;scene.add(f)}
    const F=SU.flame,e=SUo.ign;let k=0;if(SU.on&&t!=null&&e)k=Math.max(0,Math.min(1,(t-e.t0-e.dur*.06)/(e.dur*.3)));
@@ -3826,7 +3829,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function suSplitPick(t){SU.split=[];if(!SU.on||t>=SUP.total){suPanes();return}const fb=SU.focus?suEvBox(SU.focus):null,fc=fb&&!fb.isEmpty()?fb.getCenter(new THREE.Vector3()):null;
    const act=SUP.EV.filter(e=>e.id!==SU.focus&&t>=e.t0&&t<e.t1).sort((a,b)=>b.t0-a.t0);
    for(const e of act){if(SU.split.length>=2)break;const B=suEvBox(e.id);if(B.isEmpty()||B.getSize(new THREE.Vector3()).length()>120)continue;const c=B.getCenter(new THREE.Vector3());
-     if(fc&&c.distanceTo(fc)<35)continue;if(SU.split.some(x=>x.c.distanceTo(c)<35))continue;
+     if(fc&&c.distanceTo(fc)<35)continue;if(fb&&!fb.isEmpty()&&fb.clone().expandByScalar(8).intersectsBox(B))continue;if(SU.split.some(x=>x.c.distanceTo(c)<35))continue;
      const d=Math.min(70,Math.max(18,B.getSize(new THREE.Vector3()).length()*1.5)),cam=suCams[SU.split.length];cam.position.copy(c).add(new THREE.Vector3(.62,.5,.62).normalize().multiplyScalar(d));cam.lookAt(c);SU.split.push({e,c,cam})}
    suPanes()}
  const suPaneEl=document.createElement('div');suPaneEl.className='supanes';view.appendChild(suPaneEl);
@@ -3904,11 +3907,17 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    const want=new Set();
    // buildings and racks count here too: a roof or a rack between the camera and the started equipment is faded
    if(SU.on&&SU.focus){if(!SU.occAll)SU.occAll=Object.entries(byTag).flatMap(([t,a])=>a.map(o=>({t,o})));
-     const tgt=controls.target,dir=tgt.clone().sub(camera.position),L=dir.length();
-     if(L>3){suRc.set(camera.position,dir.normalize());suRc.far=L-3;
-       const own=new Set(SU.eqEv.filter(x=>x.ev===SU.focus).map(x=>x.o));
-       const roots=SU.occAll.filter(r=>!own.has(r.o)).map(r=>r.o);
-       suRc.intersectObjects(roots,true).forEach(h=>{let o=h.object;while(o&&!roots.includes(o))o=o.parent;if(o)want.add(o)})}}
+     const own=new Set(SU.eqEv.filter(x=>x.ev===SU.focus).map(x=>x.o));
+     const keeps=[SU.focus,...(SU.split||[]).map(x=>x.e.id)].map(i=>SU_SURR[i]).filter(Boolean);SU.eqEv.forEach(x=>{const t=x.o.userData.info.o&&x.o.userData.info.o.t;if(t&&keeps.some(k=>k.test(t)))own.add(x.o)});
+     const roots=SU.occAll.filter(r=>!own.has(r.o)).map(r=>r.o);
+     // everything between the camera and any corner of the started equipment is faded, not only what covers its centre
+     const hb=suHL.visible?suHL.box:null,pts=[controls.target.clone()];
+     if(hb&&!hb.isEmpty())[0,1].forEach(i=>[0,1].forEach(j=>[0,1].forEach(k=>pts.push(new THREE.Vector3(i?hb.max.x:hb.min.x,j?hb.max.y:hb.min.y,k?hb.max.z:hb.min.z)))));
+     pts.forEach(tgt=>{const dir=tgt.clone().sub(camera.position),L=dir.length();if(L<=3)return;suRc.set(camera.position,dir.normalize());suRc.far=L-1.5;
+       suRc.intersectObjects(roots,true).forEach(h=>{let o=h.object;while(o&&!roots.includes(o))o=o.parent;if(o)want.add(o)})});
+     // furnace and air filter: the whole surrounding is faded so the process inside stays visible
+     keeps.forEach(keep=>{if(!SU.occBox)SU.occBox=new Map();const B=suTagBox(keep).expandByScalar(12);
+       roots.forEach(o=>{let b=SU.occBox.get(o);if(!b){b=new THREE.Box3().setFromObject(o);SU.occBox.set(o,b)}if(b.intersectsBox(B)&&b.getSize(new THREE.Vector3()).length()<150)want.add(o)})})}
    SU.faded.forEach(o=>{if(!want.has(o)){suFade(o,false);SU.faded.delete(o)}});
    want.forEach(o=>{if(!SU.faded.has(o)){suFade(o,true);SU.faded.add(o)}})}
  function suTick(dt){
@@ -3959,7 +3968,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    Object.entries(STREAMS).forEach(([k,v])=>{const s=chips.querySelector(`[data-k="${k}"] .chiptxt`);if(s)s.textContent=currentLang==='uz'?(v.nu||v.n):v.n});
  }
  function applyFlow(){chips.querySelectorAll('.chip').forEach(c=>{const on=active.has(c.dataset.k);c.setAttribute('aria-pressed',on);c.classList.toggle('dim',active.size>0&&!on)});
-   flowObjs.forEach(f=>{const on=(!active.size||active.has(f.s))&&(!SU.on||f.rev>0);f.tube.visible=on;f.dots.forEach(d=>d.visible=on&&anim)})}
+   flowObjs.forEach(f=>{const on=(!active.size||active.has(f.s))&&(!SU.on||f.rev>0);f.tube.visible=on;const dim=SU.on&&f.tube.material===suDim[f.s];f.dots.forEach(d=>d.visible=on&&anim&&!dim)})}
  // toggles
  let anim=!matchMedia('(prefers-reduced-motion: reduce)').matches; $('bAnim').setAttribute('aria-pressed',anim);
  $('bAnim').onclick=()=>{anim=!anim;$('bAnim').setAttribute('aria-pressed',anim);applyFlow()};
@@ -4424,7 +4433,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
      const L=o.L[0]+(o.L[1]-o.L[0])*(.5-.5*Math.cos(tt*wh+c.ph));
      c.rope.scale.y=L;c.rope.position.y=c.hookY-L/2;c.hk.position.y=c.hookY-L;
      if(c.hk.userData.jaws){const a=.25+.35*Math.max(0,(L-o.L[0])/(o.L[1]-o.L[0])-.5);c.hk.userData.jaws.forEach((j,i)=>{j.rotation.x=(i?-1:1)*a})}});
-   if(anim){flowObjs.forEach(f=>{if(!f.tube.visible)return;f.off=(f.off+dt*6/f.len)%1;const n=f.dots.length,lim=SU.on?f.rev:1;f.dots.forEach((d,i)=>{const u=((i/n)+f.off)%1;if(SU.on)d.visible=u<=lim;const q=f.path.getPointAt(Math.min(u,.9995));if(q)d.position.copy(q)})})}
+   if(anim){flowObjs.forEach(f=>{if(!f.tube.visible)return;f.off=(f.off+dt*6/f.len)%1;const n=f.dots.length,lim=SU.on?f.rev:1,dim=SU.on&&f.tube.material&&f.tube.material===suDim[f.s];f.dots.forEach((d,i)=>{const u=((i/n)+f.off)%1;if(SU.on)d.visible=!dim&&u<=lim;const q=f.path.getPointAt(Math.min(u,.9995));if(q)d.position.copy(q)})})}
    suTick(dt);
    suGunAnim();suRainAnim();suShotAnim();const vp=suRender();
    const w=vp.w,h=vp.h;
