@@ -739,8 +739,8 @@ const E = [
  {t:'WT-20',X:5243.4,Y:2460.0,vend:'Sichuan Shengjiuyuan, SJY-GY-01/-06',approx:1,k:'hcylY',d:0.25,L:1.5,yc:1.3},
  {t:'PP-13101A/B',X:5238.6,Y:2479.6,vend:'Sichuan Shengjiuyuan, SJY-GY-04',approx:1,k:'box',sx:0.6,sz:1.8,h:0.8,y0:-4.9},
  {t:'PP-13102A/B',X:5238.6,Y:2483.4,vend:'Sichuan Shengjiuyuan, SJY-GY-04',approx:1,k:'box',sx:0.6,sz:1.8,h:0.8,y0:-4.9},
- {t:'WT-RW',k:'box',X:5246.91,Y:2476.98,sx:20.6,sz:10.18,h:5.6,y0:-5.9,approx:1,below:1},
- {t:'WT-PW',k:'box',X:5257.08,Y:2476.98,sx:20.6,sz:10.16,h:5.6,y0:-5.9,approx:1,below:1},
+ {t:'WT-RW',k:'box',X:5251.91,Y:2481.98,sx:10.16,sz:20.3,h:5.6,y0:-5.9,approx:1,below:1},
+ {t:'WT-PW',k:'box',X:5251.74,Y:2471.83,sx:10.16,sz:20.15,h:5.6,y0:-5.9,approx:1,below:1},
  // 132 demineralization: positions read from the vendor equipment layout (sheet 3), models per vendor drawings (sheets 14–32)
  {t:'DM-01',k:"ptank",X:5300.94,Y:2509.66,L:10,W:5,H:3,cap:"150 м³",vend:'Sichuan Shengjiuyuan, Rev.A 2026.5.29',plan:'План оборудования 132 (лист 3), разрезы 1-1…6-6'},
  {t:'DM-06',k:"ptank",X:5310.4,Y:2509.66,L:7,W:5,H:3,cap:"105 м³",vend:'Sichuan Shengjiuyuan, Rev.A 2026.5.29',plan:'План оборудования 132 (лист 3), разрезы 1-1…6-6'},
@@ -1029,7 +1029,7 @@ const F = [
 {s:"water",a:["WT-21",2.5],b:["WT-PW",-0.3],r:0.15,code:"PW-13101-300-CB2 (осветлённая вода)",p3:[[5251.3,2461.35,2.5],[5251.3,2463.9,2.5],[5251.3,2463.9,-1.5],[5251.3,2467.3,-1.5],[5253.0,2467.3,-1.5],[5253.0,2467.3,-0.3]]},
 {s:"water",a:["WT-21",0.55],b:["WT-ST",0.0],dashed:1,r:0.07,code:"DR-13103-100-CB2 (промывные воды фильтров)",p3:[[5244.7,2461.6,-1.3],[5259.5,2461.6,-1.3],[5259.5,2461.6,0.0]]},
 {s:"water",a:["WT-21",0.65],b:["WT-ST",0.0],dashed:1,r:0.07,code:"DR-13103-100-CB2 (осадок отстойника)",p3:[[5245.0,2456.1,0.65],[5245.0,2456.1,-0.3],[5259.9,2456.1,-0.3],[5259.9,2460.4,-0.3],[5259.9,2460.4,0.2]]},
-{s:"water",a:["WT-ST",-1.0],b:["WT-RW",-0.3],dashed:1,r:0.08,code:"возврат надиловой воды",p3:[[5260.6,2462.2,-1.0],[5260.6,2464.2,-1.0],[5249.6,2464.2,-1.0],[5249.6,2467.6,-1.0],[5249.6,2467.6,-0.3]]},
+{s:"water",a:["WT-ST",-1.0],b:["WT-RW",-0.3],dashed:1,r:0.08,code:"возврат надиловой воды",p3:[[5260.6,2462.2,-1.0],[5260.6,2464.2,-1.0],[5262.6,2464.2,-1.0],[5262.6,2480.0,-1.0],[5261.5,2480.0,-1.0],[5261.5,2480.0,-0.3]]},
 {s:"water",a:["PP-13102A/B",-4.4],b:["WT-24",2.2],r:0.06,code:"PW-13106-32-CB2 (на регулирующий бак хозпитьевой системы)",p3:[[5238.6,2483.4,-4.4],[5238.6,2483.4,-1.6],[5241.25,2483.4,-1.6],[5241.25,2463.0,-1.6],[5241.25,2463.0,3.6],[5241.25,2455.0,3.6],[5257.4,2455.0,3.6],[5257.4,2453.9,3.6],[5257.4,2453.9,2.24]]},
 {s:"water",a:["WT-24",0.35],b:["WT-13",0.5],r:0.04,code:"PW-13107-20-CB2 (→ насос 1 → многослойный фильтр → угольный фильтр)",p3:[[5257.4,2454.5,0.35],[5257.4,2454.5,1.4],[5257.4,2454.75,1.4],[5255.0,2454.75,1.4],[5255.0,2453.95,1.4],[5254.9,2453.95,0.75]]},
 {s:"water",a:["WT-13",1.8],b:["WT-26",2.2],r:0.035,code:"PW-13108-15-CB2 (пермеат RO → бак хозпитьевой воды)",p3:[[5253.6,2453.6,1.6],[5253.6,2453.6,2.5],[5252.0,2453.6,2.5],[5252.0,2453.6,2.24]]},
@@ -1122,9 +1122,9 @@ const F = [
  {s:"water",a:["PP-13102A/B",-4.5],b:["CT-13401A/B",1.5],w:[[5238.6,2484.8],[5266.7,2484.8],[5266.7,2432.08],[5299.33,2432.08]],e:5.7,r:0.08,via:"RN"},
  {s:"water",a:["PP-12202AB",1.8],b:["DM-17",0.6],w:[[5263.7,2295.4],[5230,2295.4],[5230,2395.1],[5265.3,2395.1],[5265.3,2491.75]],e:4.5,r:0.08,via:"RW>RS>RE>RN"},
  {s:"water",a:["WT-RW",-3.1],b:["PP-13101A/B",-4.5],r:0.1,code:"RW-13102/13103-250 (всас)",p3:[[5242.2,2480.2,-3.1],[5238.6,2480.2,-3.1],[5238.6,2480.2,-4.5]]},
-      {s:"water",a:["WT-RW",-1.0],b:["WT-OW",-1.0],dashed:1,r:0.08,code:"перелив",p3:[[5242.2,2470.0,-1.0],[5241.0,2470.0,-1.0]]},
+      {s:"water",a:["WT-RW",-1.0],b:["WT-OW",-1.0],dashed:1,r:0.08,code:"перелив",p3:[[5242.2,2477.5,-1.0],[5241.4,2477.5,-1.0],[5241.4,2470.5,-1.0],[5241.0,2470.5,-1.0]]},
  {s:"water",a:["WT-PW",-0.5],b:["WT-OW",-0.5],dashed:1,r:0.08,code:"перелив",p3:[[5252.4,2468.0,-0.5],[5252.4,2466.2,-0.5],[5240.5,2466.2,-0.5],[5240.5,2469.0,-0.5]]},
- {s:"water",a:["WT-PW",-3.1],b:["PP-13102A/B",-4.5],r:0.1,code:"PW-13102/13103-200 (всас)",p3:[[5252.4,2486.9,-3.1],[5252.4,2487.7,-3.1],[5238.9,2487.7,-3.1],[5238.9,2484.3,-3.1],[5238.9,2484.3,-4.5]]},
+ {s:"water",a:["WT-PW",-3.1],b:["PP-13102A/B",-4.5],r:0.1,code:"PW-13102/13103-200 (всас)",p3:[[5242.4,2476.0,-3.1],[5241.3,2476.0,-3.1],[5241.3,2484.3,-3.1],[5238.9,2484.3,-3.1],[5238.9,2484.3,-4.5]]},
      {s:"water",a:["VE-13503",1.1],b:["PP-13501AB",0.5],e:2.8},
  {s:"water",a:["PP-13501AB",0.5],b:["FU-13501",1.8],e:3.05},
  {s:"acid",a:["VE-12303",-1],b:["PP-12303",1.2],e:3.3,dashed:1},
@@ -3303,8 +3303,14 @@ function start(){
  const suHL=new THREE.Box3Helper(new THREE.Box3(),0xE3A008);suHL.visible=false;suHL.material.depthTest=false;suHL.renderOrder=5;scene.add(suHL);
  // automatic speed: slow (≈1 мин/с) around every equipment start, accelerating through long gaps
  // and braking smoothly before the next start. d = hours to the nearest start (before or after).
+ // auto speed, cycle per started object: hold the slowest pace for the first moments after an event starts
+ // (≈5 s of real time — the flow can be seen leaving the equipment), then speed up to the normal pace and slow
+ // down again just before the next start. Rate in hours of plant time per second.
+ const SU_RMIN=.008,SU_HOLD=.04,SU_UP=2,SU_DOWN=1.6,SU_NORM=1.5;
  function suRate(t){const st=SUP.EV.map(e=>e.t0);let dn=Infinity,dp=Infinity;st.forEach(x=>{if(x>t+1e-6)dn=Math.min(dn,x-t);else dp=Math.min(dp,t-x)});
-   const d=Math.min(dn,dp,(SUP.total-t)+.05);return Math.min(3,.016+.9*d)}
+   dn=Math.min(dn,(SUP.total-t)+.05);
+   const after=dp<SU_HOLD?SU_RMIN:SU_RMIN+(dp-SU_HOLD)*SU_UP, before=SU_RMIN+dn*SU_DOWN;
+   return Math.min(SU_NORM,after,before)}
  function suFocus(id){
    // close-up on the equipment where the first flow of the event starts, so the flow can be seen appearing
    const evFl=flowObjs.filter(fo=>fo.ev===id).sort((a,b)=>a.dp-b.dp||a.st0-b.st0);
@@ -3332,7 +3338,7 @@ function start(){
  }
  const coldCache=new Map(), grey=new THREE.Color(0x9aa3a0);
  function coldMat(m){if(coldCache.has(m))return coldCache.get(m);let c=m;if(m.color){c=m.clone();c.color=m.color.clone().lerp(grey,.75);if(c.emissive)c.emissive.setRGB(0,0,0)}coldCache.set(m,c);return c}
- function setCold(o,on){o.traverse(c=>{if(!c.isMesh)return;if(!c.userData.base)c.userData.base=c.material;if(!!c.userData.cold===on)return;c.userData.cold=on;if(c.material===selMat||c.userData.dimmed)return;c.material=on?coldMat(c.userData.base):c.userData.base})}
+ function setCold(o,on){o.traverse(c=>{if(!c.isMesh)return;if(!c.userData.base)c.userData.base=c.material;if(!!c.userData.cold===on)return;c.userData.cold=on;if(c.material===selMat||c.userData.dimmed||c.userData.fade)return;c.material=on?coldMat(c.userData.base):c.userData.base})}
  function evState(id){const e=SUo[id];return SU.t<e.t0?0:(SU.t<e.t1?1:2)}
  function suApply(){
    const t=SU.t;
@@ -3348,7 +3354,7 @@ function start(){
    applyFlow();suPaint();
  }
  function suRestore(){
-   suHL.visible=false;SU.focus=null;SU.fc=null;SU.lastFo=null;
+   SU.focus=null;suOcclude();suHL.visible=false;SU.focus=null;SU.fc=null;SU.lastFo=null;
    SU.play=false;
    flowObjs.forEach(fo=>{fo.rev=1;fo.tube.geometry.setDrawRange(0,Infinity)});
    SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
@@ -3398,11 +3404,27 @@ function start(){
    else if(SU.lastFo&&SU.lastFo.ev===SU.focus&&!(SU.fc&&suDest(SU.lastFo).c.distanceTo(SU.fc)<35)){const end=suDest(SU.lastFo);tgt=end.c;dist=end.d}else return;
    const dir=camera.position.clone().sub(controls.target);dir.y=0;if(dir.lengthSq()<1e-6)dir.set(1,0,1);dir.normalize().multiplyScalar(.82);dir.y=.57;dir.normalize();
    const a=1-Math.exp(-dt*2.2);controls.target.lerp(tgt,a);camera.position.lerp(tgt.clone().add(dir.multiplyScalar(dist)),a)}
+ // equipment standing between the camera and the started object turns see-through while the start-up plays
+ const suRc=new THREE.Raycaster(),suFadeCache=new Map();SU.faded=new Set();
+ function suFade(g,on){g.traverse(c=>{if(!c.isMesh||!c.material)return;
+   if(on){if(c.userData.fade)return;c.userData.fade=c.material;const m0=Array.isArray(c.material)?c.material[0]:c.material;let m=suFadeCache.get(m0);if(!m){m=m0.clone();m.transparent=true;m.opacity=.18;m.depthWrite=false;suFadeCache.set(m0,m)}c.material=m}
+   else if(c.userData.fade){const f=c.userData.fade,b=c.userData.base;c.material=(!b||f===selMat)?f:(c.userData.dimmed?dimMat(b):(c.userData.cold?coldMat(b):b));c.userData.fade=null}})}
+ function suOcclude(){
+   const want=new Set();
+   if(SU.on&&SU.focus){if(!SU.occRoots)SU.occRoots=Object.entries(byTag).filter(([t])=>!/^b/.test(t)).flatMap(([t,a])=>a.map(o=>({t,o})));
+     const tgt=controls.target,dir=tgt.clone().sub(camera.position),L=dir.length();
+     if(L>3){suRc.set(camera.position,dir.normalize());suRc.far=L-3;
+       const own=new Set(SU.eqEv.filter(x=>x.ev===SU.focus).map(x=>x.o));
+       const roots=SU.occRoots.filter(r=>!own.has(r.o)).map(r=>r.o);
+       suRc.intersectObjects(roots,true).forEach(h=>{let o=h.object;while(o&&!roots.includes(o))o=o.parent;if(o)want.add(o)})}}
+   SU.faded.forEach(o=>{if(!want.has(o)){suFade(o,false);SU.faded.delete(o)}});
+   want.forEach(o=>{if(!SU.faded.has(o)){suFade(o,true);SU.faded.add(o)}})}
  function suTick(dt){
    if(!SU.on)return;
    if(SU.play){SU.t=Math.min(SUP.total,SU.t+dt*(SU.spd==='auto'?suRate(SU.t):SU.spd));if(SU.t>=SUP.total){SU.play=false;SU.fc=null;if(SU.follow)flyTo(HOME.tgt,null,HOME.pos)}suApply()}
    // the camera is driven only while the simulation plays; paused or finished, it belongs to the user
    if(SU.play&&SU.follow&&SU.focus&&!tw)suCamFollow(dt);
+   SU.occT=(SU.occT||0)+dt;if(SU.occT>.25){SU.occT=0;suOcclude()}
    if(anim)SU.ext.forEach(x=>{const on=x.rev>0;x.off=(x.off+dt*8/x.len)%1;const n=x.dots.length;x.dots.forEach((d,i)=>{const u=((i/n)+x.off)%1;d.visible=on&&u<=x.rev;if(d.visible){d.position.copy(x.path.getPointAt(Math.min(u,.9995)));const X=X0-d.position.z,Y=d.position.x+Y0;if(x.hide.some(r=>X>r[0]&&X<r[1]&&Y>r[2]&&Y<r[3]))d.visible=false}})});
    else SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
  }
