@@ -200,13 +200,13 @@ body.su-mode.fs-mode #view,body.su-mode.fs-mode .labels{bottom:var(--suH,0px)}
 .su-n{flex:none;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font:700 11px var(--mono);background:var(--line);color:var(--ink2)}
 .su-step{font-weight:600!important}
 /* текущий этап пуска — карточка в правом верхнем углу модели */
-.suinfo{position:absolute;z-index:5;right:12px;top:12px;width:min(340px,calc(100% - 24px));padding:10px 12px;border-radius:12px;border:1px solid var(--line);
+.suinfo{position:absolute;z-index:5;left:12px;top:12px;width:min(340px,calc(100% - 24px));padding:10px 12px;border-radius:12px;border:1px solid var(--line);
   background:color-mix(in srgb,var(--panel) 90%,transparent);box-shadow:var(--shadow);color:var(--ink);pointer-events:none;font-size:13px;line-height:1.35}
-body.fs-mode .suinfo{right:64px;width:min(340px,calc(100% - 140px))}
+body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
 .suinfo .si-st{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#6b7a76)}
 .suinfo .si-nm{font-weight:700;font-size:15px;margin:2px 0 4px;color:#B86E00}
 .suinfo .si-why{color:var(--ink)}
-@media (max-width:760px){.suinfo{width:min(250px,calc(100% - 84px));padding:7px 9px;font-size:11.5px}.suinfo .si-nm{font-size:13px}body.fs-mode .suinfo{width:min(230px,calc(100% - 140px))}}
+@media (max-width:760px){.suinfo{width:min(250px,calc(100% - 84px));padding:7px 9px;font-size:11.5px}.suinfo .si-nm{font-size:13px}body.fs-mode .suinfo{width:min(250px,calc(100% - 80px))}}
 .su-ev i{flex:none;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ink3)}
 .su-list li[data-s="1"]>button .su-n{background:#E3A008;color:#1b1300}
 .su-list li[data-s="2"]>button .su-n{background:var(--accent);color:var(--panel)}
@@ -3449,7 +3449,9 @@ function start(){
    SU.eqEv.forEach(({o,ev})=>setCold(o,t<SUo[ev].t0||stopped(ev)));
    LB.forEach(l=>{const ids=SUlbl[l.sec]&&l.sec!=='EXT'?SUlbl[l.sec]:SUextLbl[(l.d.querySelector('b')||{}).textContent];l.d.classList.remove('su0','su1','su2');if(!ids)return;
      const st=ids.map(evState);l.d.classList.add(st.every(s=>s===2)?'su2':(st.some(s=>s>0)?'su1':'su0'))});
-   const cur=SUP.EV.filter(e=>t>=e.t0&&t<e.t1).sort((a,b)=>b.t0-a.t0)[0];
+   // the focus only moves forward: the most recently started event stays in view until the next one starts
+   // (going back to an older, still running event made the camera jump back and forth)
+   const cur=t>=SUP.total?null:SUP.EV.filter(e=>t>=e.t0).sort((a,b)=>b.t0-a.t0)[0];
    const fid=cur?cur.id:null;if(fid!==SU.focus){SU.focus=fid;if(fid)suFocus(fid);else suHL.visible=false}
    applyFlow();suPaint();suInfoPaint();
  }
