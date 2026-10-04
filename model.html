@@ -564,11 +564,11 @@ const E = [
  {t:'TW-11303',k:'prof',X:5287.4,Y:2357.5,base:3.4,plan:'3147-5G113-05',segs:[[0,0.6,6.55],[0.6,13.5,6.24]],dome:[13.5,6.24,1.18],ducts:[[14.5,0,1.82,0.8,90,0],[3,-108,1.72,3,45]],nso:'3147-5H113-03-01'},
  {t:'SK-11301',k:'chimney',X:5304.7,Y:2336.4,plan:'3147-5G113-05',vend:'Hunan Jisheng SBJS-ZT-01-01-001',approx:1},
  {t:'VE-11301',k:'ctank',X:5304.3,Y:2355.1,d:3.0,L:15.0,yc:3.9,pumps:[4.1,1.1,-1.9],dims:'Ø3000 × L 15000 (16270 по днищам), низ EL 2,400, футеровка кислотоупорным кирпичом',plan:'3147-5G113-05',nso:'3147-5H113-04-01 Rev.1'},
- {t:'EX-11301',k:'acool',X:5299.4,Y:2349.4,d:1.1,L:8.4,yc:2.05,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2508-0'},
- {t:'EX-11302',k:'acool',X:5299.4,Y:2366.5,d:0.9,L:8.2,yc:1.95,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2509-0'},
- {t:'EX-11303',k:'acool',X:5299.4,Y:2369.3,d:1,L:7.6,yc:2.00,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2510-0'},
- {t:'EX-11304',k:'acool',X:5298.8,Y:2360.6,d:1,L:6.4,yc:2.00,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2511-0'},
- {t:'EX-11305',k:'acool',X:5299.4,Y:2363.9,d:0.9,L:7.8,yc:1.95,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2512-0'},
+ {t:'EX-11301',k:'acool',dw:.5,da:.5,X:5299.4,Y:2349.4,d:1.1,L:8.4,yc:2.05,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2508-0'},
+ {t:'EX-11302',k:'acool',dw:.45,da:.45,X:5299.4,Y:2366.5,d:0.9,L:8.2,yc:1.95,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2509-0'},
+ {t:'EX-11303',k:'acool',dw:.15,da:.3,X:5299.4,Y:2369.3,d:1,L:7.6,yc:2.00,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2510-0'},
+ {t:'EX-11304',k:'acool',dw:.3,da:.5,ts:4.494,ag:2.7,X:5298.8,Y:2360.6,d:1,L:6.4,yc:2.00,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2511-0'},
+ {t:'EX-11305',k:'acool',dw:.25,da:.2,X:5299.4,Y:2363.9,d:0.9,L:7.8,yc:1.95,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2512-0'},
  {t:'PP-11301',k:'vpump',sub:2.2,dims:'вертикальный погружной JHB, Q=650–816 м³/ч, H=27 м',X:5308.4,Y:2355.1,y0:6.1,plan:'3147-5G113-05'},
  {t:'PP-11302',k:'vpump',sub:2.2,dims:'вертикальный погружной JHB, Q=650–816 м³/ч, H=27 м',X:5305.4,Y:2355.1,y0:6.1,plan:'3147-5G113-05'},
  {t:'PP-11303',k:'vpump',sub:2.2,dims:'вертикальный погружной JHB, Q=650–816 м³/ч, H=27 м',X:5302.4,Y:2355.1,y0:6.1,plan:'3147-5G113-05'},
@@ -1988,19 +1988,25 @@ function start(){
      const nzS=(x,y,z,d,sg,l=.3)=>{const n=cyl(d,d,l,M.steelDark,14);n.rotation.z=Math.PI/2;n.position.set(x+sg*l/2,y,z);g.add(n);const fl=cyl(d+.12,d+.12,.05,M.steelDark,14);fl.rotation.z=Math.PI/2;fl.position.set(x+sg*l,y,z);g.add(fl)};
      const yc=o.yc, r=o.d/2;
      if(o.k==='acool'){
-       // anodically protected shell-and-tube acid cooler (5G113-06, sections A-A…F-F): shell on two saddles on concrete
-       // piers, bottom of shell at EL 1.500; channel heads with water nozzles at both ends, acid nozzles on the shell top
-       const Ls=o.L-1.2, hl=.5;
+       // anodically protected shell-and-tube acid cooler, vendor GA Lanzhou Xingye HR2508…2512 (2025-10-29): shell Ød with
+       // elliptical heads, overall ≈L, tubesheets 5994 apart (4494 for EX-11304) with body flanges and a middle girth flange;
+       // a/d (water) and b/c (acid) on the bottom 200 below the shell, vents g/k and h DN80 on top, two anode glands 250 high
+       // 3600 apart (2700), cathode lead on the east head; saddles under both ends on concrete piers, shell bottom EL 1.5.
+       const ts=(o.ts||5.994)/2, ag=(o.ag||3.6)/2, hd=r*.5, Ls=o.L-2*hd;
        edges(CZ(o.d,Ls,0,yc));
-       [-1,1].forEach(sg=>{const ze=sg*(Ls/2+hl/2);CZ(o.d*1.12,hl,ze,yc);
-         CZ(o.d*1.26,.07,sg*(Ls/2+.035),yc,M.steelDark);CZ(o.d*1.26,.07,sg*(Ls/2+hl-.035),yc,M.steelDark);
-         CZ(o.d*1.18,.06,sg*(Ls/2+hl+.03),yc,M.steelDark);
-         CZ(.14,.3,sg*(Ls/2+hl+.2),yc,M.steelDark,10);                                               // anode / reference electrode gland
-         nzS(o.d*.56,yc+r*.45,ze,o.dw||.26,1);nzS(o.d*.56,yc-r*.45,ze,o.dw||.26,1);                  // cooling-water nozzles (a/k, d/g)
-         const zs=sg*Ls*.31;B(o.d*.95,.3,.28,0,yc-r-.05,zs);B(.7,yc-r-.2,.7,0,(yc-r-.2)/2,zs,M.conc);  // saddle + pier
-         nzT(0,sg*(Ls/2-.55),o.da||.32,yc+r*.92,.45);                                                // acid in / out (b, c)
+       [-1,1].forEach(sg=>{const h=new THREE.Mesh(new THREE.SphereGeometry(r,32,16),mat);h.scale.set(1,1,hd/r);h.position.set(0,yc,sg*Ls/2);g.add(h);
+         CZ(o.d*1.16,.09,sg*ts,yc,M.steelDark);CZ(o.d*1.12,.06,sg*(ts+.08),yc,M.steelDark);                 // tubesheet + body flanges
+         const ze=sg*(Ls/2-.46);nzT(0,ze,o.dw||.3,yc-r-.2,.2);g.children[g.children.length-2].position.y=yc-r-.1;   // a / d (bottom)
+         g.children[g.children.length-1].position.y=yc-r-.2;
+         const zb=sg*(Ls/2-.46-(o.dw||.3)/2-(o.da||.3)/2-.2);const nb=cyl(o.da||.3,o.da||.3,.2,M.steelDark,14);nb.position.set(0,yc-r-.1,zb);g.add(nb);
+         const fb=cyl((o.da||.3)+.12,(o.da||.3)+.12,.05,M.steelDark,14);fb.position.set(0,yc-r-.2,zb);g.add(fb);   // b / c (bottom)
+         nzT(0,sg*(ts+.35),.09,yc+r-.02,.2);                                                              // vents g / k
+         const an=new THREE.Mesh(new THREE.BoxGeometry(.3,.25,.3),M.steelDark);an.position.set(0,yc+r+.1,sg*ag);g.add(an);   // anode glands
+         const zs=sg*(Ls/2-.25-(o.dw||.3));B(o.d*.75,.2,.22,0,yc-r-.1,zs);B(o.d*.75+.1,yc-r-.2,.6,0,(yc-r-.2)/2,zs,M.conc);  // saddle + pier
        });
-       const dr=cyl(.12,.12,.25,M.steelDark,10);dr.position.set(0,yc-r-.1,0);g.add(dr);               // drain h
+       CZ(o.d*1.1,.06,0,yc,M.steelDark);                                                                   // middle girth flange
+       nzT(0,-.3,.09,yc+r-.02,.2);                                                                        // h
+       const cl=cyl(.14,.14,.25,M.steelDark,10);cl.rotation.x=Math.PI/2;cl.position.set(0,yc,-(o.L/2+.05));g.add(cl);   // cathode lead
      }else{
        // VE-11301 combined circulation acid tank, 3147-5H113-04 Rev.1: Ø3000 × 15000 (16270 over 2:1 heads), acid brick
        // lining, bottom EL 2.400; three pump compartments a1–a3 on the top under the pumps PP-11301/02/03 (EL 6.300),
