@@ -3171,7 +3171,7 @@ function start(){
      c:`Чаша CT-13401 26,4 × 16,2 × 2,3 м = ${f1(V_B134,0)} м³ ÷ 165,88 = ${h(V_B134/QRAW)}; пуск насосов PP-13401 — 0,5 ч.`},
     {id:'ng',st:4,dep:['a136'],dur:ngT+0.5,n:'Газопровод Г2: продувка и заполнение',nu:'G2 gaz quvuri: puflash va to‘ldirish',
      c:`Г2 Ø219 × 5, 8,81 км: объём ${f1(ngV,0)} м³, при 0,3 МПа — ${f1(ngN,0)} нм³. Продувка 3 объёма + заполнение при 3000 нм³/ч = ${h(ngT)}; проверка ГРПШ и узлов учёта 0,5 ч.`},
-    {id:'b135',st:4,dep:['ng','w132'],dur:20/85+18/12+(194-20)/60,n:'Пусковой котёл 135, пар 1,25 МПа',nu:'135 ishga tushirish qozoni, 1,25 MPa bug‘',
+    {id:'b135',st:4,stop:'b135off',dep:['ng','w132'],dur:20/85+18/12+(194-20)/60,n:'Пусковой котёл 135, пар 1,25 МПа',nu:'135 ishga tushirish qozoni, 1,25 MPa bug‘',
      c:`Бак VE-13503 20 м³ ÷ 85 т/ч = 0,24 ч; заполнение котла (≈ 18 м³) насосом PP-13501 12 м³/ч = 1,5 ч; розжиг горелки XX-13501 и подъём давления до 1,25 МПа (194 °C) со скоростью 60 °C/ч = ${h((194-20)/60)}. Котёл 10 т/ч.`},
     {id:'d1141',st:5,dep:['b135'],dur:33/85+daQ/daS,n:'Деаэратор 114.1',nu:'114.1 deaerator',
      c:`Бак DA-114.101 33 м³ ÷ 85 т/ч = 0,39 ч; нагрев 20 → 135 °C: 33 т × 4,19 × 115 = ${f1(daQ)} ГДж ÷ ${f1(daS,2)} ГДж/ч (3 т/ч пара от котла 135) = ${h(daQ/daS)}.`},
@@ -3199,10 +3199,12 @@ function start(){
      c:`Кислота на склад — после выхода концентрации в норму, ≈ 1 ч после подачи серы.`},
     {id:'hus',st:5,dep:['ign'],rel:'start',dur:3,n:'114: перегретый пар 6,3 МПа, 435 °C',nu:'114: o‘ta qizigan bug‘ 6,3 MPa, 435 °C',
      c:`Параметры пара для турбины достигаются при ≈ 60 % нагрузки: (60 − 30) % ÷ 10 %/ч = 3 ч после подачи серы.`},
+    {id:'b135off',st:5,dep:['hus'],dur:1,n:'Пусковой котёл 135 отключается',nu:'135 ishga tushirish qozoni o‘chiriladi',
+     c:`Котёл-утилизатор 114 выдаёт свой пар, коллектор пара переводят на него, горелку XX-13501 гасят, котёл 135 останавливают и выводят в резерв — 1 ч. Дальше он работает только на следующих пусках.`},
     {id:'oil115',st:7,dep:['ign','w134'],off:2,rel:'start',dur:1,n:'115: маслосистема, валоповорот',nu:'115: moy tizimi, val aylantirish',
      c:`Бак TK-11504 9 м³, пусковой насос PP-11504 40 м³/ч, подъём ротора PP-11507 — 1 ч до подачи пара.`},
     {id:'t115',st:7,dep:['hus','oil115','w134'],dur:1+1.5+20.6/0.3/60,n:'115: пуск турбины, синхронизация',nu:'115: turbinani ishga tushirish, sinxronlash',
-     c:`Прогрев паропровода 1 ч; разворот ST-11501 до 3000 об/мин с выдержками 1,5 ч; синхронизация и набор 20,6 МВт со скоростью 0,3 МВт/мин = ${h(20.6/0.3/60)}. Пар НД берётся из отбора 0,9 МПа, котёл 135 переводят в резерв.`},
+     c:`Прогрев паропровода 1 ч; разворот ST-11501 до 3000 об/мин с выдержками 1,5 ч; синхронизация и набор 20,6 МВт со скоростью 0,3 МВт/мин = ${h(20.6/0.3/60)}. Пар НД берётся из отбора 0,9 МПа.`},
    ];
    // «После ремонта»: ёмкости воды, кислоты и склад твёрдой серы заполнены, системы залиты водой; нет только пара и жидкой серы
    if(rep){const R={
@@ -3306,7 +3308,7 @@ function start(){
  function suFocus(id){
    // close-up on the equipment where the first flow of the event starts, so the flow can be seen appearing
    const evFl=flowObjs.filter(fo=>fo.ev===id).sort((a,b)=>a.dp-b.dp||a.st0-b.st0);
-   const eqB=new THREE.Box3();(SU.eqEv||[]).forEach(({o,ev})=>{if(ev===id)eqB.expandByObject(o)});
+   const eqB=new THREE.Box3();(SU.eqEv||[]).forEach(({o,ev})=>{if(ev===id||(SUo[ev]&&SUo[ev].stop===id))eqB.expandByObject(o)});
    let box=new THREE.Box3(),tgt=null,dist=30;
    const eqOk=!eqB.isEmpty()&&eqB.getSize(new THREE.Vector3()).length()<120;
    if(eqOk){
@@ -3334,9 +3336,11 @@ function start(){
  function evState(id){const e=SUo[id];return SU.t<e.t0?0:(SU.t<e.t1?1:2)}
  function suApply(){
    const t=SU.t;
-   flowObjs.forEach(fo=>{fo.rev=Math.max(0,Math.min(1,(t-fo.st0)/fo.sdur));const g=fo.tube.geometry;g.setDrawRange(0,fo.rev>=1?Infinity:Math.ceil(fo.rev*fo.segs)*48)});
+   flowObjs.forEach(fo=>{fo.rev=Math.max(0,Math.min(1,(t-fo.st0)/fo.sdur));if(fo.ev&&SUo[fo.ev]&&SUo[fo.ev].stop&&SUo[SUo[fo.ev].stop]&&t>=SUo[SUo[fo.ev].stop].t1)fo.rev=0;const g=fo.tube.geometry;g.setDrawRange(0,fo.rev>=1?Infinity:Math.ceil(fo.rev*fo.segs)*48)});
    SU.ext.forEach(x=>{x.rev=Math.max(0,Math.min(1,(t-x.st0)/x.sdur))});
-   SU.eqEv.forEach(({o,ev})=>setCold(o,t<SUo[ev].t0));
+   // equipment that only serves the start-up (boiler 135) goes cold again once its stop event is over
+   const stopped=ev=>{const e=SUo[ev];return !!(e&&e.stop&&SUo[e.stop]&&t>=SUo[e.stop].t1)};
+   SU.eqEv.forEach(({o,ev})=>setCold(o,t<SUo[ev].t0||stopped(ev)));
    LB.forEach(l=>{const ids=SUlbl[l.sec]&&l.sec!=='EXT'?SUlbl[l.sec]:SUextLbl[(l.d.querySelector('b')||{}).textContent];l.d.classList.remove('su0','su1','su2');if(!ids)return;
      const st=ids.map(evState);l.d.classList.add(st.every(s=>s===2)?'su2':(st.some(s=>s>0)?'su1':'su0'))});
    const cur=SUP.EV.filter(e=>t>=e.t0&&t<e.t1).sort((a,b)=>b.t0-a.t0)[0];
