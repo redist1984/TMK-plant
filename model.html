@@ -3386,7 +3386,7 @@ function start(){
   t115:'Пар раскручивает турбину до 3000 об/мин, генератор подключают к сети, и завод начинает вырабатывать электричество.'};
  function suInfoPaint(){const el=$('suInfo');if(!el)return;if(!SU.on){el.hidden=true;return}el.hidden=false;const uz=currentLang==='uz',t=SU.t;
    const cur=SUP.STEPS.filter(x=>t>=x.t0).pop(),e=SU.focus&&SUo[SU.focus];
-   if(t>=SUP.total){$('siSt').textContent=uz?'Ishga tushirish tugadi':'Пуск завершён';$('siNm').textContent=uz?'Zavod rejimda ishlayapti':'Завод работает на режиме';$('siWhy').textContent='Все отделения пущены: сера горит, кислота идёт на склад, турбина даёт электричество.';return}
+   if(t>=SUP.total){$('siSt').textContent=uz?'Ishga tushirish tugadi':'Пуск завершён';$('siNm').textContent=uz?'Zavod rejimda ishlayapti':'Завод работает в штатном режиме';$('siWhy').textContent='Все отделения пущены: сера горит, кислота идёт на склад, турбина даёт электричество.';return}
    $('siSt').textContent=(cur?(uz?'Bosqich ':'Этап ')+cur.n+(uz?' / ':' из ')+SUP.STEPS.length+' · ':'')+fmtT(t);
    $('siNm').textContent=e?(uz?e.nu:e.n):(uz?'Kutish':'Ожидание следующего шага');
    $('siWhy').textContent=e?(SU_WHY[e.id]||''):'Идёт выдержка по времени: заполняются ёмкости и прогревается оборудование.'}
@@ -3522,7 +3522,7 @@ function start(){
  function suPaint(){
    const t=SU.t;$('suClock').textContent=fmtT(t)+(SU.spd==='auto'&&SU.play?(()=>{const m=suRate(t)*60;return m<59.5?` · 1 с = ${Math.max(1,Math.round(m))} ${currentLang==='uz'?'daq':'мин'}`:` · 1 с = ${fmtN(m/60,1)} ${currentLang==='uz'?'soat':'ч'}`})():'');$('suR').value=t.toFixed(2);
    const cur=SUP.STEPS.filter(s=>t>=s.t0).pop();const uz=currentLang==='uz';
-   $('suNow').textContent=t>=SUP.total?(uz?'Zavod ishga tushirildi, rejimda':'Завод пущен, работает на режиме'):(SU.focus?'▶ '+(uz?SUo[SU.focus].nu:SUo[SU.focus].n)+' · ':'')+(cur?(uz?'Bosqich ':'Этап ')+cur.n:'');
+   $('suNow').textContent=t>=SUP.total?(uz?'Zavod ishga tushirildi, rejimda':'Завод пущен, работает в штатном режиме'):(SU.focus?'▶ '+(uz?SUo[SU.focus].nu:SUo[SU.focus].n)+' · ':'')+(cur?(uz?'Bosqich ':'Этап ')+cur.n:'');
    $('suPlay').textContent=SU.play?'⏸':'▶';$('suPlay').setAttribute('aria-label',SU.play?(uz?'Pauza':'Пауза'):(uz?'Boshlash':'Пуск'));
    $('suList').querySelectorAll('[data-ev]').forEach(li=>li.dataset.s=evState(li.dataset.ev));
    $('suList').querySelectorAll('[data-st]').forEach(li=>{const s=SUP.STEPS[li.dataset.st-1];li.dataset.s=t<s.t0?0:(t<s.t1?1:2)});
