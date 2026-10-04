@@ -3791,8 +3791,8 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
      return {tgt:b0.getCenter(new THREE.Vector3()),tgt1:b1.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4+.25,d0:Math.min(60,Math.max(30,b0.getSize(new THREE.Vector3()).length()*.9)),d1:Math.min(70,Math.max(32,b1.getSize(new THREE.Vector3()).length()*.95)),el:.85,late:1}}
    // oil system: seen from the south, as in the first versions; product acid: the 123 storage tanks receiving it
    if(id==='oil115'||id==='prod'){const b=suTagBox(id==='oil115'?/^(TK-11504|PP-1150[4-7]|EX-11504|TK-11502|FR-11503)/:/^(VE-12301|SM-12303)/);if(b.isEmpty())return null;
-     const d=Math.max(22,b.getSize(new THREE.Vector3()).length()*(id==='oil115'?1.6:1.05));const a=id==='oil115'?Math.PI/2:Math.PI/4;
-     return {tgt:b.getCenter(new THREE.Vector3()),a0:a,a1:a+(id==='prod'?.3:0),d0:d,d1:d,el:id==='oil115'?.75:.7}}
+     const d=Math.max(id==='oil115'?38:22,b.getSize(new THREE.Vector3()).length()*(id==='oil115'?2.4:1.05));const a=id==='oil115'?Math.PI/2:Math.PI/4;
+     return {tgt:b.getCenter(new THREE.Vector3()),a0:a,a1:a+(id==='prod'?.3:0),d0:d,d1:d,el:id==='oil115'?.95:.7}}
    const re={ign:/^(FU-11201|SM-11201)/,hc112:/^RE-11201/,t115:/^(ST-11501|HG-11501)/}[id];const b=suTagBox(re);if(b.isEmpty())return null;
    const d=Math.max(18,b.getSize(new THREE.Vector3()).length()*(id==='t115'?2.1:1.25));
    return {tgt:b.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4+(id==='t115'?Math.PI*2:.9),d0:d,d1:d*1.1,el:id==='t115'?1.1:.6}}
