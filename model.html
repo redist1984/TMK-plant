@@ -3827,7 +3827,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function suFillList(t){if(!SU.on||t==null||t>=SUP.total)return '';const uz=currentLang==='uz',out=[],seen=new Set();
    (SU.liq||[]).forEach(q=>{if(!q.add)return;const e=SUo[q.ev];if(!e||t<e.t0||t>=e.t1||(SUP.mode==='repair'&&q.keep))return;
      const v=(SU.ves||[]).find(x=>x.ev===q.ev&&q.c.userData.suG===x.g);const tag=q.tag||'';if(!tag||seen.has(tag))return;seen.add(tag);
-     out.push(`${tag} — ${q.med} ${Math.round(100*Math.min(1,(t-e.t0)/e.dur))} %`)});
+     const a0=q.arr!=null?q.arr:e.t0;out.push(t<a0?`${tag} — ${uz?'oqim kutilmoqda':'ждёт подхода потока'}`:`${tag} — ${q.med} ${Math.round(100*Math.min(1,(t-a0)/Math.max(.05,e.t1-a0)))} %`)});
    return out.length?(uz?'To‘lmoqda: ':'Заполняется: ')+out.slice(0,4).join('; ')+(out.length>4?' …':''):''}
  const suCams=[0,1].map(()=>new THREE.PerspectiveCamera(40,1,.5,3000)),suBoxC=new Map();
  function suEvBox(id){if(suBoxC.has(id))return suBoxC.get(id);const B=new THREE.Box3();(SU.eqEv||[]).forEach(x=>{if((x.ev===id||(SUo[x.ev]&&SUo[x.ev].stop===id&&/^FU-|^SK-/.test(x.o.userData.info.o.t)))&&x.o.userData.info.kind==='eq')B.expandByObject(x.o)});suBoxC.set(id,B);return B}
