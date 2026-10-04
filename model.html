@@ -1336,7 +1336,8 @@ function start(){
    M.steelDark.color.set(new THREE.Color(css('--steel')).multiplyScalar(.78));
    M.bldg.color.set(css('--bldg')); M.bund.color.set(css('--grid')); M.rack.color.set(css('--rack'));
    ['grass','field','soil','asphalt','pave','tree'].forEach(k=>M[k].color.set(css('--'+k)));
-   M.slab.color.set(css('--bldg')); M.conc.color.set(new THREE.Color(css('--bldg')).multiplyScalar(.82)); M.below.color.set(css('--edge'));
+   // decks and platforms (этажерки) stay mid-grey in both themes, so they never blend into the light ground
+   M.slab.color.set(0x7f8580); M.slab.opacity=.82; M.conc.color.set(0x9a9d98); M.below.color.set(css('--edge'));
    edgeMat.color.set(css('--edge')); gridMat.color.set(css('--grid')); undergroundMat.color.set(css('--underground'));
    Object.entries(STREAMS).forEach(([k,v])=>{const c=css(v.v);SM[k].tube.color.set(c);SM[k].dot.color.set(c)});
    selMat.color.set(css('--sel')); selMat.emissive.set(css('--sel'));
