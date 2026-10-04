@@ -3838,14 +3838,18 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function suRun(fo,t){if(t==null||!SUo.ign||!/^(gas|steam)$/.test(fo.s)||!(fo.rev>0))return false;const a=suArr('ign',/^FU-11201/)||SUo.ign.t0;return t>=a}
  // start-up figures (regulation 4.2.5): bed outlet temperatures at rate, load 30 → 100 % at 10 %/h, overall conversion 99,8 %
  const SU_BEDT=[600,505,455,438];
+ // start-up figures computed from time (approximate, for clarity); the regulation values (4.2.5) are only the end point at rate:
+ // heating — each bed approaches 420 °C hot air exponentially, the next one later; reaction — outlet rises toward 600/505/455/438 °C,
+ // faster at higher load (more gas heats the catalyst mass sooner); furnace load 30 → 100 % at 10 %/h; conversion and absorption follow
+ // the furnace with a lag; the SO₂→SO₃ degree grows with the bed temperatures up to 99,8 %
  function suKpi(t){const r={};if(t==null||!SU.on)return r;const h=SUo.hc112,e=SUo.ign;if(!h||!e)return r;
-   const aH=suArr('hc112',/^RE-11201/)||h.t0,aF=suArr('ign',/^FU-11201/)||e.t0,aR=suArr('ign',/^RE-11201/)||aF,aA=suArr('ign',/^TW-11302/)||aR,span=Math.max(.05,e.t1-aF);
-   r.bed=SU_BEDT.map((T1,i)=>{const k=Math.max(0,Math.min(1,((t-aH)/Math.max(.05,h.t1-aH)-i*.12)/.2));let T=t<aH?20:20+400*k;
-     const g=Math.max(0,Math.min(1,(t-aR-i*.35)/1.2));if(g>0)T=420+(T1-420)*g;return Math.round(T/5)*5});
-   r.heat=t>=aH;r.burn=t>=aF;
-   r.fu=t<aF?0:Math.round(30+70*Math.min(1,(t-aF)/span));
-   const lag=(a)=>t<a?0:Math.round(30+70*Math.min(1,(t-a)/Math.max(.05,e.t1-a)));
-   r.conv=lag(aR);r.abs=lag(aA);r.x=t<aR+1.4?0:Math.min(99.8,Math.round(10*(95+4.8*Math.min(1,(t-aR-1.4)/1.5)))/10);return r}
+   const aH=suArr('hc112',/^RE-11201/)||h.t0,aF=suArr('ign',/^FU-11201/)||e.t0,aR=suArr('ign',/^RE-11201/)||aF,aA=suArr('ign',/^TW-11302/)||aR,span=Math.max(.05,e.t1-aF),hs=Math.max(.05,h.t1-aH);
+   const L=x=>x<aF?0:30+70*Math.min(1,(x-aF)/span);
+   const lag=(a,tau)=>{if(t<a)return 0;let v=30,x=a;const dt=.05;while(x<t){v+=(L(x)-v)*dt/tau;x+=dt}return v};
+   r.bed=SU_BEDT.map((T1,i)=>{const d=t-aH-i*.12*hs;let T=d<=0?20:20+400*(1-Math.exp(-d/(hs*.13)));
+     const g=t-aR-i*.3;if(g>0){let y=0,x=0;const dt=.05;while(x<g){y+=(1-y)*dt/(1.3/(L(aR+i*.3+x)/100));x+=dt}T=Math.max(T,420+(T1-420)*y)}return Math.round(T)});
+   r.heat=t>=aH;r.burn=t>=aF;r.fu=Math.round(L(t));r.conv=Math.round(lag(aR,.6));r.abs=Math.round(lag(aA,.6));
+   const q=Math.max(0,Math.min(1,(r.bed[0]-420)/(SU_BEDT[0]-420)));r.x=t<aR?0:Math.round(10*(60+39.8*Math.pow(q,.6)))/10;return r}
  function suKpiText(t){const k=suKpi(t),uz=currentLang==='uz';if(!k.heat)return '';const o=[];
    o.push((uz?'Katalizator qatlamlari: ':'Слои катализатора: ')+k.bed.map((T,i)=>(i+1)+' — '+T+' °C').join(', '));
    if(k.burn)o.push((uz?'Pech yuklamasi ':'Загрузка печи ')+k.fu+' %; '+(uz?'konversiya ':'конверсия ')+k.conv+' %'+(k.x?(' (SO₂→SO₃ '+String(k.x).replace('.',',')+' %)'):'')+'; '+(uz?'absorbsiya ':'абсорбция ')+k.abs+' %');
