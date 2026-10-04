@@ -13,7 +13,7 @@
   --bg:#E9EEEC; --panel:#FFFFFF; --panel2:#F4F7F6; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
   --line:#CBD5D2; --accent:#0B6E66;
   --s-water:#23873A; --s-steam:#C9302A; --s-air:#2362C0; --s-gas:#C79A00; --s-acid:#DD6A12;
-  --s-alkali:#7A4DB8; --s-sulfur:#8A5A2B; --s-solid:#7C8683; --s-kipair:#C13584; --s-oil:#B08900; --s-fuel:#5B4636; --s-chem:#2E8B7C; --underground:#8A6D3B;
+  --s-alkali:#7A4DB8; --s-sulfur:#8A5A2B; --s-solid:#C9A227; --s-kipair:#C13584; --s-oil:#B08900; --s-fuel:#5B4636; --s-chem:#2E8B7C; --underground:#8A6D3B;
   --sky:#D9E6EC; --ground:#8DBA5A; --grid:#BAC7C2; --steel:#C3CCCA; --grass:#72AC48; --field:#86B65A; --soil:#9C7A55; --asphalt:#55595D; --pave:#C9CDCB; --rack:#85837D; --tree:#3F7F34; --bldg:#FFFFFF; --edge:#6F7F7A; --sel:#0B6E66;
   --shadow:0 10px 30px rgba(20,32,29,.16);
   --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
@@ -26,7 +26,7 @@
     --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
     --line:#2C3A36; --accent:#3FC1B3;
     --s-water:#4CC265; --s-steam:#FF6B5E; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
-    --s-alkali:#B18CF0; --s-sulfur:#C99158; --s-solid:#9AA5A1; --s-kipair:#F06BC6; --s-oil:#E0BB3F; --s-fuel:#A9917E; --s-chem:#5FC9B8; --underground:#C9A876;
+    --s-alkali:#B18CF0; --s-sulfur:#C99158; --s-solid:#E3C24A; --s-kipair:#F06BC6; --s-oil:#E0BB3F; --s-fuel:#A9917E; --s-chem:#5FC9B8; --underground:#C9A876;
     --sky:#121A18; --ground:#22341F; --grid:#2A3834; --steel:#7D8B87; --grass:#294A24; --field:#2C4527; --soil:#4A3C2C; --asphalt:#2B2F31; --pave:#4A5350; --rack:#4E5552; --tree:#20421C; --bldg:#AFC3BD; --edge:#8FA39D; --sel:#3FC1B3;
     --shadow:0 10px 30px rgba(0,0,0,.5);
   }
@@ -36,7 +36,7 @@
   --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
   --line:#2C3A36; --accent:#3FC1B3;
   --s-water:#4CC265; --s-steam:#FF6B5E; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
-  --s-alkali:#B18CF0; --s-sulfur:#C99158; --s-solid:#9AA5A1; --s-kipair:#F06BC6; --s-oil:#E0BB3F; --s-fuel:#A9917E; --s-chem:#5FC9B8; --underground:#C9A876;
+  --s-alkali:#B18CF0; --s-sulfur:#C99158; --s-solid:#E3C24A; --s-kipair:#F06BC6; --s-oil:#E0BB3F; --s-fuel:#A9917E; --s-chem:#5FC9B8; --underground:#C9A876;
   --sky:#121A18; --ground:#22341F; --grid:#2A3834; --steel:#7D8B87; --grass:#294A24; --field:#2C4527; --soil:#4A3C2C; --asphalt:#2B2F31; --pave:#4A5350; --rack:#4E5552; --tree:#20421C; --bldg:#AFC3BD; --edge:#8FA39D; --sel:#3FC1B3;
   --shadow:0 10px 30px rgba(0,0,0,.5);
 }
@@ -763,7 +763,7 @@ const E = [
  {t:'PP-13101A/B',X:5238.6,Y:2479.6,vend:'Sichuan Shengjiuyuan, SJY-GY-04',approx:1,k:'box',sx:0.6,sz:1.8,h:0.8,y0:-4.9},
  {t:'PP-13102A/B',X:5238.6,Y:2483.4,vend:'Sichuan Shengjiuyuan, SJY-GY-04',approx:1,k:'box',sx:0.6,sz:1.8,h:0.8,y0:-4.9},
  {t:'WT-RW',k:'box',X:5251.91,Y:2481.98,sx:10.16,sz:20.3,h:5.6,y0:-5.9,approx:1,below:1},
- {t:'WT-PW',k:'box',X:5251.75,Y:2471.83,sx:10.16,sz:20.15,h:5.6,y0:-5.9,approx:1,below:1},
+ {t:'WT-PW',k:'box',X:5251.76,Y:2471.83,sx:10.16,sz:20.15,h:5.6,y0:-5.9,approx:1,below:1},
  // 132 demineralization: positions read from the vendor equipment layout (sheet 3), models per vendor drawings (sheets 14–32)
  {t:'DM-01',k:"ptank",X:5300.94,Y:2509.66,L:10,W:5,H:3,cap:"150 м³",vend:'Sichuan Shengjiuyuan, Rev.A 2026.5.29',plan:'План оборудования 132 (лист 3), разрезы 1-1…6-6'},
  {t:'DM-06',k:"ptank",X:5310.4,Y:2509.66,L:7,W:5,H:3,cap:"105 м³",vend:'Sichuan Shengjiuyuan, Rev.A 2026.5.29',plan:'План оборудования 132 (лист 3), разрезы 1-1…6-6'},
@@ -3589,7 +3589,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    $('siNm').textContent=e?(uz?e.nu:e.n):(uz?'Kutish':'Ожидание следующего шага');
    $('siWhy').textContent=e?(SU_WHY[e.id]||''):'Идёт выдержка по времени: заполняются ёмкости и прогревается оборудование.'}
  // the flows that are starting right now glow, so it is clear what has just been switched on
- const suGlow={};function glowMat(s){if(!suGlow[s]){const m=SM[s].tube.clone();m.opacity=1;m.emissive=SM[s].tube.color.clone();m.emissiveIntensity=.9;suGlow[s]=m}else{suGlow[s].color.copy(SM[s].tube.color);suGlow[s].emissive.copy(SM[s].tube.color)}return suGlow[s]}
+ const suGlow={};function glowMat(s){if(!suGlow[s]){const m=SM[s].tube.clone();m.opacity=1;m.emissive=SM[s].tube.color.clone();m.emissiveIntensity=.45;suGlow[s]=m}else{suGlow[s].color.copy(SM[s].tube.color);suGlow[s].emissive.copy(SM[s].tube.color)}return suGlow[s]}
  const SU={on:false,t:0,play:false,spd:'auto',inited:false,ext:[],cold:new Set(),follow:true,focus:null};
  function suInit(){
    if(SU.inited)return;SU.inited=true;
@@ -3636,7 +3636,9 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function suFocus(id){
    // close-up on the equipment where the first flow of the event starts, so the flow can be seen appearing
    const evFl=flowObjs.filter(fo=>fo.ev===id).sort((a,b)=>a.dp-b.dp||a.st0-b.st0);
-   const eqB=new THREE.Box3();(SU.eqEv||[]).forEach(({o,ev})=>{if(ev===id||(SUo[ev]&&SUo[ev].stop===id))eqB.expandByObject(o)});
+   const eqB=new THREE.Box3();(SU.eqEv||[]).forEach(({o,ev})=>{const t=o.userData.info.o&&o.userData.info.o.t;
+     // ignition is about the furnace: the camera looks at FU-11201 and its sulfur guns, not at the whole event
+     if(id==='ign'?/^(FU-11201|SM-11201)/.test(t||''):(ev===id||(SUo[ev]&&SUo[ev].stop===id)))eqB.expandByObject(o)});
    let box=new THREE.Box3(),tgt=null,dist=30;
    const eqOk=!eqB.isEmpty()&&eqB.getSize(new THREE.Vector3()).length()<120;
    if(eqOk){
@@ -3690,7 +3692,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    const cur=t>=SUP.total?null:SUP.EV.filter(e=>t>=e.t0).sort((a,b)=>b.t0-a.t0)[0];
    const fid=cur?cur.id:null;if(fid!==SU.focus){SU.focus=fid;if(fid)suFocus(fid);else suHL.visible=false}
    if(fid!==SU.cutId){SU.cutId=fid;suCutSet(fid)}
-   suFill(t);suSplitPick(t);
+   suFill(t);suGunSet(t);suSplitPick(t);
    applyFlow();suPaint();suInfoPaint();
  }
 
@@ -3699,19 +3701,72 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  const suCutCache=new Map();SU.cutObjs=[];SU.split=[];
  function suLiquids(){if(SU.liq)return SU.liq;const L=new Set([M.liqAcid,M.liqS,M.liqW]);SU.liq=[];
    (SU.eqEv||[]).forEach(({o,ev})=>o.traverse(c=>{if(!c.isMesh||!c.userData.inner||!L.has(c.material)||Math.abs(c.rotation.x)>.01||Math.abs(c.rotation.z)>.01)return;
-     c.geometry.computeBoundingBox();const bb=c.geometry.boundingBox;SU.liq.push({c,ev,y0:c.position.y,h:bb.max.y-bb.min.y,sy:c.scale.y,keep:c.material!==M.liqS})}));return SU.liq}
+     c.geometry.computeBoundingBox();const bb=c.geometry.boundingBox;SU.liq.push({c,ev,y0:c.position.y,h:bb.max.y-bb.min.y,sy:c.scale.y,keep:c.material!==M.liqS})}));suAddLiq();return SU.liq}
+ // every storage vessel of the start-up gets its own visible level: tanks the scenario starts empty fill from the
+ // bottom while their event runs, tanks already full (water and acid after a repair) show their medium from the start
+ const SU_CUTX={ign:['FU-11201'],b114:['FU-11201']};
+ const SU_VES=/^(mtank|cbox|pit111|pit122|pit114|stank|ctank|atank|frptank|deaer|wtank|ptank|dtank|chtank|ctbasin|tank)$/,
+   SU_VTAG=/^(TK-|VE-|WT-(OW|PW|RW|ST|WS)$|DA-|C-115|EX-11201$)/,SU_ROUND=/^(mtank|stank|ctank|atank|frptank|wtank|ptank|dtank|chtank|tank|vcyl)$/;
+ function suMedium(ev,o){if(/^(m121|f111|v122)$/.test(ev))return M.liqS;if(/^(a113|prod)$/.test(ev))return /^VE-1130[45]|^TW/.test(o.t)?M.liqW:M.liqAcid;return M.liqW}
+ function suAddLiq(){const seen=new Set();SU.ves=[];
+   (SU.eqEv||[]).forEach(({o:g,ev})=>{const o=g.userData.info.o;if(!o||seen.has(g))return;
+     if(!(SU_VES.test(o.k)||(/^(box|vcyl|hcylX|hcylY)$/.test(o.k)&&SU_VTAG.test(o.t||''))))return;
+     if(/hopper|^VE-121/.test(o.k+' '+o.t))return;seen.add(g);
+     let has=false;g.traverse(c=>{if(c.isMesh&&c.userData.inner&&[M.liqAcid,M.liqS,M.liqW].includes(c.material))has=true});if(has){SU.ves.push({g,ev});return}
+     const B=new THREE.Box3().setFromObject(g);if(B.isEmpty())return;const sz=B.getSize(new THREE.Vector3()),c=B.getCenter(new THREE.Vector3());
+     if(sz.length()>60)return;
+     const H=Math.min(sz.y,o.h||sz.y),y0=B.min.y+Math.max(.15,H*.06),hh=H*.8;let mesh;
+     const mat=suMedium(ev,o).clone();mat.opacity=.92;mat.depthWrite=true;
+     if((o.k==='deaer'||o.whb||/^hcyl/.test(o.k))&&o.d&&o.L&&o.yc){const r=o.d/2*.9,alongX=o.k==='hcylY'||(o.k!=='hcylX'&&sz.x>=sz.z);
+       mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,o.L*.92,32),mat);mesh.rotation.set(alongX?0:Math.PI/2,0,alongX?Math.PI/2:0);
+       const pc=P(o.X,o.Y,o.yc);if(o.whb)pc.x=c.x;mesh.position.copy(pc);mesh.userData.inner=true;mesh.userData.suLiq=true;mesh.visible=false;scene.add(mesh);
+       SU.liq.push({c:mesh,ev,y0:pc.y,h:2*r,sy:1,keep:mat.color.getHex()!==M.liqS.color.getHex(),add:true,hz:true});SU.ves.push({g,ev});return}
+     if(SU_ROUND.test(o.k)&&!/^hcyl/.test(o.k)){const r=(o.d?o.d/2:Math.min(sz.x,sz.z)/2)*.9;const gp=g.getWorldPosition(new THREE.Vector3());
+       const cx=o.d&&Math.hypot(gp.x-c.x,gp.z-c.z)<sz.length()?gp:c;mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,hh,32),mat);mesh.position.set(cx.x,y0+hh/2,cx.z)}
+     else{const w=(o.sx||sz.x)*.88,d=(o.sz||sz.z)*.88;mesh=new THREE.Mesh(new THREE.BoxGeometry(Math.min(w,sz.x*.9),hh,Math.min(d,sz.z*.9)),mat);mesh.position.set(c.x,y0+hh/2,c.z)}
+     mesh.userData.inner=true;mesh.userData.suLiq=true;mesh.visible=false;scene.add(mesh);
+     SU.liq.push({c:mesh,ev,y0:mesh.position.y,h:hh,sy:1,keep:mat.color.getHex()!==M.liqS.color.getHex(),add:true});SU.ves.push({g,ev})})}
  function suFill(t){suLiquids().forEach(q=>{const e=SUo[q.ev];let f=1;
    if(t!=null&&e&&!(SUP.mode==='repair'&&q.keep))f=Math.max(0,Math.min(1,(t-e.t0)/Math.max(.05,e.dur)));
+   if(q.add&&(t==null||!SU.on)){q.c.visible=false;return}
+   if(q.add&&t<SUo[q.ev].t0&&!(SUP.mode==='repair'&&q.keep))f=0;
+   if(q.hz){q.c.visible=f>.001;const k=Math.max(.001,f);if(q.c.rotation.z)q.c.scale.set(k,1,1);else q.c.scale.set(1,1,k);q.c.position.y=q.y0-q.h*(1-k)/2;return}
    q.c.visible=f>.001;q.c.scale.y=q.sy*Math.max(.001,f);q.c.position.y=q.y0-q.h*q.sy*(1-f)/2})}
  function suCutClear(){SU.cutObjs.forEach(c=>{if(c.userData.suPre){c.material=c.userData.suPre;delete c.userData.suPre}});SU.cutObjs=[];SU.cutBox=null}
- function suCutSet(id){suCutClear();if(!id)return;const objs=(SU.eqEv||[]).filter(x=>x.ev===id&&x.o.userData.info.kind==='eq').map(x=>x.o);if(!objs.length)return;
+ function suCutSet(id){suCutClear();if(!id)return;suLiquids();
+   // every vessel with a level stays see-through during the start-up, so the filling is visible from the normal view
+   [...(SU.ves||[]).map(v=>v.g),...(SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.t==='FU-11201').map(x=>x.o)].forEach(g=>g.traverse(c=>{if(!c.isMesh||!c.material||c.userData.inner||Array.isArray(c.material))return;
+     let m=suCutCache.get(c.material);if(!m){m=c.material.clone();m.transparent=true;m.opacity=.2;m.depthWrite=false;suCutCache.set(c.material,m)}
+     c.userData.suPre=c.material;c.material=m;SU.cutObjs.push(c)}));
+   const objs=(SU.eqEv||[]).filter(x=>(x.ev===id||(SU_CUTX[id]||[]).includes(x.o.userData.info.o.t))&&x.o.userData.info.kind==='eq'&&!(SU.ves||[]).some(v=>v.g===x.o)).map(x=>x.o);if(!objs.length)return;
    const B=new THREE.Box3();objs.forEach(o=>B.expandByObject(o));if(B.isEmpty()||B.getSize(new THREE.Vector3()).length()>90)return;SU.cutBox=B;
    objs.forEach(o=>o.traverse(c=>{if(!c.isMesh||!c.material||c.userData.inner||Array.isArray(c.material))return;
      let m=suCutCache.get(c.material);if(!m){m=c.material.clone();m.transparent=true;m.opacity=.2;m.depthWrite=false;suCutCache.set(c.material,m)}
      c.userData.suPre=c.material;c.material=m;SU.cutObjs.push(c)}))}
+ // sulfur guns SM-11201A/B/C: during the ignition event they are pushed into the furnace one after another,
+ // then each atomises liquid sulfur into the furnace (a cone of droplets turning into flame)
+ function suGuns(){if(SU.guns)return SU.guns;SU.guns=[];
+   [...new Set((SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.k==='sgun').map(x=>x.o))].forEach((g,i)=>{g.updateMatrixWorld(true);
+     const dir=new THREE.Vector3(1,0,0).transformDirection(g.matrixWorld).setY(0).normalize(),p0=g.position.clone(),tip=g.localToWorld(new THREE.Vector3(2.5,0,0));
+     const N=520,pos=new Float32Array(N*3),col=new Float32Array(N*3),seed=[];for(let k=0;k<N;k++)seed.push([Math.random(),Math.random()*Math.PI*2,Math.random()]);
+     const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+     const pts=new THREE.Points(geo,new THREE.PointsMaterial({size:.3,vertexColors:true,transparent:true,opacity:.95,depthWrite:false}));pts.frustumCulled=false;pts.visible=false;scene.add(pts);
+     const up=new THREE.Vector3(0,1,0),side=new THREE.Vector3().crossVectors(dir,up).normalize();
+     SU.guns.push({g,i,dir,p0,tip,pts,seed,side,up,k:1})});
+   // the three guns share one entry: order them so A goes in first
+   return SU.guns}
+ function suGunSet(t){const G=suGuns(),e=SUo.ign;if(!e)return;G.forEach(q=>{let k=1;
+   if(SU.on&&t!=null){const a=e.t0+q.i*e.dur*.04,b=a+e.dur*.035;k=Math.max(0,Math.min(1,(t-a)/(b-a)))}
+   q.k=k;q.g.visible=!SU.on||k>0;q.g.position.copy(q.p0).addScaledVector(q.dir,-2.6*(1-k));q.pts.visible=SU.on&&k>=1})}
+ function suGunAnim(){if(!SU.guns||!SU.on)return;const tm=performance.now()/1000;
+   SU.guns.forEach(q=>{if(!q.pts.visible)return;const P=q.pts.geometry.attributes.position.array,C=q.pts.geometry.attributes.color.array;
+     q.seed.forEach(([u,a,v],k)=>{const f=(u+tm*.9)%1,L=f*6.5,r=L*.38*v;
+       const x=q.tip.x+q.dir.x*L+q.side.x*Math.cos(a)*r,y=q.tip.y+Math.sin(a)*r,z=q.tip.z+q.dir.z*L+q.side.z*Math.cos(a)*r;
+       P[k*3]=x;P[k*3+1]=y;P[k*3+2]=z;C[k*3]=1;C[k*3+1]=.85-.55*f;C[k*3+2]=.2*(1-f)});
+     q.pts.geometry.attributes.position.needsUpdate=true;q.pts.geometry.attributes.color.needsUpdate=true})}
  const suCams=[0,1].map(()=>new THREE.PerspectiveCamera(40,1,.5,3000)),suBoxC=new Map();
  function suEvBox(id){if(suBoxC.has(id))return suBoxC.get(id);const B=new THREE.Box3();(SU.eqEv||[]).forEach(x=>{if(x.ev===id&&x.o.userData.info.kind==='eq')B.expandByObject(x.o)});suBoxC.set(id,B);return B}
- function suSplitPick(t){SU.split=[];if(!SU.on||t>=SUP.total)return;const fb=SU.focus?suEvBox(SU.focus):null,fc=fb&&!fb.isEmpty()?fb.getCenter(new THREE.Vector3()):null;
+ function suSplitPick(t){SU.split=[];if(!SU.on||t>=SUP.total){suPanes();return}const fb=SU.focus?suEvBox(SU.focus):null,fc=fb&&!fb.isEmpty()?fb.getCenter(new THREE.Vector3()):null;
    const act=SUP.EV.filter(e=>e.id!==SU.focus&&t>=e.t0&&t<e.t1).sort((a,b)=>b.t0-a.t0);
    for(const e of act){if(SU.split.length>=2)break;const B=suEvBox(e.id);if(B.isEmpty()||B.getSize(new THREE.Vector3()).length()>120)continue;const c=B.getCenter(new THREE.Vector3());
      if(fc&&c.distanceTo(fc)<35)continue;if(SU.split.some(x=>x.c.distanceTo(c)<35))continue;
@@ -3733,7 +3788,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    renderer.setScissorTest(false);renderer.setViewport(0,0,W,H);camera.aspect=asp;camera.updateProjectionMatrix();return {w:L.w,h:L.h}}
  function suRestore(){
    SU.focus=null;suOcclude();suHL.visible=false;SU.focus=null;SU.fc=null;SU.lastFo=null;
-   suCutClear();SU.cutId=null;suFill(null);SU.split=[];suPanes();
+   suCutClear();SU.cutId=null;suFill(null);suGunSet(null);SU.split=[];suPanes();
    SU.play=false;
    flowObjs.forEach(fo=>{fo.rev=1;fo.tube.geometry.setDrawRange(0,Infinity);fo.tube.material=SM[fo.s].tube});suInfoPaint();
    SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
@@ -4314,7 +4369,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
      if(c.hk.userData.jaws){const a=.25+.35*Math.max(0,(L-o.L[0])/(o.L[1]-o.L[0])-.5);c.hk.userData.jaws.forEach((j,i)=>{j.rotation.x=(i?-1:1)*a})}});
    if(anim){flowObjs.forEach(f=>{if(!f.tube.visible)return;f.off=(f.off+dt*6/f.len)%1;const n=f.dots.length,lim=SU.on?f.rev:1;f.dots.forEach((d,i)=>{const u=((i/n)+f.off)%1;if(SU.on)d.visible=u<=lim;const q=f.path.getPointAt(Math.min(u,.9995));if(q)d.position.copy(q)})})}
    suTick(dt);
-   const vp=suRender();
+   suGunAnim();const vp=suRender();
    const w=vp.w,h=vp.h;
    LB.forEach(l=>{tmp.copy(l.p).project(camera);const vis=showL&&tmp.z<1&&Math.abs(tmp.x)<1.1&&Math.abs(tmp.y)<1.1&&(!isolated||l.sec===isolated);l.d.classList.toggle('hide',!vis);if(vis){l.d.style.left=((tmp.x+1)/2*w)+'px';l.d.style.top=((1-tmp.y)/2*h)+'px'}});
  }
