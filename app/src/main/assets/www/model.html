@@ -3694,7 +3694,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    // (going back to an older, still running event made the camera jump back and forth)
    let cur=t>=SUP.total?null:SUP.EV.filter(e=>t>=e.t0).sort((a,b)=>b.t0-a.t0||(SU_SHOT[b.id]?1:0)-(SU_SHOT[a.id]?1:0))[0];
    // steam tracing, sulfur melting and ignition keep the main view until they end; events starting meanwhile go to the side panes
-   if(cur&&!SU_KEEP[cur.id]&&cur.id!=='t115'){const hold=SUP.EV.find(e=>SU_KEEP[e.id]&&t>=e.t0&&t<e.t1);if(hold)cur=hold}
+   if(cur&&!SU_KEEP[cur.id]&&cur.id!=='t115'){const hold=SUP.EV.find(e=>SU_KEEP[e.id]&&t>=e.t0&&t<e.t0+e.dur*SU_KEEP[e.id]);if(hold)cur=hold}
    const fid=cur?cur.id:null;if(fid!==SU.focus){SU.focus=fid;if(fid)suFocus(fid);else suHL.visible=false}
    if(fid!==SU.cutId){SU.cutId=fid;suCutSet(fid)}
    suFill(t);suGunSet(t);suFlame(t);suBeds(t);suRainSet(t);suSplitPick(t);
@@ -3738,13 +3738,14 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function suFill(t){suLiquids();(SU.hid||[]).forEach(c=>c.visible=!(SU.on&&t!=null));SU.liq.forEach(q=>{const e=SUo[q.ev];let f=1;
    if(t!=null&&e&&!(SUP.mode==='repair'&&q.keep))f=Math.max(0,Math.min(1,(t-e.t0)/Math.max(.05,e.dur)));
    if(q.add&&(t==null||!SU.on)){q.c.visible=false;return}
-   if(q.add&&t<SUo[q.ev].t0&&!(SUP.mode==='repair'&&q.keep))f=0;
+   if(q.add&&!(SUP.mode==='repair'&&q.keep)){const e=SUo[q.ev];if(q.arr==null){q.arr=e.t0;flowObjs.forEach(fo=>{const b=fo.f.b,bt=typeof b==='string'?b:(Array.isArray(b)&&typeof b[0]==='string'?b[0]:null);if(bt===q.tag&&fo.st0!=null)q.arr=Math.max(q.arr,Math.min(e.t1-.05*e.dur,fo.st0+fo.sdur))})}
+     f=Math.max(0,Math.min(1,(t-q.arr)/Math.max(.05,e.t1-q.arr)))}
    if(q.hz){q.c.visible=f>.001;const k=Math.max(.001,f);if(q.c.rotation.z)q.c.scale.set(k,1,1);else q.c.scale.set(1,1,k);q.c.position.y=q.y0-q.h*(1-k)/2;return}
    q.c.visible=f>.001;q.c.scale.y=q.sy*Math.max(.001,f);q.c.position.y=q.y0-q.h*q.sy*(1-f)/2})}
  function suCutClear(){SU.cutObjs.forEach(c=>{if(c.userData.suPre){c.material=c.userData.suPre;delete c.userData.suPre}});SU.cutObjs=[];SU.cutBox=null}
  function suCutSet(id){suCutClear();if(!id)return;suLiquids();const noCut=id==='t115';
    // every vessel with a level stays see-through during the start-up, so the filling is visible from the normal view
-   [...(SU.ves||[]).filter(v=>SU.t>=SUo[v.ev].t0||(SUP.mode==='repair'&&!/^(m121|f111|v122)$/.test(v.ev))).map(v=>v.g),...(SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.t==='FU-11201').map(x=>x.o)].forEach(g=>g.traverse(c=>{if(!c.isMesh||!c.material||c.userData.inner||Array.isArray(c.material))return;
+   [...(SU.ves||[]).filter(v=>SU.t>=SUo[v.ev].t0||(SUP.mode==='repair'&&!/^(m121|f111|v122)$/.test(v.ev))).map(v=>v.g),...(SU.eqEv||[]).filter(x=>x.o.userData.info.o&&(x.o.userData.info.o.t==='FU-11201'||(x.o.userData.info.o.t==='RE-11201'&&SUo.hc112&&SU.t>=SUo.hc112.t0))).map(x=>x.o)].forEach(g=>g.traverse(c=>{if(!c.isMesh||!c.material||c.userData.inner||Array.isArray(c.material))return;
      let m=suCutCache.get(c.material);if(!m){m=c.material.clone();m.transparent=true;m.opacity=.2;m.depthWrite=false;suCutCache.set(c.material,m)}
      c.userData.suPre=c.material;c.material=m;SU.cutObjs.push(c)}));
    (SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.t==='FU-11201').forEach(x=>x.o.traverse(c=>{if(!c.isMesh||!c.userData.inner||c.userData.suPre||Array.isArray(c.material))return;
@@ -3780,19 +3781,23 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  // pulls back to show the sulfur coming from 121; ign: furnace close-up turning slowly; hc112: converter turning
  // slowly; t115: pan around the turbine hall (its roof and walls are faded by suOcclude)
  const SU_SURR={ign:/^(FU-11201|SM-11201)/,bl113:/^(SM-11301|BO-11301)/};
- const SU_SHOT={lsdist:1,m121:1,ign:1,hc112:1,t115:1},SU_KEEP={lsdist:1,m121:1,ign:1};
+ const SU_SHOT={lsdist:1,m121:1,ign:1,hc112:1,t115:1,oil115:1,prod:1},SU_KEEP={lsdist:1,m121:1,ign:.15};
  function suTagBox(re){const B=new THREE.Box3();(SU.eqEv||[]).forEach(({o})=>{const t=o.userData.info.o&&o.userData.info.o.t;if(t&&re.test(t))B.expandByObject(o)});return B}
  function suShotFor(id){const fl=flowObjs.filter(fo=>fo.ev===id),B=new THREE.Box3();
    if(id==='lsdist'){fl.forEach(fo=>{for(let u=0;u<=1;u+=.1)B.expandByPoint(fo.path.getPointAt(u))});if(B.isEmpty())return null;
      const sz=B.getSize(new THREE.Vector3()).length();return {tgt:B.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4,d0:Math.min(150,sz*.6),d1:Math.min(150,sz*.6),el:1.35}}
    // first the lump sulfur on the 121 conveyors, then the camera moves to the 111 melting tanks and the filter feed tank
-   if(id==='m121'){const b0=suTagBox(/^(CV-121|VE-1210|ZR-121|SM-121)/),b1=suTagBox(/^(TK-11101|TK-11102)/);if(b0.isEmpty()||b1.isEmpty())return null;
-     return {tgt:b0.getCenter(new THREE.Vector3()),tgt1:b1.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4+.25,d0:Math.min(60,Math.max(30,b0.getSize(new THREE.Vector3()).length()*.9)),d1:26,el:.8,late:1}}
+   if(id==='m121'){const b0=suTagBox(/^(CV-121|VE-1210|ZR-121|SM-121)/),b1=suTagBox(/^(TK-1110[1-5]|FR-1110)/);if(b0.isEmpty()||b1.isEmpty())return null;
+     return {tgt:b0.getCenter(new THREE.Vector3()),tgt1:b1.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4+.25,d0:Math.min(60,Math.max(30,b0.getSize(new THREE.Vector3()).length()*.9)),d1:Math.min(70,Math.max(32,b1.getSize(new THREE.Vector3()).length()*.95)),el:.85,late:1}}
+   // oil system: seen from the south, as in the first versions; product acid: the 123 storage tanks receiving it
+   if(id==='oil115'||id==='prod'){const b=suTagBox(id==='oil115'?/^(TK-11504|PP-1150[4-7]|EX-11504|TK-11502|FR-11503)/:/^(VE-12301|SM-12303)/);if(b.isEmpty())return null;
+     const d=Math.max(22,b.getSize(new THREE.Vector3()).length()*(id==='oil115'?1.6:1.05));const a=id==='oil115'?Math.PI/2:Math.PI/4;
+     return {tgt:b.getCenter(new THREE.Vector3()),a0:a,a1:a+(id==='prod'?.3:0),d0:d,d1:d,el:id==='oil115'?.75:.7}}
    const re={ign:/^(FU-11201|SM-11201)/,hc112:/^RE-11201/,t115:/^(ST-11501|HG-11501)/}[id];const b=suTagBox(re);if(b.isEmpty())return null;
    const d=Math.max(18,b.getSize(new THREE.Vector3()).length()*(id==='t115'?2.1:1.25));
    return {tgt:b.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4+(id==='t115'?Math.PI*2:.9),d0:d,d1:d*1.1,el:id==='t115'?1.1:.6}}
  function suShotAnim(){const sh=SU.shot;if(!sh||!SU.on||!SU.follow||SU.focus!==sh.id)return;const e=SUo[sh.id],p=Math.max(0,Math.min(1,(SU.t-e.t0)/Math.max(.05,e.dur)));
-   const q=sh.late?Math.max(0,Math.min(1,(p-.3)/.4)):p,k=q*q*(3-2*q),a=sh.a0+(sh.a1-sh.a0)*(sh.id==='t115'?p:k),d=sh.d0+(sh.d1-sh.d0)*k,tg=sh.tgt1?sh.tgt.clone().lerp(sh.tgt1,k):sh.tgt;
+   const q=sh.late?Math.max(0,Math.min(1,(p-.06)/.18)):p,k=q*q*(3-2*q),a=sh.a0+(sh.a1-sh.a0)*(sh.id==='t115'?p:k),d=sh.d0+(sh.d1-sh.d0)*k,tg=sh.tgt1?sh.tgt.clone().lerp(sh.tgt1,k):sh.tgt;
    const want=tg.clone().add(new THREE.Vector3(Math.cos(a),sh.el,Math.sin(a)).normalize().multiplyScalar(d));
    const now=performance.now(),dt=Math.min(.25,(now-(SU.shotT||now))/1000);SU.shotT=now;const al=1-Math.exp(-dt*2.5);
    camera.position.lerp(want,al);controls.target.lerp(tg,al);camera.lookAt(controls.target)}
