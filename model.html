@@ -259,7 +259,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
     </div>
   </div>
   <div class="tip" id="tip" hidden></div>
-  <div class="suinfo" id="suInfo" hidden aria-live="polite"><div class="si-st" id="siSt"></div><div class="si-nm" id="siNm"></div><div class="si-why" id="siWhy"></div></div>
+  <div class="suinfo" id="suInfo" hidden aria-live="polite"><div class="si-st" id="siSt"></div><div class="si-nm" id="siNm"></div><div class="si-why" id="siWhy"></div><div class="si-why si-fill" id="siFill" hidden></div></div>
   <button class="rotate-fab" type="button" id="bRotateMode" aria-pressed="false"
     title="Включить вращение пальцем (иначе палец перемещает камеру)" aria-label="Режим вращения пальцем">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3568,7 +3568,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
   b135:'Пусковой котёл на газе даёт первый пар. Пока сера не горит, это единственный источник пара на заводе.',
   d1141:'Деаэратор паром нагревает питательную воду и удаляет из неё кислород, чтобы не ржавели трубы котла-утилизатора.',
   b114:'Котёл-утилизатор заполняют горячей деаэрированной водой. Позже он будет получать пар от тепла горящей серы.',
-  lsdist:'Пар идёт в паровые спутники и змеевики 111, 122 и 112. Сера застывает ниже 120 °C, поэтому все её трубы и ёмкости сначала прогревают.',
+  lsdist:'Пар НД 0,5 МПа от пусковой котельной 135 через коллектор XX-11502 (115) идёт по эстакаде (светящиеся красные линии) в 111 — змеевики баков плавления и фильтров, в 122 — змеевики резервуара и спутники трубопроводов серы, в 112 — спутники серных форсунок. Сера застывает ниже 120 °C, поэтому всё это прогревают до подачи серы.',
   m121:'Кран со склада 121 подаёт твёрдую серу в плавильники 111, где паром её расплавляют; жидкая сера переливом стекает в бак фильтра TK-11102.',
   f111:'Жидкую серу фильтруют от золы и примесей. Чистая сера не забивает форсунки печи и катализатор.',
   v122:'Чистая жидкая сера заполняет резервуар 122. Это запас, из которого насосы будут подавать серу в печь.',
@@ -3587,8 +3587,10 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    if(t>=SUP.total){$('siSt').textContent=uz?'Ishga tushirish tugadi':'Пуск завершён';$('siNm').textContent=uz?'Zavod rejimda ishlayapti':'Завод работает в штатном режиме';$('siWhy').textContent='Все отделения пущены: сера горит, кислота идёт на склад, турбина даёт электричество.';return}
    $('siSt').textContent=(cur?(uz?'Bosqich ':'Этап ')+cur.n+(uz?' / ':' из ')+SUP.STEPS.length+' · ':'')+fmtT(t);
    $('siNm').textContent=e?(uz?e.nu:e.n):(uz?'Kutish':'Ожидание следующего шага');
-   $('siWhy').textContent=e?(SU_WHY[e.id]||''):'Идёт выдержка по времени: заполняются ёмкости и прогревается оборудование.'}
+   $('siWhy').textContent=e?(SU_WHY[e.id]||''):'Идёт выдержка по времени: заполняются ёмкости и прогревается оборудование.';
+   const fe=$('siFill');if(fe){const tx=suFillList(t);fe.textContent=tx;fe.hidden=!tx}}
  // the flows that are starting right now glow, so it is clear what has just been switched on
+ const suDim={};function suDimMat(s){if(!suDim[s]){const m=SM[s].tube.clone();m.opacity=.1;m.depthWrite=false;suDim[s]=m}return suDim[s]}
  const suGlow={};function glowMat(s){if(!suGlow[s]){const m=SM[s].tube.clone();m.opacity=1;m.emissive=SM[s].tube.color.clone();m.emissiveIntensity=.45;suGlow[s]=m}else{suGlow[s].color.copy(SM[s].tube.color);suGlow[s].emissive.copy(SM[s].tube.color)}return suGlow[s]}
  const SU={on:false,t:0,play:false,spd:'auto',inited:false,ext:[],cold:new Set(),follow:true,focus:null};
  function suInit(){
@@ -3657,6 +3659,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    suHL.box.copy(box).expandByScalar(.4);suHL.visible=true;
    // inside one department the camera stays put: a new event close to the current view only moves the highlight
    const near=SU.fc&&tgt.distanceTo(SU.fc)<28;if(!near)SU.fc=tgt.clone();
+   SU.shot=null;if(SU_SHOT[id]){const sh=suShotFor(id);if(sh){sh.id=id;SU.shot=sh;return}}
    if(!SU.follow)return;
    // the camera picks the side from which nothing big (a converter, a tower, a building) stands in front of
    // the started equipment; inside one department it stays where it is unless its current view is blocked
@@ -3675,12 +3678,12 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  }
  const coldCache=new Map(), grey=new THREE.Color(0x9aa3a0);
  function coldMat(m){if(coldCache.has(m))return coldCache.get(m);let c=m;if(m.color){c=m.clone();c.color=m.color.clone().lerp(grey,.75);if(c.emissive)c.emissive.setRGB(0,0,0)}coldCache.set(m,c);return c}
- function setCold(o,on){o.traverse(c=>{if(!c.isMesh)return;if(!c.userData.base)c.userData.base=c.material;if(!!c.userData.cold===on)return;c.userData.cold=on;if(c.material===selMat||c.userData.dimmed||c.userData.fade)return;c.material=on?coldMat(c.userData.base):c.userData.base})}
+ function setCold(o,on){o.traverse(c=>{if(!c.isMesh||(c.userData.inner&&(c.material===M.liqAcid||c.material===M.liqS||c.material===M.liqW)))return;if(!c.userData.base)c.userData.base=c.material;if(!!c.userData.cold===on)return;c.userData.cold=on;if(c.material===selMat||c.userData.dimmed||c.userData.fade)return;c.material=on?coldMat(c.userData.base):c.userData.base})}
  function evState(id){const e=SUo[id];return SU.t<e.t0?0:(SU.t<e.t1?1:2)}
  function suApply(){
    const t=SU.t;
    flowObjs.forEach(fo=>{fo.rev=Math.max(0,Math.min(1,(t-fo.st0)/fo.sdur));if(fo.ev&&SUo[fo.ev]&&SUo[fo.ev].stop&&SUo[SUo[fo.ev].stop]&&t>=SUo[SUo[fo.ev].stop].t1)fo.rev=0;const g=fo.tube.geometry;g.setDrawRange(0,fo.rev>=1?Infinity:Math.ceil(fo.rev*fo.segs)*48);
-     const hot=fo.rev>0&&fo.ev&&SUo[fo.ev]&&t>=SUo[fo.ev].t0&&t<SUo[fo.ev].t1;fo.tube.material=hot?glowMat(fo.s):SM[fo.s].tube;});
+     const hot=fo.rev>0&&fo.ev&&SUo[fo.ev]&&t>=SUo[fo.ev].t0&&t<SUo[fo.ev].t1;fo.tube.material=hot?glowMat(fo.s):(SU.focus==='lsdist'||SU.focus==='t115'?suDimMat(fo.s):SM[fo.s].tube);});
    SU.ext.forEach(x=>{x.rev=Math.max(0,Math.min(1,(t-x.st0)/x.sdur))});
    // equipment that only serves the start-up (boiler 135) goes cold again once its stop event is over
    const stopped=ev=>{const e=SUo[ev];return !!(e&&e.stop&&SUo[e.stop]&&t>=SUo[e.stop].t1)};
@@ -3689,10 +3692,12 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
      const st=ids.map(evState);l.d.classList.add(st.every(s=>s===2)?'su2':(st.some(s=>s>0)?'su1':'su0'))});
    // the focus only moves forward: the most recently started event stays in view until the next one starts
    // (going back to an older, still running event made the camera jump back and forth)
-   const cur=t>=SUP.total?null:SUP.EV.filter(e=>t>=e.t0).sort((a,b)=>b.t0-a.t0)[0];
+   let cur=t>=SUP.total?null:SUP.EV.filter(e=>t>=e.t0).sort((a,b)=>b.t0-a.t0||(SU_SHOT[b.id]?1:0)-(SU_SHOT[a.id]?1:0))[0];
+   // steam tracing, sulfur melting and ignition keep the main view until they end; events starting meanwhile go to the side panes
+   if(cur&&!SU_KEEP[cur.id]&&cur.id!=='t115'){const hold=SUP.EV.find(e=>SU_KEEP[e.id]&&t>=e.t0&&t<e.t1);if(hold)cur=hold}
    const fid=cur?cur.id:null;if(fid!==SU.focus){SU.focus=fid;if(fid)suFocus(fid);else suHL.visible=false}
    if(fid!==SU.cutId){SU.cutId=fid;suCutSet(fid)}
-   suFill(t);suGunSet(t);suSplitPick(t);
+   suFill(t);suGunSet(t);suFlame(t);suBeds(t);suRainSet(t);suSplitPick(t);
    applyFlow();suPaint();suInfoPaint();
  }
 
@@ -3701,44 +3706,48 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  const suCutCache=new Map();SU.cutObjs=[];SU.split=[];
  function suLiquids(){if(SU.liq)return SU.liq;const L=new Set([M.liqAcid,M.liqS,M.liqW]);SU.liq=[];
    (SU.eqEv||[]).forEach(({o,ev})=>o.traverse(c=>{if(!c.isMesh||!c.userData.inner||!L.has(c.material)||Math.abs(c.rotation.x)>.01||Math.abs(c.rotation.z)>.01)return;
-     c.geometry.computeBoundingBox();const bb=c.geometry.boundingBox;SU.liq.push({c,ev,y0:c.position.y,h:bb.max.y-bb.min.y,sy:c.scale.y,keep:c.material!==M.liqS})}));suAddLiq();return SU.liq}
+     c.geometry.computeBoundingBox();const bb=c.geometry.boundingBox;SU.liq.push({c,ev,g:o,y0:c.position.y,h:bb.max.y-bb.min.y,sy:c.scale.y,keep:c.material!==M.liqS})}));suAddLiq();
+   // a vessel gets one level only: its own built-in partial level (seen in sections) is replaced during the start-up by a level over the whole volume
+   SU.hid=[];SU.liq=SU.liq.filter(q=>{if(!q.add&&q.g&&SU.repl&&SU.repl.has(q.g)){SU.hid.push(q.c);return false}return true});return SU.liq}
  // every storage vessel of the start-up gets its own visible level: tanks the scenario starts empty fill from the
  // bottom while their event runs, tanks already full (water and acid after a repair) show their medium from the start
  const SU_CUTX={ign:['FU-11201'],b114:['FU-11201']};
  const SU_VES=/^(mtank|cbox|pit111|pit122|pit114|stank|ctank|atank|frptank|deaer|wtank|ptank|dtank|chtank|ctbasin|tank)$/,
    SU_VTAG=/^(TK-|VE-|WT-(OW|PW|RW|ST|WS)$|DA-|C-115|EX-11201$)/,SU_ROUND=/^(mtank|stank|ctank|atank|frptank|wtank|ptank|dtank|chtank|tank|vcyl)$/;
  function suMedium(ev,o){if(/^(m121|f111|v122)$/.test(ev))return M.liqS;if(/^(a113|prod)$/.test(ev))return /^VE-1130[45]|^TW/.test(o.t)?M.liqW:M.liqAcid;return M.liqW}
+ function suMedName(m){const h=m.color.getHex(),uz=currentLang==='uz';return h===M.liqS.color.getHex()?(uz?'suyuq oltingugurt':'жидкая сера'):h===M.liqAcid.color.getHex()?(uz?'kislota':'кислота'):(uz?'suv':'вода')}
  function suAddLiq(){const seen=new Set();SU.ves=[];
    (SU.eqEv||[]).forEach(({o:g,ev})=>{const o=g.userData.info.o;if(!o||seen.has(g))return;
      if(!(SU_VES.test(o.k)||(/^(box|vcyl|hcylX|hcylY)$/.test(o.k)&&SU_VTAG.test(o.t||''))))return;
      if(/hopper|^VE-121/.test(o.k+' '+o.t))return;seen.add(g);
-     let has=false;g.traverse(c=>{if(c.isMesh&&c.userData.inner&&[M.liqAcid,M.liqS,M.liqW].includes(c.material))has=true});if(has){SU.ves.push({g,ev});return}
+     if(o.k==='ctbasin'){SU.ves.push({g,ev});return}
+     (SU.repl=SU.repl||new Set()).add(g);
      const B=new THREE.Box3().setFromObject(g);if(B.isEmpty())return;const sz=B.getSize(new THREE.Vector3()),c=B.getCenter(new THREE.Vector3());
      if(sz.length()>60)return;
-     const H=Math.min(sz.y,o.h||sz.y),y0=B.min.y+Math.max(.15,H*.06),hh=H*.8;let mesh;
+     const H=Math.min(sz.y,o.h||sz.y),y0=B.min.y+Math.max(.12,H*.04),hh=H*.9;let mesh;
      const mat=suMedium(ev,o).clone();mat.opacity=.92;mat.depthWrite=true;
-     if((o.k==='deaer'||o.whb||/^hcyl/.test(o.k))&&o.d&&o.L&&o.yc){const r=o.d/2*.9,alongX=o.k==='hcylY'||(o.k!=='hcylX'&&sz.x>=sz.z);
+     if((o.k==='deaer'||o.whb||/^hcyl/.test(o.k))&&o.d&&o.L&&o.yc){const r=o.d/2*.95,alongX=o.k==='hcylY'||(o.k!=='hcylX'&&sz.x>=sz.z);
        mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,o.L*.92,32),mat);mesh.rotation.set(alongX?0:Math.PI/2,0,alongX?Math.PI/2:0);
        const pc=P(o.X,o.Y,o.yc);if(o.whb)pc.x=c.x;mesh.position.copy(pc);mesh.userData.inner=true;mesh.userData.suLiq=true;mesh.visible=false;scene.add(mesh);
-       SU.liq.push({c:mesh,ev,y0:pc.y,h:2*r,sy:1,keep:mat.color.getHex()!==M.liqS.color.getHex(),add:true,hz:true});SU.ves.push({g,ev});return}
-     if(SU_ROUND.test(o.k)&&!/^hcyl/.test(o.k)){const r=(o.d?o.d/2:Math.min(sz.x,sz.z)/2)*.9;const gp=g.getWorldPosition(new THREE.Vector3());
+       SU.liq.push({c:mesh,ev,y0:pc.y,h:2*r,sy:1,keep:mat.color.getHex()!==M.liqS.color.getHex(),add:true,hz:true,tag:o.t,med:suMedName(mat)});SU.ves.push({g,ev});return}
+     if(SU_ROUND.test(o.k)&&!/^hcyl/.test(o.k)){const r=(o.d?o.d/2:Math.min(sz.x,sz.z)/2)*.95;const gp=g.getWorldPosition(new THREE.Vector3());
        const cx=o.d&&Math.hypot(gp.x-c.x,gp.z-c.z)<sz.length()?gp:c;mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,hh,32),mat);mesh.position.set(cx.x,y0+hh/2,cx.z)}
-     else{const w=(o.sx||sz.x)*.88,d=(o.sz||sz.z)*.88;mesh=new THREE.Mesh(new THREE.BoxGeometry(Math.min(w,sz.x*.9),hh,Math.min(d,sz.z*.9)),mat);mesh.position.set(c.x,y0+hh/2,c.z)}
+     else{const w=(o.sx||sz.x)*.95,d=(o.sz||sz.z)*.95;mesh=new THREE.Mesh(new THREE.BoxGeometry(Math.min(w,sz.x*.95),hh,Math.min(d,sz.z*.95)),mat);mesh.position.set(c.x,y0+hh/2,c.z)}
      mesh.userData.inner=true;mesh.userData.suLiq=true;mesh.visible=false;scene.add(mesh);
-     SU.liq.push({c:mesh,ev,y0:mesh.position.y,h:hh,sy:1,keep:mat.color.getHex()!==M.liqS.color.getHex(),add:true});SU.ves.push({g,ev})})}
- function suFill(t){suLiquids().forEach(q=>{const e=SUo[q.ev];let f=1;
+     SU.liq.push({c:mesh,ev,y0:mesh.position.y,h:hh,sy:1,keep:mat.color.getHex()!==M.liqS.color.getHex(),add:true,tag:o.t,med:suMedName(mat)});SU.ves.push({g,ev})})}
+ function suFill(t){suLiquids();(SU.hid||[]).forEach(c=>c.visible=!(SU.on&&t!=null));SU.liq.forEach(q=>{const e=SUo[q.ev];let f=1;
    if(t!=null&&e&&!(SUP.mode==='repair'&&q.keep))f=Math.max(0,Math.min(1,(t-e.t0)/Math.max(.05,e.dur)));
    if(q.add&&(t==null||!SU.on)){q.c.visible=false;return}
    if(q.add&&t<SUo[q.ev].t0&&!(SUP.mode==='repair'&&q.keep))f=0;
    if(q.hz){q.c.visible=f>.001;const k=Math.max(.001,f);if(q.c.rotation.z)q.c.scale.set(k,1,1);else q.c.scale.set(1,1,k);q.c.position.y=q.y0-q.h*(1-k)/2;return}
    q.c.visible=f>.001;q.c.scale.y=q.sy*Math.max(.001,f);q.c.position.y=q.y0-q.h*q.sy*(1-f)/2})}
  function suCutClear(){SU.cutObjs.forEach(c=>{if(c.userData.suPre){c.material=c.userData.suPre;delete c.userData.suPre}});SU.cutObjs=[];SU.cutBox=null}
- function suCutSet(id){suCutClear();if(!id)return;suLiquids();
+ function suCutSet(id){suCutClear();if(!id)return;suLiquids();const noCut=id==='t115';
    // every vessel with a level stays see-through during the start-up, so the filling is visible from the normal view
-   [...(SU.ves||[]).map(v=>v.g),...(SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.t==='FU-11201').map(x=>x.o)].forEach(g=>g.traverse(c=>{if(!c.isMesh||!c.material||c.userData.inner||Array.isArray(c.material))return;
+   [...(SU.ves||[]).filter(v=>SU.t>=SUo[v.ev].t0||(SUP.mode==='repair'&&!/^(m121|f111|v122)$/.test(v.ev))).map(v=>v.g),...(SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.t==='FU-11201').map(x=>x.o)].forEach(g=>g.traverse(c=>{if(!c.isMesh||!c.material||c.userData.inner||Array.isArray(c.material))return;
      let m=suCutCache.get(c.material);if(!m){m=c.material.clone();m.transparent=true;m.opacity=.2;m.depthWrite=false;suCutCache.set(c.material,m)}
      c.userData.suPre=c.material;c.material=m;SU.cutObjs.push(c)}));
-   const objs=(SU.eqEv||[]).filter(x=>(x.ev===id||(SU_CUTX[id]||[]).includes(x.o.userData.info.o.t))&&x.o.userData.info.kind==='eq'&&!(SU.ves||[]).some(v=>v.g===x.o)).map(x=>x.o);if(!objs.length)return;
+   const objs=(SU.eqEv||[]).filter(x=>(x.ev===id||(SU_CUTX[id]||[]).includes(x.o.userData.info.o.t))&&x.o.userData.info.kind==='eq'&&!(SU.ves||[]).some(v=>v.g===x.o)&&(!noCut||x.o.userData.info.o.k==='bcrane')).map(x=>x.o);if(!objs.length)return;
    const B=new THREE.Box3();objs.forEach(o=>B.expandByObject(o));if(B.isEmpty()||B.getSize(new THREE.Vector3()).length()>90)return;SU.cutBox=B;
    objs.forEach(o=>o.traverse(c=>{if(!c.isMesh||!c.material||c.userData.inner||Array.isArray(c.material))return;
      let m=suCutCache.get(c.material);if(!m){m=c.material.clone();m.transparent=true;m.opacity=.2;m.depthWrite=false;suCutCache.set(c.material,m)}
@@ -3764,8 +3773,56 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
        const x=q.tip.x+q.dir.x*L+q.side.x*Math.cos(a)*r,y=q.tip.y+Math.sin(a)*r,z=q.tip.z+q.dir.z*L+q.side.z*Math.cos(a)*r;
        P[k*3]=x;P[k*3+1]=y;P[k*3+2]=z;C[k*3]=1;C[k*3+1]=.85-.55*f;C[k*3+2]=.2*(1-f)});
      q.pts.geometry.attributes.position.needsUpdate=true;q.pts.geometry.attributes.color.needsUpdate=true})}
+ // ---- camera shots: some events are shown with a camera move instead of a fixed view ----
+ // lsdist: high view over all steam lines from the header to 111/122/112; m121: starts close on the melting tanks and
+ // pulls back to show the sulfur coming from 121; ign: furnace close-up turning slowly; hc112: converter turning
+ // slowly; t115: pan around the turbine hall (its roof and walls are faded by suOcclude)
+ const SU_SHOT={lsdist:1,m121:1,ign:1,hc112:1,t115:1},SU_KEEP={lsdist:1,m121:1,ign:1};
+ function suTagBox(re){const B=new THREE.Box3();(SU.eqEv||[]).forEach(({o})=>{const t=o.userData.info.o&&o.userData.info.o.t;if(t&&re.test(t))B.expandByObject(o)});return B}
+ function suShotFor(id){const fl=flowObjs.filter(fo=>fo.ev===id),B=new THREE.Box3();
+   if(id==='lsdist'){fl.forEach(fo=>{for(let u=0;u<=1;u+=.1)B.expandByPoint(fo.path.getPointAt(u))});if(B.isEmpty())return null;
+     const sz=B.getSize(new THREE.Vector3()).length();return {tgt:B.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4,d0:Math.min(150,sz*.6),d1:Math.min(150,sz*.6),el:1.35}}
+   if(id==='m121'){const b0=suTagBox(/^(TK-11101|TK-11102)/),b1=suTagBox(/^(TK-1110|VE-1210|CV-121|LR-12101)/);if(b0.isEmpty())return null;
+     const c0=b0.getCenter(new THREE.Vector3()),c1=b1.isEmpty()?c0:b1.getCenter(new THREE.Vector3());
+     return {tgt:c0,tgt1:c0.clone().lerp(c1,.6),a0:Math.PI/4,a1:Math.PI/4+.35,d0:24,d1:Math.min(110,Math.max(45,b1.getSize(new THREE.Vector3()).length()*1.1)),el:.8}}
+   const re={ign:/^(FU-11201|SM-11201)/,hc112:/^RE-11201/,t115:/^(ST-11501|HG-11501)/}[id];const b=suTagBox(re);if(b.isEmpty())return null;
+   const d=Math.max(18,b.getSize(new THREE.Vector3()).length()*(id==='t115'?2.1:1.25));
+   return {tgt:b.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4+(id==='t115'?Math.PI*2:.9),d0:d,d1:d*1.1,el:id==='t115'?1.1:.6}}
+ function suShotAnim(){const sh=SU.shot;if(!sh||!SU.on||!SU.follow||SU.focus!==sh.id)return;const e=SUo[sh.id],p=Math.max(0,Math.min(1,(SU.t-e.t0)/Math.max(.05,e.dur)));
+   const k=p*p*(3-2*p),a=sh.a0+(sh.a1-sh.a0)*(sh.id==='t115'?p:k),d=sh.d0+(sh.d1-sh.d0)*k,tg=sh.tgt1?sh.tgt.clone().lerp(sh.tgt1,k):sh.tgt;
+   const want=tg.clone().add(new THREE.Vector3(Math.cos(a),sh.el,Math.sin(a)).normalize().multiplyScalar(d));
+   const now=performance.now(),dt=Math.min(.25,(now-(SU.shotT||now))/1000);SU.shotT=now;const al=1-Math.exp(-dt*2.5);
+   camera.position.lerp(want,al);controls.target.lerp(tg,al);camera.lookAt(controls.target)}
+ // furnace: a flame grows inside FU-11201 once the guns spray
+ function suFlame(t){const G=suGuns();if(!G.length)return;if(!SU.flame){const q=G[0],fb=suTagBox(/^FU-11201/);if(fb.isEmpty())return;
+     const sz=fb.getSize(new THREE.Vector3()),L=Math.max(sz.x,sz.z)*.75,r=Math.min(sz.x,sz.z,sz.y)*.32;
+     const m=new THREE.MeshStandardMaterial({color:0xff7a1a,emissive:0xff5a00,emissiveIntensity:.9,transparent:true,opacity:.45,depthWrite:false});
+     const f=new THREE.Mesh(new THREE.CylinderGeometry(r*.55,r,L,24,1,true),m);f.rotation.z=Math.PI/2;
+     f.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),q.dir);SU.flame={f,L,q};f.visible=false;scene.add(f)}
+   const F=SU.flame,e=SUo.ign;let k=0;if(SU.on&&t!=null&&e)k=Math.max(0,Math.min(1,(t-e.t0-e.dur*.06)/(e.dur*.3)));
+   F.f.visible=k>0;F.f.scale.set(.4+.6*k,Math.max(.01,k),.4+.6*k);F.f.position.copy(F.q.tip).addScaledVector(F.q.dir,1.5+F.L*k/2)}
+ // converter: the four catalyst beds heat one after another (gas enters from the top), dull to glowing
+ function suBeds(t){if(!SU.beds){SU.beds=[];(SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.t==='RE-11201').forEach(({o})=>o.traverse(c=>{if(c.isMesh&&(c.material===M.cat||c.userData.base===M.cat))SU.beds.push(c)}));
+     SU.beds.sort((a,b)=>b.getWorldPosition(new THREE.Vector3()).y-a.getWorldPosition(new THREE.Vector3()).y);SU.beds.forEach(c=>{c.userData.suBedM=M.cat.clone()})}
+   const e=SUo.hc112,hot=new THREE.Color(0xff4d14);SU.beds.forEach((c,i)=>{if(!SU.on||t==null||!e){c.material=M.cat;return}
+     const k=Math.max(0,Math.min(1,((t-e.t0)/e.dur-i*.12)/.2)),m=c.userData.suBedM;m.color.copy(M.cat.color).lerp(hot,k);m.emissive.copy(hot).multiplyScalar(k*.8);c.material=m;c.userData.inner=1})}
+ // cooling towers: water is sprayed over the fill and rains into the basin (only the basin holds water)
+ function suRain(){if(SU.rain)return SU.rain;SU.rain=[];(SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.k==='ct').forEach(({o:g,ev})=>{
+     if(SU.rain.some(r=>r.g===g))return;const o=g.userData.info.o,B=new THREE.Box3().setFromObject(g),c=B.getCenter(new THREE.Vector3()),w=o.w*.85;
+     const N=400,pos=new Float32Array(N*3),geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+     const pts=new THREE.Points(geo,new THREE.PointsMaterial({size:.12,color:0x5fb0ff,transparent:true,opacity:.85,depthWrite:false}));pts.frustumCulled=false;pts.visible=false;scene.add(pts);
+     SU.rain.push({g,ev,c,w,y0:B.min.y+7.3,y1:B.min.y+1.9,pts,seed:Array.from({length:N},()=>[Math.random()-.5,Math.random()-.5,Math.random()])})});return SU.rain}
+ function suRainSet(t){suRain().forEach(r=>{r.pts.visible=!!(SU.on&&t!=null&&SUo[r.ev]&&t>=SUo[r.ev].t0)})}
+ function suRainAnim(){if(!SU.rain||!SU.on)return;const tm=performance.now()/1000;SU.rain.forEach(r=>{if(!r.pts.visible)return;const P=r.pts.geometry.attributes.position.array;
+   r.seed.forEach(([a,b,u],k)=>{const f=(u+tm*.7)%1;P[k*3]=r.c.x+a*r.w;P[k*3+1]=r.y0-(r.y0-r.y1)*f;P[k*3+2]=r.c.z+b*r.w});r.pts.geometry.attributes.position.needsUpdate=true})}
+ // the info card lists what is filling right now and how far
+ function suFillList(t){if(!SU.on||t==null||t>=SUP.total)return '';const uz=currentLang==='uz',out=[],seen=new Set();
+   (SU.liq||[]).forEach(q=>{if(!q.add)return;const e=SUo[q.ev];if(!e||t<e.t0||t>=e.t1||(SUP.mode==='repair'&&q.keep))return;
+     const v=(SU.ves||[]).find(x=>x.ev===q.ev&&q.c.userData.suG===x.g);const tag=q.tag||'';if(!tag||seen.has(tag))return;seen.add(tag);
+     out.push(`${tag} — ${q.med} ${Math.round(100*Math.min(1,(t-e.t0)/e.dur))} %`)});
+   return out.length?(uz?'To‘lmoqda: ':'Заполняется: ')+out.slice(0,4).join('; ')+(out.length>4?' …':''):''}
  const suCams=[0,1].map(()=>new THREE.PerspectiveCamera(40,1,.5,3000)),suBoxC=new Map();
- function suEvBox(id){if(suBoxC.has(id))return suBoxC.get(id);const B=new THREE.Box3();(SU.eqEv||[]).forEach(x=>{if(x.ev===id&&x.o.userData.info.kind==='eq')B.expandByObject(x.o)});suBoxC.set(id,B);return B}
+ function suEvBox(id){if(suBoxC.has(id))return suBoxC.get(id);const B=new THREE.Box3();(SU.eqEv||[]).forEach(x=>{if((x.ev===id||(SUo[x.ev]&&SUo[x.ev].stop===id&&/^FU-|^SK-/.test(x.o.userData.info.o.t)))&&x.o.userData.info.kind==='eq')B.expandByObject(x.o)});suBoxC.set(id,B);return B}
  function suSplitPick(t){SU.split=[];if(!SU.on||t>=SUP.total){suPanes();return}const fb=SU.focus?suEvBox(SU.focus):null,fc=fb&&!fb.isEmpty()?fb.getCenter(new THREE.Vector3()):null;
    const act=SUP.EV.filter(e=>e.id!==SU.focus&&t>=e.t0&&t<e.t1).sort((a,b)=>b.t0-a.t0);
    for(const e of act){if(SU.split.length>=2)break;const B=suEvBox(e.id);if(B.isEmpty()||B.getSize(new THREE.Vector3()).length()>120)continue;const c=B.getCenter(new THREE.Vector3());
@@ -3788,7 +3845,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    renderer.setScissorTest(false);renderer.setViewport(0,0,W,H);camera.aspect=asp;camera.updateProjectionMatrix();return {w:L.w,h:L.h}}
  function suRestore(){
    SU.focus=null;suOcclude();suHL.visible=false;SU.focus=null;SU.fc=null;SU.lastFo=null;
-   suCutClear();SU.cutId=null;suFill(null);suGunSet(null);SU.split=[];suPanes();
+   suCutClear();SU.cutId=null;suFill(null);suGunSet(null);suFlame(null);suBeds(null);suRainSet(null);SU.shot=null;SU.split=[];suPanes();
    SU.play=false;
    flowObjs.forEach(fo=>{fo.rev=1;fo.tube.geometry.setDrawRange(0,Infinity);fo.tube.material=SM[fo.s].tube});suInfoPaint();
    SU.ext.forEach(x=>x.dots.forEach(d=>d.visible=false));
@@ -4369,7 +4426,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
      if(c.hk.userData.jaws){const a=.25+.35*Math.max(0,(L-o.L[0])/(o.L[1]-o.L[0])-.5);c.hk.userData.jaws.forEach((j,i)=>{j.rotation.x=(i?-1:1)*a})}});
    if(anim){flowObjs.forEach(f=>{if(!f.tube.visible)return;f.off=(f.off+dt*6/f.len)%1;const n=f.dots.length,lim=SU.on?f.rev:1;f.dots.forEach((d,i)=>{const u=((i/n)+f.off)%1;if(SU.on)d.visible=u<=lim;const q=f.path.getPointAt(Math.min(u,.9995));if(q)d.position.copy(q)})})}
    suTick(dt);
-   suGunAnim();const vp=suRender();
+   suGunAnim();suRainAnim();suShotAnim();const vp=suRender();
    const w=vp.w,h=vp.h;
    LB.forEach(l=>{tmp.copy(l.p).project(camera);const vis=showL&&tmp.z<1&&Math.abs(tmp.x)<1.1&&Math.abs(tmp.y)<1.1&&(!isolated||l.sec===isolated);l.d.classList.toggle('hide',!vis);if(vis){l.d.style.left=((tmp.x+1)/2*w)+'px';l.d.style.top=((1-tmp.y)/2*h)+'px'}});
  }
