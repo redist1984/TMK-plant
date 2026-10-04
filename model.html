@@ -207,6 +207,10 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
 .suinfo .si-st{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#6b7a76)}
 .suinfo .si-nm{font-weight:700;font-size:15px;margin:2px 0 4px;color:#B86E00}
 .suinfo .si-why{color:var(--ink)}
+.suside{position:absolute;z-index:5;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.suside .sc{padding:7px 10px;border-radius:10px;border:1px solid var(--line);background:color-mix(in srgb,var(--card,#fff) 88%,transparent);box-shadow:0 2px 8px rgba(0,0,0,.08);font-size:12px;line-height:1.35}
+.suside .sc b{display:block;color:#B86E00;font-size:12.5px;margin-bottom:2px}
+@media (max-width:760px){.suside .sc{padding:5px 8px;font-size:11px}.suside .sc b{font-size:11.5px}}
 @media (max-width:760px){.suinfo{width:min(250px,calc(100% - 84px));padding:7px 9px;font-size:11.5px}.suinfo .si-nm{font-size:13px}body.fs-mode .suinfo{width:min(250px,calc(100% - 80px))}}
 .su-ev i{flex:none;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--ink3)}
 .su-list li[data-s="1"]>button .su-n{background:#E3A008;color:#1b1300}
@@ -3860,8 +3864,8 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    if(txt==null){L.sp.visible=false;return}L.sp.visible=true;L.sp.position.copy(pos);if(L.txt===txt)return;L.txt=txt;const g=L.c.getContext('2d');g.clearRect(0,0,256,64);
    g.fillStyle='rgba(255,255,255,.88)';g.beginPath();g.roundRect(2,6,252,52,12);g.fill();g.strokeStyle=col||'#c2410c';g.lineWidth=3;g.stroke();g.fillStyle=col||'#9a3412';g.font='bold 28px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,128,33);L.tx.needsUpdate=true}
  function suLblSet(t){const k=suKpi(t);const on=SU.on&&t!=null&&t<SUP.total;
-   const rb=suTagBox(/^RE-11201/);if(!rb.isEmpty()&&SU.beds){const c=rb.getCenter(new THREE.Vector3()),rr=rb.getSize(new THREE.Vector3()).x/2+4,d=new THREE.Vector3(.7071,0,.7071);
-     SU.beds.forEach((b,i)=>{const y=b.getWorldPosition(new THREE.Vector3()).y;suLbl('bed'+i,on&&k.heat?((i+1)+' слой '+k.bed[i]+' °C'):null,c.clone().addScaledVector(d,rr).setY(y))})}
+   const rb=suTagBox(/^RE-11201/);if(!rb.isEmpty()&&SU.beds){const c=rb.getCenter(new THREE.Vector3()),rr=rb.getSize(new THREE.Vector3()).x*.3,d=new THREE.Vector3(.7071,0,.7071);
+     SU.beds.forEach((b,i)=>{const y=new THREE.Box3().setFromObject(b).getCenter(new THREE.Vector3()).y;suLbl('bed'+i,on&&k.heat?((i+1)+' слой '+k.bed[i]+' °C'):null,c.clone().addScaledVector(d,rr).setY(y))})}
    const fb=suTagBox(/^FU-11201/);if(!fb.isEmpty())suLbl('fu',on&&k.burn?('Печь '+k.fu+' %'):null,fb.getCenter(new THREE.Vector3()).setY(fb.max.y+2.5),'#b45309')}
  function suFillList(t){if(!SU.on||t==null||t>=SUP.total)return '';const uz=currentLang==='uz',out=[],seen=new Set();
    (SU.liq||[]).forEach(q=>{if(!q.add)return;const e=SUo[q.ev];if(!e||t<e.t0||t>=e.t1||(SUP.mode==='repair'&&q.keep))return;
@@ -3879,11 +3883,17 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
      const d=Math.min(70,Math.max(18,B.getSize(new THREE.Vector3()).length()*1.5)),cam=suCams[SU.split.length];cam.position.copy(c).add(new THREE.Vector3(.62,.5,.62).normalize().multiplyScalar(d));cam.lookAt(c);SU.split.push({e,c,cam})}
    suPanes()}
  const suPaneEl=document.createElement('div');suPaneEl.className='supanes';view.appendChild(suPaneEl);
- function suPanes(){const uz=currentLang==='uz';suPaneEl.innerHTML=SU.split.map((x,i)=>`<div class="supane" data-i="${i}"><span>${esc(uz?x.e.nu:x.e.n)}</span></div>`).join('');suPaneLayout()}
- function suPaneLayout(){const W=view.clientWidth,H=view.clientHeight,n=SU.split.length;if(!n){suPaneEl.hidden=true;return {x:0,y:0,w:W,h:H,p:[]}}
-   suPaneEl.hidden=false;const mob=W<700,p=[];let mw,mh;
+ // cards for the processes running in the side panes, in the free top-right corner of the main view (on a phone above the panes)
+ const suSideEl=document.createElement('div');suSideEl.className='suside';view.appendChild(suSideEl);
+ function suSideFill(){const uz=currentLang==='uz';suSideEl.innerHTML=(SU.on?SU.split:[]).map(x=>{const w=(SU_WHY[x.e.id]||'').split(/(?<=[.!?])\s/)[0];
+   return `<div class="sc"><b>${esc(uz?x.e.nu:x.e.n)}</b>${esc(w)}</div>`}).join('');suSideEl.hidden=!suSideEl.innerHTML}
+ function suPanes(){suSideFill();const uz=currentLang==='uz';suPaneEl.innerHTML=SU.split.map((x,i)=>`<div class="supane" data-i="${i}"><span>${esc(uz?x.e.nu:x.e.n)}</span></div>`).join('');suPaneLayout()}
+ function suPaneLayout(){const W=view.clientWidth,H=view.clientHeight,n=SU.split.length;if(!n){suPaneEl.hidden=true;suSideEl.hidden=true;return {x:0,y:0,w:W,h:H,p:[]}}
+   suPaneEl.hidden=false;suSideEl.hidden=!suSideEl.innerHTML;const mob=W<700,p=[];let mw,mh;
    if(mob){mw=W;mh=Math.round(H*.6);const pw=W/n;for(let i=0;i<n;i++)p.push({x:Math.round(i*pw),y:mh,w:Math.round(pw),h:H-mh})}
    else{mw=Math.round(W*.64);mh=H;const ph=H/n;for(let i=0;i<n;i++)p.push({x:mw,y:Math.round(i*ph),w:W-mw,h:Math.round(ph)})}
+   if(mob)Object.assign(suSideEl.style,{left:'12px',right:'auto',top:'auto',bottom:(H-mh+10)+'px',width:(W-24)+'px'});
+   else Object.assign(suSideEl.style,{left:'auto',right:(W-mw+12)+'px',top:'12px',bottom:'auto',width:Math.min(300,Math.round(mw*.3))+'px'});
    [...suPaneEl.children].forEach((d,i)=>{const q=p[i];if(!q)return;Object.assign(d.style,{left:q.x+'px',top:q.y+'px',width:q.w+'px',height:q.h+'px'})});
    return {x:0,y:0,w:mw,h:mh,p}}
  function suRender(){const W=view.clientWidth,H=view.clientHeight;
