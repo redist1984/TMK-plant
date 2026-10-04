@@ -3864,8 +3864,8 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    if(txt==null){L.sp.visible=false;return}L.sp.visible=true;L.sp.position.copy(pos);if(L.txt===txt)return;L.txt=txt;const g=L.c.getContext('2d');g.clearRect(0,0,256,64);
    g.fillStyle='rgba(255,255,255,.88)';g.beginPath();g.roundRect(2,6,252,52,12);g.fill();g.strokeStyle=col||'#c2410c';g.lineWidth=3;g.stroke();g.fillStyle=col||'#9a3412';g.font='bold 28px sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(txt,128,33);L.tx.needsUpdate=true}
  function suLblSet(t){const k=suKpi(t);const on=SU.on&&t!=null&&t<SUP.total;
-   const rb=suTagBox(/^RE-11201/);if(!rb.isEmpty()&&SU.beds){const c=rb.getCenter(new THREE.Vector3()),rr=rb.getSize(new THREE.Vector3()).x/2+4,d=new THREE.Vector3(.7071,0,.7071);
-     SU.beds.forEach((b,i)=>{const y=b.getWorldPosition(new THREE.Vector3()).y;suLbl('bed'+i,on&&k.heat?((i+1)+' слой '+k.bed[i]+' °C'):null,c.clone().addScaledVector(d,rr).setY(y))})}
+   const rb=suTagBox(/^RE-11201/);if(!rb.isEmpty()&&SU.beds){const c=rb.getCenter(new THREE.Vector3()),rr=rb.getSize(new THREE.Vector3()).x*.3,d=new THREE.Vector3(.7071,0,.7071);
+     SU.beds.forEach((b,i)=>{const y=new THREE.Box3().setFromObject(b).getCenter(new THREE.Vector3()).y;suLbl('bed'+i,on&&k.heat?((i+1)+' слой '+k.bed[i]+' °C'):null,c.clone().addScaledVector(d,rr).setY(y))})}
    const fb=suTagBox(/^FU-11201/);if(!fb.isEmpty())suLbl('fu',on&&k.burn?('Печь '+k.fu+' %'):null,fb.getCenter(new THREE.Vector3()).setY(fb.max.y+2.5),'#b45309')}
  function suFillList(t){if(!SU.on||t==null||t>=SUP.total)return '';const uz=currentLang==='uz',out=[],seen=new Set();
    (SU.liq||[]).forEach(q=>{if(!q.add)return;const e=SUo[q.ev];if(!e||t<e.t0||t>=e.t1||(SUP.mode==='repair'&&q.keep))return;
