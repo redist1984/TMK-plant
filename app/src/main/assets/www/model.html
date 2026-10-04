@@ -569,7 +569,7 @@ const E = [
  {t:'TW-11301',ped:'round',k:'prof',X:5287.4,Y:2348.5,base:3.4,plan:'3147-5G113-05',segs:[[0,0.6,6.55],[0.6,13.7,6.24]],dome:[13.7,6.24,1.1],ducts:[[14.6,0,1.82,0.8,90,0],[3,225,1.72,3,45]],nso:'3147-5H113-01-01'},
  {t:'TW-11302',ped:'round',k:'prof',X:5287.4,Y:2366.5,base:3.4,plan:'3147-5G113-05',segs:[[0,0.6,6.3],[0.6,20.64,6.15]],dome:[20.64,6.15,1.1],ducts:[[18.3,-62,1.52,1.2],[3,-108,1.62,3,45]],nso:'3147-5H113-02-01'},
  {t:'TW-11303',ped:'round',k:'prof',X:5287.4,Y:2357.5,base:3.4,plan:'3147-5G113-05',segs:[[0,0.6,6.55],[0.6,13.5,6.24]],dome:[13.5,6.24,1.18],ducts:[[14.5,0,1.82,0.8,90,0],[3,-108,1.72,3,45]],nso:'3147-5H113-03-01'},
- {t:'SK-11301',k:'chimney',X:5304.7,Y:2336.4,plan:'3147-5G113-05',vend:'Hunan Jisheng SBJS-ZT-01-01-001'},
+ {t:'SK-11301',k:'chimney',X:5303.1,Y:2339.1,plan:'3147-5G113-05',vend:'Hunan Jisheng SBJS-ZT-01-01-001'},
  {t:'VE-11301',k:'ctank',X:5304.3,Y:2355.1,d:3.0,L:15.0,yc:3.9,pumps:[4.1,1.1,-1.9],dims:'Ø3000 × L 15000 (16270 по днищам), низ EL 2,400, футеровка кислотоупорным кирпичом',plan:'3147-5G113-05',nso:'3147-5H113-04-01 Rev.1'},
  {t:'EX-11301',k:'acool',dw:.5,da:.5,X:5299.4,Y:2349.4,d:1.1,L:8.4,yc:2.05,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2508-0'},
  {t:'EX-11302',k:'acool',dw:.45,da:.45,X:5299.4,Y:2366.5,d:0.9,L:8.2,yc:1.95,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2509-0'},
@@ -3639,7 +3639,10 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  // (≈5 s of real time — the flow can be seen leaving the equipment), then speed up to the normal pace and slow
  // down again just before the next start. Rate in hours of plant time per second.
  const SU_RMIN=.008,SU_HOLD=.04,SU_UP=2,SU_DOWN=1.6,SU_NORM=1.5;
- function suRate(t){const st=SUP.EV.map(e=>e.t0);let dn=Infinity,dp=Infinity;st.forEach(x=>{if(x>t+1e-6)dn=Math.min(dn,x-t);else dp=Math.min(dp,t-x)});
+ // every change of a card text (new flow inside a stage) also slows the playback, so the text can be read
+ function suPhTimes(){if(SU.phT&&SU.phK===SU.arrC)return SU.phT;const o=[];if(typeof SU_PH!=='undefined')Object.entries(SU_PH).forEach(([id,L])=>{const e=SUo[id];if(!e)return;
+     L.forEach(([k])=>{const a=typeof k==='number'?e.t0+k*e.dur:suArr(id,k);if(a!=null&&a>e.t0)o.push(a)})});SU.phT=o;SU.phK=SU.arrC;return o}
+ function suRate(t){const st=SUP.EV.map(e=>e.t0).concat(suPhTimes());let dn=Infinity,dp=Infinity;st.forEach(x=>{if(x>t+1e-6)dn=Math.min(dn,x-t);else dp=Math.min(dp,t-x)});
    dn=Math.min(dn,(SUP.total-t)+.05);
    const after=dp<SU_HOLD?SU_RMIN:SU_RMIN+(dp-SU_HOLD)*SU_UP, before=SU_RMIN+dn*SU_DOWN;
    return Math.min(SU_NORM,after,before)}
