@@ -564,11 +564,11 @@ const E = [
  {t:'TW-11303',k:'prof',X:5287.4,Y:2357.5,base:3.4,plan:'3147-5G113-05',segs:[[0,0.6,6.55],[0.6,13.5,6.24]],dome:[13.5,6.24,1.18],ducts:[[14.5,0,1.82,0.8,90,0],[3,-108,1.72,3,45]],nso:'3147-5H113-03-01'},
  {t:'SK-11301',k:'chimney',X:5304.7,Y:2336.4,plan:'3147-5G113-05',vend:'Hunan Jisheng SBJS-ZT-01-01-001',approx:1},
  {t:'VE-11301',k:'ctank',X:5304.3,Y:2355.1,d:3.0,L:15.0,yc:3.9,pumps:[4.1,1.1,-1.9],dims:'Ø3000 × L 15000 (16270 по днищам), низ EL 2,400, футеровка кислотоупорным кирпичом',plan:'3147-5G113-05',nso:'3147-5H113-04-01 Rev.1'},
- {t:'EX-11301',k:'acool',X:5299.4,Y:2349.4,d:1.1,L:8.4,yc:2.05,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2508-0'},
- {t:'EX-11302',k:'acool',X:5299.4,Y:2366.5,d:0.9,L:8.2,yc:1.95,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2509-0'},
- {t:'EX-11303',k:'acool',X:5299.4,Y:2369.3,d:1,L:7.6,yc:2.00,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2510-0'},
- {t:'EX-11304',k:'acool',X:5298.8,Y:2360.6,d:1,L:6.4,yc:2.00,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2511-0'},
- {t:'EX-11305',k:'acool',X:5299.4,Y:2363.9,d:0.9,L:7.8,yc:1.95,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2512-0'},
+ {t:'EX-11301',k:'acool',dw:.5,da:.5,X:5299.4,Y:2349.4,d:1.1,L:8.4,yc:2.05,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2508-0'},
+ {t:'EX-11302',k:'acool',dw:.45,da:.45,X:5299.4,Y:2366.5,d:0.9,L:8.2,yc:1.95,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2509-0'},
+ {t:'EX-11303',k:'acool',dw:.15,da:.3,X:5299.4,Y:2369.3,d:1,L:7.6,yc:2.00,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2510-0'},
+ {t:'EX-11304',k:'acool',dw:.3,da:.5,ts:4.494,ag:2.7,X:5298.8,Y:2360.6,d:1,L:6.4,yc:2.00,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2511-0'},
+ {t:'EX-11305',k:'acool',dw:.25,da:.2,X:5299.4,Y:2363.9,d:0.9,L:7.8,yc:1.95,plan:'3147-5G113-05',vend:'Lanzhou Xingye HR2512-0'},
  {t:'PP-11301',k:'vpump',sub:2.2,dims:'вертикальный погружной JHB, Q=650–816 м³/ч, H=27 м',X:5308.4,Y:2355.1,y0:6.1,plan:'3147-5G113-05'},
  {t:'PP-11302',k:'vpump',sub:2.2,dims:'вертикальный погружной JHB, Q=650–816 м³/ч, H=27 м',X:5305.4,Y:2355.1,y0:6.1,plan:'3147-5G113-05'},
  {t:'PP-11303',k:'vpump',sub:2.2,dims:'вертикальный погружной JHB, Q=650–816 м³/ч, H=27 м',X:5302.4,Y:2355.1,y0:6.1,plan:'3147-5G113-05'},
@@ -587,10 +587,12 @@ const E = [
  {t:'EX-11501',k:'cond',X:5251.6,Y:2411.6,d:2.8,L:9.17,yc:3.5,vend:'Qingdao Jieneng 0-0002-586C-0000-00',plan:'3147-5R115-17 л.2'},
  {t:'PP-11501AB',k:'box',X:5255.9,Y:2411.55,sx:3.4,sz:1.4,h:1.4,y0:-2,plan:'3147-5R115-17 л.2'},
  {t:'XX-11502',k:'box',X:5260.5,Y:2418.4,sx:4.2,sz:0.8,h:1.2,plan:'3147-5R115-17 л.1'},
- {t:'VE-12301AB',k:'tank',X:5347.606,Y:2426.04,d:24,h:14,R:24,base:1.2,nso:'3147-5H123-01-01',plan:'3147-5G123-05'},
- {t:'PP-12301AB',k:'pump',X:5369.6,Y:2409.5,y0:0.2,plan:'3147-5G123-05'},
- {t:'VE-12302',k:'vcyl',X:5369.7,Y:2402.7,d:4.6,h:0.4,underground:1,plan:'3147-5G123-05'},
- {t:'PP-12302AB',k:'pump',X:5369.7,Y:2402.7,y0:0.4,plan:'3147-5G123-05'},
+ {t:'VE-12301AB',k:'atank',X:5347.606,Y:2426.04,d:24,h:14,R:24,base:1.2,nso:'3147-5H123-01-01',plan:'3147-5G123-05'},
+ {t:'PP-12301AB',k:'hpump2',X:5369.6,Y:2408.5,L:1.9,W:0.64,H:0.8,y0:0.235,plan:'3147-5G123-05',vend:'Kunming Jiahe JHA80-250/160M, 50 м³/ч, 20 м, 11 кВт'},
+ {t:'PP-12301AB',k:'hpump2',X:5369.6,Y:2410.5,L:1.9,W:0.64,H:0.8,y0:0.235,plan:'3147-5G123-05',vend:'Kunming Jiahe JHA80-250/160M, 50 м³/ч, 20 м, 11 кВт'},
+ {t:'VE-12302',k:'pit111',round:1,underground:1,X:5369.7,Y:2402.7,d:4.0,h:2.35,dims:'Ø4000 × H 2350 мм, ≈30 м³ (подземный, кислотоупорный кирпич)',nso:'3147-5H123-02-01',plan:'3147-5G123-05'},
+ {t:'PP-12302AB',k:'vpump',sub:2.3,X:5369.7,Y:2401.9,y0:.08,dims:'погружной JHB50-20, L=2300 мм, 50 м³/ч, 20 м, 15 кВт',plan:'3147-5G123-05'},
+ {t:'PP-12302AB',k:'vpump',sub:2.3,X:5369.7,Y:2403.5,y0:.08,dims:'погружной JHB50-20, L=2300 мм, 50 м³/ч, 20 м, 15 кВт',plan:'3147-5G123-05'},
  {t:'SM-12303A~D',k:'box',X:5372.8,Y:2449.9,sx:46,sz:3,h:0.4,y0:5.8,plan:'3147-5G123-05'},
  // top-loading arms AL1402 DN150 with metering skids (Lianyungang Hechang HCL26040-00/-03);
  // loading points at the 4 posts of station 124 on genplan UZLS-3147-4T100-01 Rev.E, arms shown deployed over the track
@@ -624,8 +626,8 @@ const E = [
 {t:'RM-13',k:'mach',type:'press',X:5345.5,Y:2566.3,col:0x3F6FA0,plan:'План РМУ 142'},
 {t:'RW-1…6',k:'railnet',lines:{"1": [[5390.32, 2063], [5391.94, 2158.7], [5398.07, 2521.58]], "2": [[5388.5, 2205.32], [5388.42, 2227.57], [5388.5, 2239.64], [5391.5, 2416.73], [5393.48, 2448.32], [5395.37, 2465.9], [5397.46, 2485.13]], "L": [[5392.08, 2167.07], [5390.61, 2182.88], [5377.66, 2320.67]], "3": [[5384.43, 2248.54], [5384.37, 2270.6], [5384.45, 2282.64], [5388.49, 2521.58]], "4": [[5380.36, 2291.76], [5380.29, 2313.39], [5380.37, 2325.38], [5383.69, 2521.56]], "5": [[5377.66, 2320.67], [5376.68, 2339.99], [5376.16, 2359.31], [5378.91, 2521.55]], "6": [[5390.61, 2080.0], [5390.68, 2086.11], [5390.69, 2091.85], [5390.63, 2097.24], [5390.51, 2102.31], [5390.32, 2107.08], [5390.08, 2111.58], [5389.78, 2115.82], [5389.41, 2119.84], [5389.0, 2123.66], [5388.53, 2127.29], [5388.0, 2130.77], [5387.43, 2134.11], [5386.8, 2137.34], [5386.13, 2140.49], [5385.4, 2143.57], [5384.64, 2146.62], [5383.83, 2149.65], [5382.98, 2152.69], [5382.08, 2155.76], [5381.15, 2158.88], [5380.9, 2159.71], [5379.61, 2163.57], [5378.16, 2167.41], [5372.82, 2181.3], [5370.08, 2189.05], [5367.77, 2196.98], [5365.88, 2204.97], [5364.45, 2213.06], [5363.45, 2221.26], [5362.92, 2229.45], [5362.84, 2237.68], [5364.13, 2313.98]]},stops:[[5398.09, 2522.48], [5388.51, 2522.64], [5383.71, 2522.72], [5378.93, 2522.8], [5364.09, 2311.63]],plan:'UZLS-3147-4T100-01 Rev.E'},
  {t:'SM-12303A~D',k:'rail',norails:1,X:5377.8,y:[2412,2482],pl:{X:5372.8,w:3,top:6.2,y:[2426.4,2473.4]},plan:'3147-5G123-05'},
- {t:'VE-12301AB',k:'tank',X:5347.606,Y:2460.54,d:24,h:14,R:24,base:1.2,nso:'3147-5H123-01-01',plan:'3147-5G123-05'},
- {t:'TW-12301',k:'vcyl',X:5347.6,Y:2427.04,d:0.5,h:4,base:17.6,plan:'3147-5G123-05',approx:1},
+ {t:'VE-12301AB',k:'atank',X:5347.606,Y:2460.54,d:24,h:14,R:24,base:1.2,nso:'3147-5H123-01-01',plan:'3147-5G123-05'},
+ {t:'TW-12301',k:'scrtw',X:5347.6,Y:2427.04,d:0.53,h:4.48,base:17.7,plan:'3147-5G123-05',nso:'3147-5H123-04-01'},
  {t:'VE-11401',k:'flash',X:5240.3,Y:2324.1,y0:.3,d:1.216,h:3.82,hs:2.66,leg:.652,bc:.84,legA:[180,300,60],lgA:225,side:[[90,2.9,.11],[270,1.2,.08],[270,2.3,.08],[0,3.1,.11]],dims:'DN1200 × H≈3818, V=3,5 м³, 3 опоры на Ø840',vend:'SOPO CERE 37SCG2504-0',plan:'3147-5R114-14'},
  {t:'VE-11402',k:'flash',X:5240.9,Y:2317.1,y0:0,d:2.024,h:4.13,hs:2.5,leg:.846,bc:1.5,legA:[90,210,330],lgA:90,side:[[270,2.4,.14],[90,1.6,.08],[270,1.6,.08],[0,3.0,.11]],dims:'DN2000 × H≈4132, V=10 м³, 3 опоры на Ø1500',vend:'SOPO CERE 38SCG2504-0',plan:'3147-5R114-14'},
  {t:'MZ-114.101',k:'box',X:5239.5,Y:2332.6,sx:1.5,sz:1.2,h:1.5,y0:6,plan:'3147-5R114.1-04',approx:1},
@@ -665,7 +667,7 @@ const E = [
  {t:'VE-11303',k:'pit111',underground:1,y0:-2,X:5310.2,Y:2368.4,sx:2,sz:2,h:2,dims:'2 × 2 × H 2 м (подземный, кислотоупорный)',nso:'3147-5H113-08-01',approx:1},
  {t:'PP-11306',k:'vpump',X:5310.6,Y:2368.4,y0:0.08,sub:1.8,dims:'вертикальный погружной JFY30-30, Q=30 м³/ч, H=30 м',approx:1},
  {t:'VE-12303',k:'box',X:5330.1,Y:2398.3,sx:3,sz:2.2,h:2,y0:-2,plan:'3147-5G123-05',approx:1},
- {t:'PP-12303',k:'pump',X:5330.1,Y:2398.3,y0:0,plan:'3147-5G123-05'},
+ {t:'PP-12303',k:'vpump',sub:2.165,X:5330.1,Y:2398.3,y0:.08,dims:'погружной, L=2165 мм, 10 м³/ч, 20 м, 5,5 кВт',plan:'3147-5G123-05'},
  {t:'TK-11504',k:'box',X:5259.2,Y:2405.2,sx:3.46,sz:2.46,h:1.97,y0:3.4,vend:'Qingdao Jieneng 0-0002-586C-0000-00',plan:'3147-5R115-17 л.2'},
  {t:'PP-11504',k:'pump',X:5260.7,Y:2406.5,y0:0,plan:'3147-5R115-17 л.1'},
  {t:'PP-11505',k:'pump',X:5260.7,Y:2404.75,y0:0,plan:'3147-5R115-17 л.1'},
@@ -844,12 +846,9 @@ const F = [
  {s:"solid",a:["FR-11102",7],b:["XX-11101ABC",0.75],e:8.05,dashed:1},
  {s:"sulfur",a:["TK-11101A/B",3],b:["TK-11102",2.5],e:3.5,from2:[5354.4,2339.4]},
  {s:"sulfur",p3:[[5342.2,2342.8,3],[5342.2,2345,3],[5347.9,2345,3],[5347.9,2347.4,3]]},
- {s:"sulfur",a:["TK-11102",2.5],b:[5352,2362,7],e:9},
- {s:"sulfur",a:["TK-11102",2.5],b:[5346,2362,7],e:8.6},
  {s:"sulfur",a:[5352,2368,7],b:["TK-11103",2.5],e:9.4,w:[[5352,2368],[5343.5,2368]]},
  {s:"sulfur",a:[5346,2368,7],b:["TK-11103",2.5],e:9.4,w:[[5346,2368],[5343.5,2368]]},
- {s:"sulfur",a:["TK-11104",2.5],b:[5352,2362,7],e:9.8,dashed:1},
- {s:"sulfur",a:["TK-11103",2.5],b:[5340,2362,7],e:8.2},
+ {s:"sulfur",a:[5353.6,2368,7],b:["TK-11104",2.5],e:9.0,w:[[5353.6,2368],[5353.6,2368]],ea:"FR-11101A/B"},
  {s:"sulfur",a:[5340,2368,7],b:["TK-11105",2.5],e:8.8,w:[[5340,2368],[5338.9,2368]]},
  {s:"sulfur",a:["TK-11105",2.5],b:["VE-12201",12],e:7.2,w:[[5338.9,2348.8],[5327.7,2348.8],[5327.7,2294.4],[5288.64,2294.4],[5288.64,2265.79]],r:0.08,via:"R1>RW"},
  {s:"sulfur",a:["VE-12201",1],b:["VE-12202",2],e:3},
@@ -1022,8 +1021,8 @@ const F = [
  {s:"acid",a:["VE-12302",0.2],b:["PP-12302AB",1.6],e:3.3},
  {s:"acid",a:["PP-12302AB",1.6],b:["SM-12303A~D",6],w:[[5369.7,2449.9]],e:5.9,dashed:1},
  {s:"acid",a:["PP-12301AB",1.4],b:["VE-12302",0.2],e:2.8,dashed:1},
- {s:"acid",a:["PP-12302AB",1.6],b:["TW-12301",20.4],w:[[5369.7,2427.04]],e:18.9,dashed:1},
- {s:"acid",a:["TW-12301",20.4],b:["VE-12302",0.2],w:[[5347.6,2402.7]],e:19.1},
+ {s:"acid",a:["PP-12302AB",1.6],b:["TW-12301",20.4],w:[[5369.7,2427.04]],e:20.8,dashed:1},
+ {s:"acid",a:["TW-12301",20.4],b:["VE-12302",0.2],w:[[5347.6,2402.7]],e:19.6},
  {s:"acid",a:["VE-12301AB",3.2],b:["VE-12303",-1],dashed:1,via:"local",p3:[[5347.6,2413.6,3.2],[5347.6,2404.0,3.2],[5330.1,2404.0,3.2],[5330.1,2399.7,3.2],[5330.1,2399.7,-0.5]]},
  {s:"acid",a:["PP-12303",1.2],b:[5330.1,2390.5,-0.8],e:1.2,dashed:1,code:"WSA-12301-80-DE3 (стоки в канализацию)",r:0.05,via:"local"},
  {s:"water",a:["PP-114.101AB",1.6],b:["EX-11205",10],e:8.5,w:[[5238.6,2362.7]],via:"local"},
@@ -1829,6 +1828,7 @@ function start(){
      if(o.drum){const dd=(o.dd||1.8)*.92;const w=cyl(dd,dd,(o.dl||o.L*.75)*.97,M.liqW,20);w.rotation.copy(tb.rotation);w.position.set(0,o.yc+(o.dz||o.d/2+1.6)-.05,0);add(w)}}
    else if(o.k==='hves'){const lq=new THREE.Mesh(new THREE.BoxGeometry(o.d*.82,o.d*.5,o.L*.98),M.liqAcid);lq.position.y=o.yc-o.d*.2;add(lq)}
    else if(o.k==='tank'){const lq=cyl(o.d-.3,o.d-.3,o.h*.72,o.t.startsWith('VE-122')?M.liqS:M.liqAcid,64);lq.position.y=o.h*.36+.05;add(lq)}
+   else if(o.k==='atank'){const lq=cyl(o.d-.3,o.d-.3,12.6*.72,M.liqAcid,64);lq.position.y=o.base+12.6*.36+.05;add(lq)}
    else if(o.k==='mtank'){const lq=cyl(5.8,5.8,3.6,M.liqS,40);lq.position.y=2.9;add(lq)}
    else if(o.k==='cbox'){const lq=new THREE.Mesh(new THREE.BoxGeometry(4.3,1.8,4.3),M.liqS);lq.position.y=1.65;add(lq)}
    else if(o.k==='vcyl'&&o.t==='VE-11302'){const lq=cyl(o.d-.3,o.d-.3,o.h*.7,M.liqAcid,40);lq.position.y=o.h*.35+.02;add(lq)}
@@ -1842,6 +1842,41 @@ function start(){
    else if(o.k==='tower'){const c=cyl(o.d,o.d,o.h,mat);c.position.y=o.h/2;g.add(c);dome(g,o.h,o.d,o.d*.18,mat);g.position.copy(P(o.X,o.Y,0))}
    else if(o.k==='tank'){const c=cyl(o.d,o.d,o.h,mat,64);c.position.y=o.h/2;g.add(c);const r=o.d/2;dome(g,o.h,o.d,o.R-Math.sqrt(o.R*o.R-r*r),mat);
      const ring=cyl(o.d+.6,o.d+.6,.25,M.steelDark,64);ring.position.y=o.h;g.add(ring);g.position.copy(P(o.X,o.Y,0))}
+   else if(o.k==='scrtw'){
+     // TW-12301 vent scrubber on the acid tank roof, 3147-5H123-04-01: Ø530 × ≈4477 with heads, ceramic saddle packing,
+     // N1 DN200 inlet at 45° low, N3 drain into the roof, N4 DN200 gooseneck outlet on top, 4 support lugs at EL 19.600.
+     const sh=cyl(.53,.53,3.95,mat,24);sh.position.y=.26+3.95/2;g.add(sh);
+     [.26,4.21].forEach((y,i)=>{const h=new THREE.Mesh(new THREE.SphereGeometry(.265,16,8),mat);h.scale.y=.5;h.position.y=y;g.add(h)});
+     [1.1,2.6,3.6].forEach(y=>{const f=cyl(.68,.68,.05,M.steelDark,24);f.position.y=y;g.add(f)});
+     for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4,l=new THREE.Mesh(new THREE.BoxGeometry(.25,.25,.08),M.steelDark);l.position.set(Math.cos(a)*.38,1.9,-Math.sin(a)*.38);l.rotation.y=a;g.add(l)}
+     const n3=cyl(.06,.06,.4,M.steelDark,10);n3.position.y=-.1;g.add(n3);
+     const nk=cyl(.22,.22,.45,M.steelDark,14);nk.position.y=4.55;g.add(nk);
+     const gn=new THREE.Mesh(new THREE.TorusGeometry(.35,.11,8,16,Math.PI),M.steelDark);gn.position.set(.35,4.78,0);g.add(gn);
+     const dn=cyl(.22,.22,.25,M.steelDark,14);dn.position.set(.7,4.65,0);g.add(dn);
+     const n1=cyl(.22,.22,.5,M.steelDark,14);n1.rotation.z=Math.PI/4;n1.position.set(-.42,.7,0);g.add(n1);
+     g.position.copy(P(o.X,o.Y,o.base))}
+   else if(o.k==='atank'){
+     // VE-12301A/B sulfuric acid tank, 3147-5H123-01-01/-08 and nozzle plan 5G123-07: Ø24000 × 14000 shell on a ring
+     // foundation (bottom EL 1.200), dome roof R24000 (top ≈ EL 18.5), top curb angle and roof handrail, spiral stair on the
+     // west/south-west side from grade to the roof, shell manholes a/c DN600, bottom nozzles b/e/f/g/h on the north side.
+     const r=o.d/2,b=o.base,dir=t=>[Math.cos(t*Math.PI/180),-Math.sin(t*Math.PI/180)];
+     const fd=cyl(o.d+1.0,o.d+1.0,b,M.conc,64);fd.position.y=b/2;g.add(fd);
+     const c=cyl(o.d,o.d,o.h,mat,64);c.position.y=b+o.h/2;g.add(c);dome(g,b+o.h,o.d,o.R-Math.sqrt(o.R*o.R-r*r),mat);
+     const ring=cyl(o.d+.3,o.d+.3,.2,M.steelDark,64);ring.position.y=b+o.h;g.add(ring);
+     [1.6,0].forEach((dr,i)=>{const hr=new THREE.Mesh(new THREE.TorusGeometry(r-.6-dr*0,.03,4,96),M.steel);hr.rotation.x=Math.PI/2;hr.position.y=b+o.h+.35+(i?0:.75);g.add(hr)});
+     for(let t=0;t<360;t+=10){const[x,z]=dir(t);const pst=cyl(.04,.04,1.1,M.steel,4);pst.position.set(x*(r-.6),b+o.h+.55+.1,z*(r-.6));g.add(pst)}
+     // spiral stair: 270° (west) at grade → 195° at the roof, 1 m wide, outer stringer + handrail
+     const t0=275,t1=195,n=56,sr=r+.6;
+     for(let i=0;i<=n;i++){const k=i/n,t=t0+(t1-t0)*k,[x,z]=dir(t),h=k*(b+o.h);
+       const st=new THREE.Mesh(new THREE.BoxGeometry(1.0,.05,.3),M.grate||M.steelDark);st.position.set(x*sr,h+.1,z*sr);st.rotation.y=Math.atan2(-z,x);g.add(st);
+       if(i%4===0){const pp=cyl(.03,.03,1.0,M.steel,4);pp.position.set(x*(sr+.5),h+.6,z*(sr+.5));g.add(pp)}}
+     const tl=new THREE.Mesh(new THREE.BoxGeometry(1.4,.06,1.4),M.steelDark),[tx,tz]=dir(t1);tl.position.set(tx*sr,b+o.h+.1,tz*sr);g.add(tl);
+     // nozzles: [bearing, height above grade, DN]
+     const nz=(t,h,d,l=.35)=>{const[x,z]=dir(t),q=cyl(d,d,l,M.steelDark,16);q.position.set(x*(r+l/2),h,z*(r+l/2));q.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(x,0,z));g.add(q);
+       const f=cyl(d+.15,d+.15,.05,M.steelDark,16);f.quaternion.copy(q.quaternion);f.position.set(x*(r+l),h,z*(r+l));g.add(f)};
+     nz(298,b+.9,.62);nz(180,b+.9,.62);                                                    // manholes a, c
+     [[332,.15],[349,.2],[3,.2],[33,.2],[45,.2],[312,.15]].forEach(([t,d])=>nz(t,b+.45,d));  // b2, f1, f2, g, h, e
+     g.position.copy(P(o.X,o.Y,0))}
    else if(o.k==='stack'){const c=cyl(o.d,o.d*.8,o.h,mat,20);c.position.y=o.h/2;g.add(c);g.position.copy(P(o.X,o.Y,0))}
    else if(o.k==='prof'){let rmax=0;o.segs.forEach(([y0,y1,d0,d1])=>{const c=cyl(d0,d1??d0,y1-y0,mat);c.position.y=(y0+y1)/2;g.add(c);rmax=Math.max(rmax,d0/2,(d1??d0)/2)});
      if(o.dome)dome(g,o.dome[0],o.dome[1],o.dome[2],mat);
@@ -1991,19 +2026,25 @@ function start(){
      const nzS=(x,y,z,d,sg,l=.3)=>{const n=cyl(d,d,l,M.steelDark,14);n.rotation.z=Math.PI/2;n.position.set(x+sg*l/2,y,z);g.add(n);const fl=cyl(d+.12,d+.12,.05,M.steelDark,14);fl.rotation.z=Math.PI/2;fl.position.set(x+sg*l,y,z);g.add(fl)};
      const yc=o.yc, r=o.d/2;
      if(o.k==='acool'){
-       // anodically protected shell-and-tube acid cooler (5G113-06, sections A-A…F-F): shell on two saddles on concrete
-       // piers, bottom of shell at EL 1.500; channel heads with water nozzles at both ends, acid nozzles on the shell top
-       const Ls=o.L-1.2, hl=.5;
+       // anodically protected shell-and-tube acid cooler, vendor GA Lanzhou Xingye HR2508…2512 (2025-10-29): shell Ød with
+       // elliptical heads, overall ≈L, tubesheets 5994 apart (4494 for EX-11304) with body flanges and a middle girth flange;
+       // a/d (water) and b/c (acid) on the bottom 200 below the shell, vents g/k and h DN80 on top, two anode glands 250 high
+       // 3600 apart (2700), cathode lead on the east head; saddles under both ends on concrete piers, shell bottom EL 1.5.
+       const ts=(o.ts||5.994)/2, ag=(o.ag||3.6)/2, hd=r*.5, Ls=o.L-2*hd;
        edges(CZ(o.d,Ls,0,yc));
-       [-1,1].forEach(sg=>{const ze=sg*(Ls/2+hl/2);CZ(o.d*1.12,hl,ze,yc);
-         CZ(o.d*1.26,.07,sg*(Ls/2+.035),yc,M.steelDark);CZ(o.d*1.26,.07,sg*(Ls/2+hl-.035),yc,M.steelDark);
-         CZ(o.d*1.18,.06,sg*(Ls/2+hl+.03),yc,M.steelDark);
-         CZ(.14,.3,sg*(Ls/2+hl+.2),yc,M.steelDark,10);                                               // anode / reference electrode gland
-         nzS(o.d*.56,yc+r*.45,ze,o.dw||.26,1);nzS(o.d*.56,yc-r*.45,ze,o.dw||.26,1);                  // cooling-water nozzles (a/k, d/g)
-         const zs=sg*Ls*.31;B(o.d*.95,.3,.28,0,yc-r-.05,zs);B(.7,yc-r-.2,.7,0,(yc-r-.2)/2,zs,M.conc);  // saddle + pier
-         nzT(0,sg*(Ls/2-.55),o.da||.32,yc+r*.92,.45);                                                // acid in / out (b, c)
+       [-1,1].forEach(sg=>{const h=new THREE.Mesh(new THREE.SphereGeometry(r,32,16),mat);h.scale.set(1,1,hd/r);h.position.set(0,yc,sg*Ls/2);g.add(h);
+         CZ(o.d*1.16,.09,sg*ts,yc,M.steelDark);CZ(o.d*1.12,.06,sg*(ts+.08),yc,M.steelDark);                 // tubesheet + body flanges
+         const ze=sg*(Ls/2-.46);nzT(0,ze,o.dw||.3,yc-r-.2,.2);g.children[g.children.length-2].position.y=yc-r-.1;   // a / d (bottom)
+         g.children[g.children.length-1].position.y=yc-r-.2;
+         const zb=sg*(Ls/2-.46-(o.dw||.3)/2-(o.da||.3)/2-.2);const nb=cyl(o.da||.3,o.da||.3,.2,M.steelDark,14);nb.position.set(0,yc-r-.1,zb);g.add(nb);
+         const fb=cyl((o.da||.3)+.12,(o.da||.3)+.12,.05,M.steelDark,14);fb.position.set(0,yc-r-.2,zb);g.add(fb);   // b / c (bottom)
+         nzT(0,sg*(ts+.35),.09,yc+r-.02,.2);                                                              // vents g / k
+         const an=new THREE.Mesh(new THREE.BoxGeometry(.3,.25,.3),M.steelDark);an.position.set(0,yc+r+.1,sg*ag);g.add(an);   // anode glands
+         const zs=sg*(Ls/2-.25-(o.dw||.3));B(o.d*.75,.2,.22,0,yc-r-.1,zs);B(o.d*.75+.1,yc-r-.2,.6,0,(yc-r-.2)/2,zs,M.conc);  // saddle + pier
        });
-       const dr=cyl(.12,.12,.25,M.steelDark,10);dr.position.set(0,yc-r-.1,0);g.add(dr);               // drain h
+       CZ(o.d*1.1,.06,0,yc,M.steelDark);                                                                   // middle girth flange
+       nzT(0,-.3,.09,yc+r-.02,.2);                                                                        // h
+       const cl=cyl(.14,.14,.25,M.steelDark,10);cl.rotation.x=Math.PI/2;cl.position.set(0,yc,-(o.L/2+.05));g.add(cl);   // cathode lead
      }else{
        // VE-11301 combined circulation acid tank, 3147-5H113-04 Rev.1: Ø3000 × 15000 (16270 over 2:1 heads), acid brick
        // lining, bottom EL 2.400; three pump compartments a1–a3 on the top under the pumps PP-11301/02/03 (EL 6.300),
@@ -3102,7 +3143,7 @@ function start(){
    let dims=T.noData3d;
    if(o){const k=o.k;
      if(o.dims)dims=o.dims;
-     else if(['vcyl','tower','reactor','stack','tank','mtank'].includes(k))dims=`Ø${o.d} × H ${o.h} м`;
+     else if(['vcyl','tower','reactor','stack','tank','atank','mtank'].includes(k))dims=`Ø${o.d} × H ${o.h} м`;
      else if(k==='prof'){const dm=Math.max(...o.segs.flatMap(s=>[s[2],s[3]??s[2]]));const hm=Math.max(...o.segs.map(s=>s[1]))+(o.dome?o.dome[2]:0);dims=`Ø до ${dm} × H ${hm.toFixed(2)} м`}
      else if(k.startsWith('hcyl')||k==='hves'||k==='furnace')dims=`Ø${o.d} × L ${o.L} м`;
      else if(k==='deaer')dims=currentLang==='uz'?`bak Ø${o.d} × L ${o.Lo} m, kolonka Ø${o.hd} m`:`бак Ø${o.d} × L ${o.Lo} м, колонка Ø${o.hd} м`;
@@ -3288,7 +3329,7 @@ function start(){
     {id:'lsdist',st:6,dep:['b135'],dur:1,n:'Пар НД на 111, 122, 112: прогрев спутников',nu:'111, 122, 112 ga PB bug‘i: yo‘ldoshlarni qizdirish',
      c:`Прогрев паровых спутников, змеевиков TK-111xx и VE-12201, рубашек насосов и фильтров — 1 ч.`},
     {id:'m121',st:6,dep:['lsdist'],dur:sCharge/70,n:'121 → 111: подача и плавление серы',nu:'121 → 111: oltingugurtni uzatish va eritish',
-     c:`Загрузка TK-11101A/B 2 × 110 м³ × 0,8 × 1,8 т/м³ = ${f1(sCharge,0)} т. Кран LR-12101 (грейфер 10 т, цикл ${f1(crane)} мин) даёт ${f1(craneQ,0)} т/ч, пар на плавление (6 т/ч × 2015 кДж/кг × 0,85 ÷ 141 кДж/кг) — ${f1(steamQ,0)} т/ч; ограничивает конвейер CV-12101 70 т/ч → ${h(sCharge/70)}.`},
+     c:`Загрузка TK-11101A/B 2 × 110 м³ × 0,8 × 1,8 т/м³ = ${f1(sCharge,0)} т. Кран LR-12101 (грейфер 10 т, цикл ${f1(crane)} мин) даёт ${f1(craneQ,0)} т/ч, пар на плавление (6 т/ч × 2015 кДж/кг × 0,85 ÷ 141 кДж/кг) — ${f1(steamQ,0)} т/ч; ограничивает конвейер CV-12101 70 т/ч → ${h(sCharge/70)}. Жидкая сера 130–145 °C самотёком через верхний перелив TK-11101A/B идёт в бак фильтра 1-й ступени TK-11102 (регламент, п. 4.2.2).`},
     {id:'f111',st:6,dep:['m121'],off:sCharge/2/70,rel:'start',dur:filtV/25,n:'111: намыв и фильтрация серы',nu:'111: oltingugurtni filtrlash',
      c:`Начинается, когда заполнен первый резервуар (${h(sCharge/2/70)} после начала загрузки); намыв подложки в TK-11104 — параллельно. TK-11102 и TK-11103 по 40 м³, фильтры 3 × 11,85 м³, TK-11105 40 м³ = ${f1(filtV,0)} м³ ÷ 25 м³/ч (PP-11101) = ${h(filtV/25)}.`},
     {id:'v122',st:6,dep:['f111'],dur:v122/25,n:'122: склад жидкой серы',nu:'122: suyuq oltingugurt ombori',
@@ -3348,7 +3389,7 @@ function start(){
    if(s==='W131')return 'w131'; if(s==='W132')return 'w132'; if(s==='W133')return /134/.test(t)?'w134':'w133';
    if(s==='R114')return /^(DA|PP-114|MZ)/.test(t)?'d1141':'hus';
    if(s==='R115'){if(t==='XX-11502')return 'lsdist';if(/^(TK-1150[24]|PP-1150[4-7]|EX-11504|FR-11503)/.test(t))return 'oil115';return 't115'}
-   if(s==='Hg121'||t==='TK-11101A/B'||t==='AG-11101A/B')return 'm121';
+   if(s==='Hg121'||t==='TK-11101A/B'||t==='AG-11101A/B'||t==='TK-11102')return 'm121';
    if(s==='G111')return 'f111'; if(s==='G122')return 'v122';
    if(s==='G112'){if(/^(FU-11201|EX-11201|SM-11202|XX-11201|EX-1120[57])/.test(t))return 'b114';if(/^SM-11201/.test(t))return 'ign';if(/^EX-11206/.test(t))return 'hus';return 'hc112'}
    if(s==='G113')return /^(BO-11301|SM-11301|TW-11301)/.test(t)?'bl113':(/^(TW-11304|VE-1130[45]|BO-11302)/.test(t)?'ign':'a113');
@@ -3392,7 +3433,7 @@ function start(){
   d1141:'Деаэратор паром нагревает питательную воду и удаляет из неё кислород, чтобы не ржавели трубы котла-утилизатора.',
   b114:'Котёл-утилизатор заполняют горячей деаэрированной водой. Позже он будет получать пар от тепла горящей серы.',
   lsdist:'Пар идёт в паровые спутники и змеевики 111, 122 и 112. Сера застывает ниже 120 °C, поэтому все её трубы и ёмкости сначала прогревают.',
-  m121:'Кран со склада 121 подаёт твёрдую серу в плавильники 111, где паром её расплавляют.',
+  m121:'Кран со склада 121 подаёт твёрдую серу в плавильники 111, где паром её расплавляют; жидкая сера переливом стекает в бак фильтра TK-11102.',
   f111:'Жидкую серу фильтруют от золы и примесей. Чистая сера не забивает форсунки печи и катализатор.',
   v122:'Чистая жидкая сера заполняет резервуар 122. Это запас, из которого насосы будут подавать серу в печь.',
   a113:'Отделение 113 заполняют серной кислотой со склада 123 и включают её циркуляцию по башням. Кислота сушит воздух и поглощает газ SO₃.',
