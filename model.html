@@ -4158,10 +4158,17 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function coldMat(m){if(coldCache.has(m))return coldCache.get(m);let c=m;if(m.color){c=m.clone();c.color=m.color.clone().lerp(grey,.75);if(c.emissive)c.emissive.setRGB(0,0,0)}coldCache.set(m,c);return c}
  function setCold(o,on){o.traverse(c=>{if(!c.isMesh||(c.userData.inner&&(c.material===M.liqAcid||c.material===M.liqS||c.material===M.liqW)))return;if(!c.userData.base)c.userData.base=c.material;if(!!c.userData.cold===on)return;c.userData.cold=on;if(c.material===selMat||c.userData.dimmed||c.userData.fade)return;c.material=on?coldMat(c.userData.base):c.userData.base})}
  function evState(id){const e=SUo[id];return SU.t<e.t0?0:(SU.t<e.t1?1:2)}
+ // catalyst heating: the hot air leaving the converter goes on along the gas train (exchangers, absorbers) until the gas comes;
+ // the gas lines downstream of RE-11201 are shown faint in the air colour meanwhile, filling in order
+ function suAirOn(fo,t){if(fo.ev!=='ign'||fo.s!=='gas')return false;const h=SUo.hc112,e=SUo.ign;if(!h||!e)return false;
+   const aH=suArr('hc112',/^RE-11201/)||h.t0,aR=suArr('ign',/^RE-11201/);if(aR==null||fo.st0<aR-1e-6||t<aH||t>=fo.st0)return false;
+   const k=(fo.st0-aR)/Math.max(.05,e.t1-aR);return t>=aH+k*(h.t1-aH)*.5}
+ function suAirMat(){if(!SU.airM){const m=(SM.air||SM.gas).tube.clone();m.transparent=true;m.opacity=.45;m.depthWrite=false;SU.airM=m}return SU.airM}
  function suApply(){
    const t=SU.t;
    flowObjs.forEach(fo=>{fo.rev=Math.max(0,Math.min(1,(t-fo.st0)/fo.sdur));if(fo.ev&&SUo[fo.ev]&&SUo[fo.ev].stop&&SUo[SUo[fo.ev].stop]&&t>=SUo[SUo[fo.ev].stop].t1)fo.rev=0;const g=fo.tube.geometry;g.setDrawRange(0,fo.rev>=1?Infinity:Math.ceil(fo.rev*fo.segs)*48);
-     const hot=fo.rev>0&&fo.ev&&SUo[fo.ev]&&t>=SUo[fo.ev].t0&&t<SUo[fo.ev].t1;const run=suRun(fo,t);fo.tube.material=(hot||run)&&!(SU.focus==='ign'&&!/^(sulfur|gas|steam|water)$/.test(fo.s))?glowMat(fo.s):(/^(lsdist|t115|ign|bl113)$/.test(SU.focus)?suDimMat(fo.s):SM[fo.s].tube);});
+     const hot=fo.rev>0&&fo.ev&&SUo[fo.ev]&&t>=SUo[fo.ev].t0&&t<SUo[fo.ev].t1;const run=suRun(fo,t);if(fo.rev===0&&suAirOn(fo,t)){fo.tube.geometry.setDrawRange(0,Infinity);fo.tube.material=suAirMat();return}
+     fo.tube.material=(hot||run)&&!(SU.focus==='ign'&&!/^(sulfur|gas|steam|water)$/.test(fo.s))?glowMat(fo.s):(/^(lsdist|t115|ign|bl113)$/.test(SU.focus)?suDimMat(fo.s):SM[fo.s].tube);});
    SU.ext.forEach(x=>{x.rev=Math.max(0,Math.min(1,(t-x.st0)/x.sdur))});
    // equipment that only serves the start-up (boiler 135) goes cold again once its stop event is over
    const stopped=ev=>{const e=SUo[ev];return !!(e&&e.stop&&SUo[e.stop]&&t>=SUo[e.stop].t1)};
@@ -4171,8 +4178,9 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    // the focus only moves forward: the most recently started event stays in view until the next one starts
    // (going back to an older, still running event made the camera jump back and forth)
    let cur=t>=SUP.total?null:SUP.EV.filter(e=>t>=e.t0).sort((a,b)=>b.t0-a.t0||(SU_SHOT[b.id]?1:0)-(SU_SHOT[a.id]?1:0))[0];
+   // the start-up boiler 135 keeps the main view over the power-plant cooling water 134 (it matters more for the start-up)
    // steam tracing, sulfur melting and ignition keep the main view until they end; events starting meanwhile go to the side panes
-   if(cur&&!SU_KEEP[cur.id]&&cur.id!=='t115'){const hold=SUP.EV.find(e=>SU_KEEP[e.id]&&t>=e.t0&&t<e.t0+e.dur*SU_KEEP[e.id]);if(hold)cur=hold}
+   if(cur&&!SU_KEEP[cur.id]&&cur.id!=='t115'){const hold=SUP.EV.find(e=>SU_KEEP[e.id]&&t>=e.t0&&t<e.t0+e.dur*SU_KEEP[e.id]&&(e.id!=='b135'||cur.id==='w134'));if(hold)cur=hold}
    const fid=cur?cur.id:null;if(fid!==SU.focus){SU.focus=fid;if(fid)suFocus(fid);else suHL.visible=false}
    // the see-through set also changes when a later event starts under the same focus (converter heating, a new vessel filling)
    const ck=fid+'|'+SUP.EV.filter(e=>t>=e.t0).length;if(ck!==SU.cutId){SU.cutId=ck;suCutSet(fid)}
@@ -4272,7 +4280,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  // pulls back to show the sulfur coming from 121; ign: furnace close-up turning slowly; hc112: converter turning
  // slowly; t115: pan around the turbine hall (its roof and walls are faded by suOcclude)
  const SU_SURR={ign:/^(FU-11201|SM-11201)/,bl113:/^(SM-11301|BO-11301)/};
- const SU_SHOT={lsdist:1,m121:1,ign:1,hc112:1,t115:1,oil115:1,prod:1,v122:1},SU_KEEP={lsdist:1,m121:1,ign:.15};
+ const SU_SHOT={lsdist:1,m121:1,ign:1,hc112:1,t115:1,oil115:1,prod:1,v122:1},SU_KEEP={lsdist:1,m121:1,ign:.15,b135:1};
  function suTagBox(re){const B=new THREE.Box3();(SU.eqEv||[]).forEach(({o})=>{const t=o.userData.info.o&&o.userData.info.o.t;if(t&&re.test(t))B.expandByObject(o)});return B}
  function suShotFor(id){const fl=flowObjs.filter(fo=>fo.ev===id),B=new THREE.Box3();
    if(id==='lsdist'){fl.forEach(fo=>{for(let u=0;u<=1;u+=.1)B.expandByPoint(fo.path.getPointAt(u))});if(B.isEmpty())return null;
@@ -4312,7 +4320,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function suBeds(t){if(!SU.beds){SU.beds=[];(SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.t==='RE-11201').forEach(({o})=>o.traverse(c=>{if(c.isMesh&&(c.material===M.cat||c.userData.base===M.cat))SU.beds.push(c)}));
      SU.beds.sort((a,b)=>a.getWorldPosition(new THREE.Vector3()).y-b.getWorldPosition(new THREE.Vector3()).y);SU.beds.forEach(c=>{c.userData.suBedM=M.cat.clone()})}
    const e=SUo.hc112,hot=new THREE.Color(0xff4d14);SU.beds.forEach((c,i)=>{if(!SU.on||t==null||!e){c.material=M.cat;return}
-     const a=suArr('hc112',/^RE-11201/)||e.t0,k=Math.max(0,Math.min(1,((t-a)/Math.max(.05,e.t1-a)-i*.12)/.2)),m=c.userData.suBedM;m.color.copy(M.cat.color).lerp(hot,k);m.emissive.copy(hot).multiplyScalar(k*.8);c.material=m;c.userData.inner=1})}
+     const a=suArr('hc112',/^RE-11201/)||e.t0,k=Math.max(0,Math.min(1,((t-a)/Math.max(.05,e.t1-a)-i*.05)/.55)),m=c.userData.suBedM;m.color.copy(M.cat.color).lerp(hot,k);m.emissive.copy(hot).multiplyScalar(k*.8);c.material=m;c.userData.inner=1})}
  // cooling towers: water is sprayed over the fill and rains into the basin (only the basin holds water)
  function suRain(){if(SU.rain)return SU.rain;SU.rain=[];(SU.eqEv||[]).filter(x=>x.o.userData.info.o&&x.o.userData.info.o.k==='ct').forEach(({o:g,ev})=>{
      if(SU.rain.some(r=>r.g===g))return;const o=g.userData.info.o,B=new THREE.Box3().setFromObject(g),c=B.getCenter(new THREE.Vector3()),w=o.w*.85;
@@ -4335,7 +4343,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    const aH=suArr('hc112',/^RE-11201/)||h.t0,aF=suArr('ign',/^FU-11201/)||e.t0,aR=suArr('ign',/^RE-11201/)||aF,aA=suArr('ign',/^TW-11302/)||aR,span=Math.max(.05,e.t1-aF),hs=Math.max(.05,h.t1-aH);
    const L=x=>x<aF?0:30+70*Math.min(1,(x-aF)/span);
    const lag=(a,tau)=>{if(t<a)return 0;let v=30,x=a;const dt=.05;while(x<t){v+=(L(x)-v)*dt/tau;x+=dt}return v};
-   r.bed=SU_BEDT.map((T1,i)=>{const d=t-aH-i*.12*hs;let T=d<=0?20:20+400*(1-Math.exp(-d/(hs*.13)));
+   r.bed=SU_BEDT.map((T1,i)=>{const d=t-aH-i*.02*hs;let T=d<=0?20:20+400*(1-Math.exp(-d/(hs*.22)));
      const g=t-aR-i*.3;if(g>0){let y=0,x=0;const dt=.05;while(x<g){y+=(1-y)*dt/(1.3/(L(aR+i*.3+x)/100));x+=dt}T=Math.max(T,420+(T1-420)*y)}return Math.round(T)});
    r.heat=t>=aH;r.burn=t>=aF;r.fu=Math.round(L(t));r.conv=Math.round(lag(aR,.6));r.abs=Math.round(lag(aA,.6));
    const q=Math.max(0,Math.min(1,(r.bed[0]-420)/(SU_BEDT[0]-420)));r.x=t<aR?0:Math.round(10*(60+39.8*Math.pow(q,.6)))/10;return r}
@@ -4363,7 +4371,9 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    if(id==='ign'){B.copy(suTagBox(/^(FU-11201|EX-1120[1-7]|RE-11201|XX-11201)/));if(!B.isEmpty()){suBoxC.set(id,B);return B}}(SU.eqEv||[]).forEach(x=>{if((x.ev===id||(SUo[x.ev]&&SUo[x.ev].stop===id&&/^FU-|^SK-/.test(x.o.userData.info.o.t)))&&x.o.userData.info.kind==='eq')B.expandByObject(x.o)});suBoxC.set(id,B);return B}
  function suSplitPick(t){SU.split=[];if(!SU.on||t>=SUP.total){suPanes();return}const fb=SU.focus?suEvBox(SU.focus):null,fc=fb&&!fb.isEmpty()?fb.getCenter(new THREE.Vector3()):null;
    const act=SUP.EV.filter(e=>e.id!==SU.focus&&t>=e.t0&&t<e.t1).sort((a,b)=>b.t0-a.t0);
-   for(const e of act){if(SU.split.length>=2)break;const B=suEvBox(e.id);if(B.isEmpty()||B.getSize(new THREE.Vector3()).length()>120)continue;const c=B.getCenter(new THREE.Vector3());
+   for(const e of act){if(SU.split.length>=2)break;let B=suEvBox(e.id);
+     // the 134 cooling water lines run far across the plant: its pane frames the cooling tower and pumps only
+     if(e.id==='w134'){const b=new THREE.Box3();SU.eqEv.filter(x=>x.ev===e.id).forEach(x=>b.expandByObject(x.o));if(!b.isEmpty())B=b}if(B.isEmpty()||B.getSize(new THREE.Vector3()).length()>120)continue;const c=B.getCenter(new THREE.Vector3());
      if(fc&&c.distanceTo(fc)<35)continue;if(fb&&!fb.isEmpty()&&fb.clone().expandByScalar(8).intersectsBox(B))continue;if(SU.split.some(x=>x.c.distanceTo(c)<35))continue;
      const d=Math.min(70,Math.max(18,B.getSize(new THREE.Vector3()).length()*1.5)),cam=suCams[SU.split.length];cam.position.copy(c).add(new THREE.Vector3(.62,.5,.62).normalize().multiplyScalar(d));cam.lookAt(c);SU.split.push({e,c,cam})}
    // sulfur burning: once SO2 reaches the converter it gets its own pane, so the transparent beds heating up stay in view
@@ -4379,7 +4389,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
 
  // the card follows the stage: each new flow that appears gets its own explanation ([start as stage fraction or 'tag' of first arrival, text])
  const SU_PH={
-  hc112:[[0,'Воздуходувка гонит сухой воздух через подогреватель EX-11208, там его нагревают дымовые газы горелок.'],['RE-11201','Горячий воздух проходит слои катализатора по очереди, первый слой, нижний, прогревается быстрее всех.'],[.6,'Верхние слои догреваются до 420 °C. С этой температуры катализатор готов ускорять реакцию SO₂ → SO₃.']],
+  hc112:[[0,'Воздуходувка гонит сухой воздух через подогреватель EX-11208, там его нагревают дымовые газы горелок.'],['RE-11201','Горячий воздух входит в конвертер снизу и проходит все четыре слоя, они прогреваются почти одновременно, нижний чуть раньше. Дальше воздух идёт по газовому тракту до абсорберов.'],[.6,'Все слои выходят на 420 °C. С этой температуры катализатор готов ускорять реакцию SO₂ → SO₃.']],
   ign:[[0,'Насосы подают жидкую серу к форсункам, воздуходувка подаёт сухой воздух в печь.'],['FU-11201','Сера распыляется в горячей печи и сгорает, получается газ SO₂ с температурой около 1000 °C. Котёл-утилизатор EX-11201 охлаждает газ, и вода в нём превращается в пар.'],['RE-11201','SO₂ входит в конвертер. На катализаторе он соединяется с кислородом и становится SO₃, слои разогреваются от тепла реакции.'],['EX-11205','Между слоями газ охлаждают пароперегреватели и экономайзеры, его тепло идёт на пар. Это тепло потом крутит турбину.'],['TW-11302','Газ с SO₃ проходит через абсорберы. Крепкая кислота поглощает SO₃, её становится больше, и пока она копится в циркуляционных сборниках 113.'],[.75,'Нагрузку поднимают до 100 %: включают вторую и третью форсунки, растут выработка кислоты и пара.']],
   m121:[[0,'Кран загружает комовую серу в бункер, конвейеры везут её к отделению 111.'],['TK-11101A/B','Сера падает в плавильники, паровые змеевики нагревают её выше 120 °C, и она плавится.'],['TK-11102','Жидкая сера переливается в бак фильтра TK-11102.']],
   prod:[[0,'Крепость кислоты в сборниках держится на 98,5 %, излишек насосами откачивают на склад 123 через холодильники.'],[.55,'Склад принимает кислоту, начинается налив в цистерны на эстакаде 124: это первая отгрузка готовой продукции.']],
