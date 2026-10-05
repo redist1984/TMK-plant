@@ -4266,7 +4266,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  // pulls back to show the sulfur coming from 121; ign: furnace close-up turning slowly; hc112: converter turning
  // slowly; t115: pan around the turbine hall (its roof and walls are faded by suOcclude)
  const SU_SURR={ign:/^(FU-11201|SM-11201)/,bl113:/^(SM-11301|BO-11301)/};
- const SU_SHOT={lsdist:1,m121:1,ign:1,hc112:1,t115:1,oil115:1,prod:1},SU_KEEP={lsdist:1,m121:1,ign:.15};
+ const SU_SHOT={lsdist:1,m121:1,ign:1,hc112:1,t115:1,oil115:1,prod:1,v122:1},SU_KEEP={lsdist:1,m121:1,ign:.15};
  function suTagBox(re){const B=new THREE.Box3();(SU.eqEv||[]).forEach(({o})=>{const t=o.userData.info.o&&o.userData.info.o.t;if(t&&re.test(t))B.expandByObject(o)});return B}
  function suShotFor(id){const fl=flowObjs.filter(fo=>fo.ev===id),B=new THREE.Box3();
    if(id==='lsdist'){fl.forEach(fo=>{for(let u=0;u<=1;u+=.1)B.expandByPoint(fo.path.getPointAt(u))});if(B.isEmpty())return null;
@@ -4279,8 +4279,11 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
      const d=Math.max(id==='oil115'?38:22,b.getSize(new THREE.Vector3()).length()*(id==='oil115'?2.4:1.05));const a=id==='oil115'?Math.PI/2:Math.PI/4;
      return {tgt:b.getCenter(new THREE.Vector3()),a0:a,a1:a+(id==='prod'?.3:0),d0:d,d1:d,el:id==='oil115'?.95:.7}}
    // ignition: seen from the south-west, from the gun end of the furnace, so the guns going in are not hidden behind the gas ducts
-   if(id==='ign'){const b=suTagBox(/^(FU-11201|SM-11201)/),g=suTagBox(/^SM-11201/);if(b.isEmpty())return null;const tg=b.getCenter(new THREE.Vector3());if(!g.isEmpty())tg.lerp(g.getCenter(new THREE.Vector3()),.4);
-     const d=Math.max(16,b.getSize(new THREE.Vector3()).length()*.95);return {tgt:tg,a0:Math.PI*.75,a1:Math.PI*.75+.5,d0:d,d1:d*1.08,el:.55}}
+   if(id==='ign'){const b=suTagBox(/^(FU-11201|SM-11201)/),g=suTagBox(/^SM-11201/);if(b.isEmpty())return null;const tg=b.getCenter(new THREE.Vector3());if(!g.isEmpty())tg.lerp(g.getCenter(new THREE.Vector3()),.6);
+     const d=Math.max(12,b.getSize(new THREE.Vector3()).length()*.6);return {tgt:tg,a0:Math.PI*.8,a1:Math.PI*.8+.35,d0:d,d1:d*1.15,el:.5}}
+   // liquid sulfur store 122: close on the tanks filling, as in the first versions
+   if(id==='v122'){const b=suTagBox(/^VE-1220[1-3]/);if(b.isEmpty())return null;const d=Math.max(20,b.getSize(new THREE.Vector3()).length()*.9);
+     return {tgt:b.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4+.4,d0:d,d1:d*1.05,el:.7}}
    const re={ign:/^(FU-11201|SM-11201)/,hc112:/^RE-11201/,t115:/^(ST-11501|HG-11501)/}[id];const b=suTagBox(re);if(b.isEmpty())return null;
    const d=Math.max(18,b.getSize(new THREE.Vector3()).length()*(id==='t115'?2.1:1.25));
    return {tgt:b.getCenter(new THREE.Vector3()),a0:Math.PI/4,a1:Math.PI/4+(id==='t115'?Math.PI*2:.9),d0:d,d1:d*1.1,el:id==='t115'?1.1:.6}}
