@@ -191,7 +191,11 @@ body.su-mode.fs-mode #view,body.su-mode.fs-mode .labels{bottom:var(--suH,0px)}
 .su-tot{font-size:11.5px;color:var(--ink3)}
 .subar select{font:500 12.5px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 6px}
 #suPlay{min-width:40px;font-size:14px}
-#suR{flex:1 1 140px;min-width:100px}
+#suR,#buR{flex:1 1 140px;min-width:100px}
+#buPlay{min-width:40px;font-size:14px}
+.suinfo .si-why .mono{color:var(--ink3);font-size:11px}
+.suinfo .si-why>div{margin-top:2px}
+@media (max-width:760px){#biWhy>div:nth-child(n+3){display:none}}
 .su-list{list-style:none;margin:0;padding:0;overflow:auto;flex:1;min-height:0;border-top:1px solid var(--line)}
 .su-list ul{list-style:none;margin:0 0 4px;padding:0 0 0 26px}
 .su-list button{display:flex;width:100%;gap:8px;align-items:center;text-align:left;background:none;border:0;color:var(--ink);font:500 12.5px var(--sans);padding:4px 2px;cursor:pointer;border-radius:6px}
@@ -223,7 +227,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
 .lbl.su0{opacity:.6}
 .lbl.su1{border-color:#E3A008;box-shadow:0 0 0 2px #E3A00866}
 .lbl.su2{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
-@media (max-width:760px){.subar{left:8px;right:8px;transform:none;width:auto;bottom:8px;max-height:50vh;padding:6px 8px}.subar .btn{padding:5px 8px}.subar #suSpd{max-width:96px}#suR{flex-basis:100%;order:9}}
+@media (max-width:760px){.subar{left:8px;right:8px;transform:none;width:auto;bottom:8px;max-height:50vh;padding:6px 8px}.subar .btn{padding:5px 8px}.subar #suSpd,.subar #buSpd{max-width:96px}#suR,#buR{flex-basis:100%;order:9}}
 </style>
 </head>
 <body>
@@ -248,6 +252,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
   <button class="btn" type="button" id="tabModel" role="tab" aria-selected="true" aria-pressed="true">Модель</button>
   <button class="btn" type="button" id="tabCut" role="tab" aria-selected="false" aria-pressed="false">Разрез</button>
   <button class="btn" type="button" id="tabStart" role="tab" aria-selected="false" aria-pressed="false">Пуск завода</button>
+  <button class="btn" type="button" id="tabBuild" role="tab" aria-selected="false" aria-pressed="false">Строительство</button>
 </div>
 
 <div class="stage" id="stage">
@@ -263,6 +268,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
     </div>
   </div>
   <div class="tip" id="tip" hidden></div>
+  <div class="suinfo" id="buInfo" hidden aria-live="polite"><div class="si-st" id="biSt"></div><div class="si-nm" id="biNm"></div><div class="si-why" id="biWhy"></div></div>
   <div class="suinfo" id="suInfo" hidden aria-live="polite"><div class="si-st" id="siSt"></div><div class="si-nm" id="siNm"></div><div class="si-why" id="siWhy"></div><div class="si-why si-fill" id="siFill" hidden></div></div>
   <button class="rotate-fab" type="button" id="bRotateMode" aria-pressed="false"
     title="Включить вращение пальцем (иначе палец перемещает камеру)" aria-label="Режим вращения пальцем">
@@ -299,6 +305,21 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
       <output id="cutV">—</output>
       <button class="btn" type="button" id="cutFlip" disabled title="Показать другую сторону">⇄ сторона</button>
     </div>
+  </div>
+  <div class="card subar" id="bubar" role="tabpanel" aria-label="Строительство" hidden>
+    <div class="su-top">
+      <span class="su-clock" id="buClock">13.01.2026</span>
+      <button class="btn" type="button" id="buPlay" aria-label="Пуск">▶</button>
+      <button class="btn" type="button" id="buReset" title="В начало" aria-label="В начало">⟲</button>
+      <button class="btn" type="button" id="buToday" title="Перейти к сегодняшней дате">Сегодня</button>
+      <button class="btn" type="button" id="buFollow" aria-pressed="true" title="Камера следует за объектом, где идут работы">🎯 Следить</button>
+      <select id="buSpd" aria-label="Скорость"><option value="2">1 с = 2 дня</option><option value="5" selected>1 с = 5 дней</option><option value="10">1 с = 10 дней</option><option value="20">1 с = 20 дней</option></select>
+      <input type="range" id="buR" min="12" max="436" step="0.1" value="10" aria-label="Дата по графику">
+      <button class="btn" type="button" id="buMore" aria-expanded="false" title="Объекты и работы по графику">Объекты ▴</button>
+      <span class="su-now" id="buNow"></span>
+    </div>
+    <span class="su-tot" id="buTot"></span>
+    <ol class="su-list" id="buList"></ol>
   </div>
   <div class="card subar" id="subar" role="tabpanel" aria-label="Пуск завода" hidden>
     <div class="su-top">
@@ -3692,7 +3713,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function select(tag){clearSel();(byTag[tag]||[]).forEach(o=>meshes(o).forEach(c=>{if(!c.userData.base)c.userData.base=c.material;c.material=selMat;selected.push(c)}))}
  function owner(obj){while(obj&&!(obj.userData&&obj.userData.info))obj=obj.parent;return obj}
  function pick(ev){const r=renderer.domElement.getBoundingClientRect();mouse.x=((ev.clientX-r.left)/r.width)*2-1;mouse.y=-((ev.clientY-r.top)/r.height)*2+1;ray.setFromCamera(mouse,camera);
-   const hits=ray.intersectObjects(pickables,true).filter(h=>h.object.isMesh&&h.object.visible&&(cut.m==='off'||cutPlane.distanceToPoint(h.point)>=0)).map(h=>owner(h.object)).filter(o=>o&&o.userData&&o.userData.info);
+   const hits=ray.intersectObjects(pickables,true).filter(h=>h.object.isMesh&&h.object.visible&&(!BU.on||buVisUp(h.object))&&(cut.m==='off'||cutPlane.distanceToPoint(h.point)>=0)).map(h=>owner(h.object)).filter(o=>o&&o.userData&&o.userData.info);
    // prefer equipment over transparent building shells
    return hits.find(o=>o.userData.info.kind!=='bldg')||hits[0]}
  function pickPipe(ev){const r=renderer.domElement.getBoundingClientRect();mouse.x=((ev.clientX-r.left)/r.width)*2-1;mouse.y=-((ev.clientY-r.top)/r.height)*2+1;ray.setFromCamera(mouse,camera);
@@ -3877,6 +3898,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  const tabModel=$('tabModel'), tabCut=$('tabCut'), cutbarEl=$('cutbar'), bCutFab=$('bCutFab');
  function setTab(showCut){
    if(typeof setStart==='function')setStart(false);
+   if(typeof setBuild==='function')setBuild(false);
    tabModel.setAttribute('aria-pressed',!showCut);tabModel.setAttribute('aria-selected',!showCut);
    tabCut.setAttribute('aria-pressed',showCut);tabCut.setAttribute('aria-selected',showCut);
    cutbarEl.hidden=!showCut;
@@ -4524,6 +4546,271 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
  $('suFollow').onclick=()=>{SU.follow=!SU.follow;suFollowUI();if(SU.follow&&SU.focus)suFocus(SU.focus)};
  controls.addEventListener('start',()=>{if(SU.on&&SU.follow){SU.follow=false;suFollowUI()}});
  $('suMore').onclick=()=>{const o=subar.classList.toggle('open');$('suMore').setAttribute('aria-expanded',o);$('suMore').textContent=(currentLang==='uz'?'Bosqichlar':'Этапы')+(o?' ▾':' ▴');if(o){SU.lastAct=null;suPaint()}};
+ // ---- строительно-монтажные работы (вкладка «Строительство») ----
+ // Даты — по «Графику для работы» (MS Project, 2026): для каждого объекта взят раздел «Строительство»
+ // (строительные и монтажные работы). Дни считаются от 01.01.2026, t1 — день после окончания работы,
+ // p — процент выполнения по графику. Виды работ: pile — сваи, exc — земляные, fnd — фундаменты,
+ // str — несущие конструкции, fin — отделка, ns/eq — монтаж нестандартного / прочего оборудования,
+ // pipe — трубопроводы, el/kip/eng/ins/test — электромонтаж, КИПиА, инженерные системы, защита, испытания.
+ const BU_SCHED=
+{"101":[["exc","Разработка котлована / Земляные работы (выемка грунта)",131,147,100],["fnd","Возведение фундаментов",147,220,100],["str","Возведение зданий (строительные работы)",220,278,55],["eq","Монтаж оборудования и трубопроводов",278,296,0],["el","Электромонтажные работы и монтаж КИПиА",294,301,0],["test","Индивидуальные испытания оборудования пожарной насосной станции",301,306,0]],"102":[["exc","Разработка котлована / Земляные работы (выемка грунта)",24,33,100],["fnd","Заливка бетона",33,34,100],["fnd","Мероприятия по уходу за бетоном после заливки",34,42,100],["fnd","Работы по армированию (дно резервуара)",42,55,100],["fnd","Установка опалубок (дно резервуара)",56,57,100],["fnd","Заливка бетона (дно резервуара)",57,58,100],["fnd","Работы по армированию (стенки резервуара)",58,69,100],["fnd","Установка опалубок на (стенки резервуара)",69,76,100],["fnd","Заливка бетона (стенки резервуара)",76,77,100],["fnd","Мероприятия по уходу за бетоном после заливки",77,82,100],["fnd","Демонтаж опалубочной системы",82,84,100],["fnd","Срезка арматурных стержней, обработка водостойким раствором",84,85,100],["fnd","Демонтаж строительных лесов",87,89,100],["test","Гидроиспытания резервуара на герметичность и прочность",85,115,100],["exc","Обратная засыпка пазур резервуара",115,121,100],["eq","Монтажные работы",120,212,100]],"сети":[["net","Строительство внутриплощадочных подземных сетей",105,195,0]],"дороги":[["rbase","Основание дорожного полотна завода",151,251,60],["rtop","Покрытие дорожного полотна завода",273,313,0],["gate","КПП/Проходная",233,293,0]],"121":[["pile","Свайные работы (Работы заказчика)",105,111,100],["exc","Разработка котлована / Земляные работы (выемка грунта)",110,115,100],["pile","Срубка оголовков свай",124,132,100],["pile","Испытания свай",131,135,100],["fnd","Фундаменты под оборудование",134,175,100],["fnd","Фундаменты зданий и сооружений (Каркасные фундаменты)",134,175,100],["str","Основные (несущие) конструкции",174,227,100],["fin","Архитектурно-отделочные работы",261,273,10],["ns","Изготовление и монтаж нестандартного оборудования",243,273,30],["ns","Монтаж грейферного крана",258,273,70],["eq","Монтаж оборудование системы подачи сырья",227,272,30],["pipe","Технологические трубопроводы и трубопроводы порошковых материалов",273,318,0],["el","Электромонтажные работы",318,348,0],["kip","Монтаж КИПиА",318,348,0]],"111":[["pile","Свайные работы (Работы заказчика)",97,101,100],["exc","Разработка котлована / Земляные работы (выемка грунта)",101,105,100],["pile","Срубка оголовков свай",111,114,100],["pile","Испытание свай",113,117,100],["fnd","Фундаменты под оборудование",116,182,86],["fnd","Фундаменты зданий и сооружений (Каркасные фундаменты)",116,182,100],["str","Основные (несущие) конструкции",195,240,100],["fin","Архитектурно-отделочные работы",192,270,40],["ns","Изготовление и монтаж нестандартного оборудования: резервуары, сероплавилки и ёмкости",234,279,50],["eq","Монтаж прочего динамического и статического оборудования",229,279,30],["pipe","Технологическая обвязка (Трубопроводы)",279,359,0],["el","Электромонтажные работы",279,309,0],["kip","Монтаж КИПиА",289,309,0],["ins","Антикоррозийная защита и теплоизоляция",266,316,0]],"122":[["pile","Свайные работы (Работы заказчика)",110,114,100],["exc","Разработка котлована / Земляные работы (выемка грунта)",113,116,100],["pile","Срубка оголовков свай",121,125,100],["fnd","Фундаменты под оборудование",124,170,100],["ns","Изготовление и монтаж резервуаров для жидкой серы",169,288,85],["eq","Монтаж прочего динамического и статического оборудования",288,308,0],["pipe","Технологическая обвязка (Трубопроводы)",288,333,0],["el","Электромонтажные работы",333,363,0],["kip","Монтаж КИПиА",363,383,0],["ins","Покрытие кислотостойкими кирпичами резервуара для очищенной серы",288,328,0],["ins","Антикоррозийная защита и теплоизоляция",298,328,0]],"112":[["pile","Свайные работы (Работы заказчика)",71,88,100],["exc","Разработка котлована / Земляные работы (выемка грунта)",82,89,100],["pile","Срубка оголовков свай",90,101,100],["pile","Испытания свай",99,103,100],["fnd","Фундаменты под оборудование",102,140,100],["fnd","Фундаменты зданий и сооружений (структурный фундаменты)",140,180,100],["str","Основные (несущие) конструкции",253,283,0],["ns","Изготовление и монтаж нестандартного оборудования (печь, конвертер и т. д.)",229,314,60],["ns","Монтаж котлов на отходящее тепло",205,245,100],["eq","Монтаж прочего динамического и статического оборудования",197,288,40],["pipe","Технологическая обвязка (Трубопроводы)",314,359,0],["el","Электромонтажные работы",359,389,0],["kip","Монтаж КИПиА",359,389,0],["ins","Футеровка печи (Огнеупорная защита)",314,359,0],["ins","Антикоррозийная защита и теплоизоляция",314,369,0]],"113":[["pile","Свайные работы (Работы заказчика)",87,98,100],["exc","Разработка котлована / Земляные работы (выемка грунта)",97,101,100],["pile","Срубка оголовков свай",101,120,100],["fnd","Фундаменты под оборудование",119,180,100],["fnd","Фундаменты зданий и сооружений (Каркасные фундаменты)",127,157,100],["str","Основные (несущие) конструкции",157,232,85],["fin","Архитектурно-отделочные работы",226,320,10],["ns","Изготовление и монтаж нестандартного оборудования (абсорбционной колонны и т.д.)",232,312,65],["eq","Монтаж прочего динамического и статического оборудования",232,293,50],["pipe","Технологическая обвязка (Трубопроводы)",312,367,0],["el","Электромонтажные работы",293,338,0],["kip","Монтаж КИПиА",338,368,0],["ins","Кислотоупорная кирпичная футеровка",312,357,0],["ins","Антикоррозийная защита и теплоизоляция",367,392,0]],"123":[["pile","Свайные работы (Работы заказчика)",13,54,100],["exc","Разработка котлована / Земляные работы (выемка грунта)",48,56,100],["pile","Срубка оголовков свай",56,76,100],["exc","Уплотнение грунта (основание) в межсвайном пространстве",75,78,100],["fnd","Мероприятия по уходу за бетоном после заливки",77,81,100],["pile","Испытания свай",77,78,100],["fnd","Фундаменты под оборудование",78,118,100],["fnd","Сборный бассейн сточных вод",118,123,60],["ns","Монтаж резервуаров для серной кислоты",123,171,100],["eq","Монтаж прочего динамического и статического оборудования",171,288,15],["pipe","Технологическая обвязка (Трубопроводы)",288,318,0],["el","Электромонтажные работы",288,318,0],["kip","Монтаж КИПиА",298,318,0],["ins","Покрытие кислотостойкими кирпичами подземного резервуара для серной кислоты",273,318,0],["ins","Антикоррозийная защита и теплоизоляция",318,363,0]],"114":[["exc","Разработка котлована / Земляные работы (выемка грунта)",82,89,100],["fnd","Фундаменты под оборудование",89,124,100],["fnd","Фундаменты зданий и сооружений (Каркасные фундаменты)",124,154,100],["str","Основные (несущие) конструкции",252,282,25],["fin","Архитектурно-отделочные работы",273,293,0],["eq","Монтаж прочего динамического и статического оборудования",282,312,0],["pipe","Технологическая обвязка (Трубопроводы)",312,352,0],["el","Электромонтажные работы",352,372,0],["kip","Монтаж КИПиА",352,372,0],["ins","Антикоррозийная защита и теплоизоляция",372,387,0]],"115":[["pile","Свайные работы (Работы заказчика)",54,71,100],["pile","Срубка свай, которые не вошли в землю",71,75,100],["exc","Разработка котлована / Земляные работы (выемка грунта)",74,78,100],["pile","Срубка оголовков свай",77,90,100],["pile","Испытание свай",87,90,100],["fnd","Фундаменты под оборудование",90,135,100],["str","Основные (несущие) конструкции",134,253,100],["fin","Архитектурно-отделочные работы",227,307,10],["ns","Монтаж паровых турбин и электрогенераторных установок",287,332,0],["eq","Монтаж прочего механического оборудования",287,317,0],["pipe","Технологическая обвязка (Трубопроводы)",317,362,0],["el","Электромонтажные работы",362,407,0],["kip","Монтаж КИПиА",362,402,0],["ins","Антикоррозийная защита и теплоизоляция",402,427,0]],"132":[["exc","Разработка котлована / Земляные работы (выемка грунта)",70,90,100],["fnd","Фундаментные работы",90,135,100],["str","Основные (несущие) конструкции",135,208,100],["fin","Архитектурно-отделочные работы",182,273,75],["eq","Монтаж механического оборудования",192,283,60],["pipe","Монтаж трубопроводов",243,309,15],["el","Электромонтажные работы",308,339,0],["kip","Монтаж КИПиА",308,339,0],["ins","Антикоррозийная защита и теплоизоляция",338,369,0]],"137":[["pile","Свайные работы (Работы заказчика)",54,65,100],["exc","Разработка котлована / Земляные работы (выемка грунта)",74,78,100],["pile","Срубка оголовков свай",77,91,100],["fnd","Фундаменты под оборудование",90,134,100],["str","Основные (несущие) конструкции",134,273,70],["ns","Монтаж трансформаторов и распределительных щитов",273,294,0],["el","Проверка и подключение электрических кабелей",294,324,0],["test","Электрические испытания",324,344,0],["el","Подключение к электросети и подготовка к подаче электроэнергии",344,347,0]],"116":[["exc","Разработка котлована / Земляные работы (выемка грунта)",165,195,0],["fnd","Фундаменты зданий и сооружений (Каркасные фундаменты)",195,255,0],["str","Металлоконструкции технологических эстакад",255,315,0],["beam","Металлоконструкции технологических эстакад",315,355,0],["el","Электромонтажные работы",355,396,0],["ins","Антикоррозийная защита и теплоизоляция",396,436,0]],"131":[["pile","Свайные работы (Работы заказчика)",54,56,100],["exc","Разработка котлована / Земляные работы (выемка грунта)",64,67,100],["pile","Срубка оголовков свай",75,77,100],["fnd","Фундаментные работы",76,174,100],["str","Основные (несущие) конструкции",174,229,100],["fin","Архитектурно-отделочные работы",229,274,75],["eq","Монтаж механического оборудования",230,260,75],["pipe","Монтаж трубопроводов",260,296,50],["el","Электромонтажные работы",296,317,0],["kip","Монтаж КИПиА",317,338,0],["ins","Антикоррозийная защита и теплоизоляция",338,359,0]],"135":[["exc","Разработка котлована / Земляные работы (выемка грунта)",12,42,100],["fnd","Фундаментные работы",43,79,100],["str","Основные (несущие) конструкции",79,232,100],["fin","Архитектурно-отделочные работы",232,262,85],["eq","Монтаж механического оборудования (пусковый котел и т.д.)",232,262,50],["pipe","Монтаж трубопроводов",262,292,5],["el","Электромонтажные работы",292,312,0],["kip","Монтаж КИПиА",292,312,0],["ins","Антикоррозийная защита и теплоизоляция",312,342,0]],"133/134":[["exc","Разработка котлована / Земляные работы (выемка грунта)",33,53,100],["fnd","Фундаментные работы",53,256,100],["str","Основные (несущие) конструкции",69,288,70],["fin","Архитектурно-отделочные работы",243,288,5],["eq","Монтаж механического оборудования",288,328,0],["pipe","Монтаж трубопроводов",328,358,0],["el","Электромонтажные работы",358,378,0],["kip","Монтаж КИПиА",358,378,0],["ins","Антикоррозийная защита и теплоизоляция",378,398,0]],"136":[["exc","Разработка котлована / Земляные работы (выемка грунта)",12,46,100],["fnd","Фундаментные работы",46,76,100],["str","Основные (несущие) конструкции",75,145,100],["fin","Архитектурно-отделочные работы",173,258,85],["eq","Монтаж механического оборудования (компрессоры и т.д.)",212,258,100],["pipe","Монтаж трубопроводов",258,288,70],["el","Электромонтажные работы",288,308,0],["kip","Монтаж КИПиА",288,308,0],["ins","Антикоррозийная защита и теплоизоляция",308,338,0]],"141":[["exc","Разработка котлована / Земляные работы (выемка грунта)",18,23,100],["fnd","Фундаменты зданий и сооружений (Каркасные фундаменты)",38,79,100],["str","Основные (несущие) конструкции",79,135,100],["fin","Архитектурно-отделочные работы (работы Заказчика)",135,210,30],["kip","Монтаж КИПиА",270,300,0],["eng","Монтаж водоснабжения и канализации в здании",210,240,0],["eng","Монтаж вентиляции и кондиционирования",210,240,0],["el","Монтаж внутреннего электроснабжения здания",240,270,0],["eng","Монтаж пожаротушения",240,270,0]]};
+ const BU_NM={'101':['Станция пожаротушения','Yong‘in o‘chirish stansiyasi'],'102':['Аварийный бассейн и бассейн дождевых стоков','Avariya va yomg‘ir suvlari havzasi'],
+   'сети':['Внутриплощадочные подземные сети','Maydon ichidagi yer osti tarmoqlari'],'дороги':['Дороги и КПП','Yo‘llar va nazorat punkti'],
+   '121':['Склад серы и система подачи сырья','Oltingugurt ombori va xomashyo uzatish'],'111':['Плавление и фильтрация серы','Oltingugurtni eritish va filtrlash'],
+   '122':['Парк резервуаров жидкой серы','Suyuq oltingugurt rezervuarlari'],'112':['Сжигание серы и конверсия','Oltingugurtni yoqish va konversiya'],
+   '113':['Осушка и абсорбция','Quritish va absorbsiya'],'123':['Парк товарной серной кислоты','Tovar sulfat kislota rezervuarlari'],
+   '114':['Рекуперация тепла и деаэрация','Issiqlik rekuperatsiyasi va deaeratsiya'],'115':['Турбогенераторная (энергоблок)','Turbogenerator (energoblok)'],
+   '137':['Подстанция','Podstansiya'],'116':['Эстакада технологических трубопроводов','Texnologik quvurlar estakadasi'],'131':['Станция очистки воды','Suv tozalash stansiyasi'],
+   '132':['Станция деминерализации воды','Suvni demineralizatsiya stansiyasi'],'133/134':['Станция оборотного водоснабжения','Aylanma suv ta’minoti stansiyasi'],
+   '135':['Пусковая котельная','Ishga tushirish qozonxonasi'],'136':['Компрессорная станция','Kompressor stansiyasi'],'141':['Административно-бытовой корпус и ремонтный цех','Ma’muriy-maishiy bino va ta’mirlash sexi']};
+ const BU_KIND={pile:'Сваи',exc:'Земляные работы',fnd:'Фундаменты',str:'Несущие конструкции',beam:'Металлоконструкции эстакад',fin:'Отделка',ns:'Монтаж оборудования',eq:'Монтаж оборудования',
+   pipe:'Трубопроводы',el:'Электромонтаж',kip:'КИПиА',eng:'Инженерные системы',ins:'Защита и футеровка',test:'Испытания',rbase:'Основание дорог',rtop:'Покрытие дорог',gate:'КПП',net:'Подземные сети'};
+ const BU_D0=new Date(2026,0,1),BU_T0=12,BU_T1=436;
+ const buDate=d=>{const x=new Date(BU_D0.getTime());x.setDate(x.getDate()+Math.floor(d));return String(x.getDate()).padStart(2,'0')+'.'+String(x.getMonth()+1).padStart(2,'0')+'.'+x.getFullYear()};
+ const buToday=()=>{const n=new Date();return Math.max(BU_T0,Math.min(BU_T1,Math.floor((new Date(n.getFullYear(),n.getMonth(),n.getDate())-BU_D0)/864e5)))};
+ const BU={on:false,inited:false,t:BU_T0,play:false,spd:5,follow:true,items:[],pools:[],fk:null};
+ const buRows=(k,re)=>(BU_SCHED[k]||[]).filter(r=>typeof re==='string'?r[0]===re:re.test(r[0]));
+ const buWin=rows=>rows.length?[Math.min(...rows.map(r=>r[2])),Math.max(...rows.map(r=>r[3]))]:null;
+ const buEase=u=>u<=0?0:u>=1?1:u*u*(3-2*u);
+ const BU_SECK={Hg121:'121',G111:'111',G122:'122',G112:'112',G113:'113',G123:'123',R114:'114',R115:'115',W131:'131',W132:'132',W133:'133/134'};
+ const BU_NSK=/^(mtank|cbox|tw111|sk111|stank|atank|furnace|reactor|hcylY|prof|hx|tw113|chimney|ctank|scrub|deaer|turb|gen|cond|pkboiler|stack2|hopper|bcrane|frptank|afilt|xfl|bell|ct|ctbasin)$/;
+ const BU_GROW=/^(mtank|stank|atank|tw113|chimney|sk111|stack2|ct|ctbasin|reactor|scrub)$/;
+ function buKey(o){const u=o.userData||{},t=u.tag||'';
+   if(t==='b101')return '101';if(t==='pool102')return '102';if(t==='b135'||(u.sec==='UT'&&/-135\d\d/.test(t)))return '135';if(t==='b136'||/-136\d\d/.test(t))return '136';
+   if(t==='b141'||t==='b142'||/^RM-/.test(t))return '141';if(/^EXT-/.test(t))return 'сети';if(/^RW-1/.test(t))return null;return BU_SECK[u.sec]||null}
+ // row used for mounting a piece of equipment: the schedule names the big field-erected / non-standard items separately
+ function buEqRow(k,o){const ok=((o.userData.info||{}).o||{}).k||'',t=o.userData.tag,ns=buRows(k,'ns'),eq=buRows(k,'eq'),f=re=>ns.find(r=>re.test(r[1]));
+   if(k==='121'){if(ok==='bcrane')return f(/грейфер/);if(ok==='hopper')return f(/нестандарт/);return eq[0]}
+   if(k==='112'&&ok==='hcylY'&&/^EX-112/.test(t))return f(/котлов/);
+   const gen=ns.find(r=>!/котлов|грейфер|трансформ/.test(r[1]))||ns[0];
+   if(BU_NSK.test(ok)&&gen)return gen;return eq[0]||gen||buRows(k,/^(eng|el)$/)[0]||null}
+ function buPlanBox(b,pt){const x=pt.x||b.x,y=pt.y||b.y;return{x0:Math.min(x[0],x[1]),x1:Math.max(x[0],x[1]),y0:Math.min(y[0],y[1]),y1:Math.max(y[0],y[1]),H:pt.eaves||pt.h||b.h}}
+ // crane (crawler with a lattice boom, yellow as the tower cranes in the model)
+ function buCrane(){const g=new THREE.Group(),tu=new THREE.Group(),Y=M.crane,D=M.steelDark;
+   [-1.35,1.35].forEach(z=>{const tr=new THREE.Mesh(new THREE.BoxGeometry(5.2,.9,.8),D);tr.position.set(0,.45,z);g.add(tr)});
+   const bd=new THREE.Mesh(new THREE.BoxGeometry(4.2,1.5,2.7),Y);bd.position.set(-.4,1.65,0);tu.add(bd);
+   const cab=new THREE.Mesh(new THREE.BoxGeometry(1.3,1.7,1.1),M.glass||Y);cab.position.set(1.2,2.1,-1.0);tu.add(cab);
+   const cw=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.3,2.5),D);cw.position.set(-2.4,1.9,0);tu.add(cw);
+   g.add(tu);const boom=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,1,4,1,true),Y);g.add(boom);
+   const rope=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,1,4),D);g.add(rope);const hk=new THREE.Mesh(new THREE.BoxGeometry(.5,.6,.5),Y);g.add(hk);
+   g.userData={tu,boom,rope,hk};g.visible=false;return g}
+ function buInit(){if(BU.inited)return;BU.inited=true;
+   const grp=BU.grp=new THREE.Group();grp.visible=false;scene.add(grp);
+   const cM=BU.cM=new THREE.MeshStandardMaterial({color:0x9a9d98,roughness:.85});                    // fresh concrete
+   const skM=new THREE.MeshStandardMaterial({color:0xA4472E,roughness:.6,metalness:.25});            // steel frame in red primer
+   const soilM=new THREE.MeshStandardMaterial({color:0x8C6A47,roughness:1,depthTest:false,depthWrite:false});
+   const pileM=new THREE.MeshStandardMaterial({color:0xB9BBB6,roughness:.8});
+   BU.gravel=new THREE.MeshStandardMaterial({color:0xA8998A,roughness:1,depthTest:false,depthWrite:false});
+   const P_={pile:[],pad:[],col:[],beam:[],soil:[]};BU.P=P_;
+   const reg0=new Set(allObj.filter(o=>o.userData&&o.userData.tag)),it0=[];
+   const boxOf=o=>new THREE.Box3().setFromObject(o);
+   // equipment and buildings
+   reg0.forEach(o=>{const k=buKey(o);if(!k||!BU_SCHED[k])return;const info=o.userData.info||{};
+     const it={o,k,tag:o.userData.tag,box:boxOf(o),conc:[],body:[],ph:2,cv:true};if(it.box.isEmpty())return;
+     if(info.kind==='bldg'){it.kind='b';it.mode='grow';
+       if(it.tag==='b115'){const a={...it,body:[],conc:[]},b={...it,k:'137',body:[],conc:[]};o.updateMatrixWorld(true);
+         o.traverse(c=>{if(!(c.isMesh||c.isLine))return;const bb=boxOf(c);if(bb.isEmpty())return;const Yp=bb.getCenter(new THREE.Vector3()).x+Y0;(Yp>2421.2?b:a).body.push(c)});
+         a.box=new THREE.Box3();a.body.forEach(c=>a.box.expandByObject(c));b.box=new THREE.Box3();b.body.forEach(c=>b.box.expandByObject(c));a.part=0;b.part=1;it0.push(a,b);return}
+       it.body=[o];it0.push(it);return}
+     it.kind='e';const ok=(info.o||{}).k||'';it.ok=ok;
+     if(k==='сети'){it.mode='lift';it.body=[o];it.grp=true;it0.push(it);return}
+     // field-erected tanks and towers grow ring by ring; pits and underground tanks are built in place too, the rest is lifted by crane
+     it.mode=BU_GROW.test(ok)||it.box.max.y<.6||it.box.min.y<-1.5?'grow':'lift';
+     const hasC=n=>{let f=false;n.traverse(c=>{if(c.isMesh&&c.material===M.conc)f=true});return f};
+     const walk=n=>{if(n.isMesh&&n.material===M.conc){it.conc.push(n);return}if(!hasC(n)){it.body.push(n);return}n.children.forEach(walk)};
+     if(hasC(o)){o.children.forEach(walk)}else{it.grp=true;it.body=[o]}
+     it0.push(it)});
+   // loose parts of a department: bund walls (concrete, built with the foundations) and the sulfur pile (arrives at start-up)
+   Object.entries(bySec).forEach(([s,a])=>{const k=BU_SECK[s];a.forEach(m=>{if(reg0.has(m)||!m.isMesh)return;
+     if(m.material===M.pile){it0.push({o:m,k:'121',kind:'x',mode:'lift',grp:true,body:[m],conc:[],box:boxOf(m),ph:2,cv:true,m0:BU_T1-.01,m1:BU_T1-.01,f0:-1e9,H:0});return}
+     if(!k)return;it0.push({o:m,k,kind:'w',mode:'grow',body:[m],conc:[],box:boxOf(m),ph:2,cv:true})})});
+   scene.updateMatrixWorld(true);
+   // schedule slots
+   const byK={};it0.forEach(it=>{(byK[it.k]=byK[it.k]||[]).push(it)});
+   const slots=(list,w,frac,ord)=>{if(!w||!list.length)return;const W=w[1]-w[0],L=Math.max(Math.min(W*frac,W),Math.min(W,W/list.length));list.sort(ord).forEach((it,i,arr)=>{const s=w[0]+(W-L)*(arr.length>1?i/(arr.length-1):0);it.s0=s;it.s1=s+L})};
+   const vol=b=>{const s=b.getSize(new THREE.Vector3());return s.x*s.y*s.z},byX=(a,b)=>a.box.min.x-b.box.min.x||a.box.min.z-b.box.min.z;
+   Object.entries(byK).forEach(([k,list])=>{
+     const fAll=buWin(buRows(k,'fnd')),fEq=buWin(buRows(k,'fnd').filter(r=>!/зданий/.test(r[1])))||fAll,fB=buWin(buRows(k,'fnd').filter(r=>/зданий/.test(r[1])))||fAll;
+     const str=buWin(buRows(k,'str')),fin=buWin(buRows(k,'fin'));
+     // equipment: foundation slot, then mounting slot inside the row the schedule gives for it
+     const eqs=list.filter(it=>it.kind==='e');
+     if(k==='сети'){const w=buWin(buRows(k,'net'));eqs.forEach((it,i)=>{it.f0=-1e9;it.m0=it.m1=w[0]+(w[1]-w[0])*i/Math.max(1,eqs.length);it.H=0})}
+     else{slots(eqs,fEq||[BU_T0,BU_T0],.25,byX);eqs.forEach(it=>{it.f0=it.s0==null?-1e9:it.s0});
+       const rmap=new Map();eqs.forEach(it=>{const r=buEqRow(k,it.o);if(!r){it.m0=it.m1=BU_T0;return}if(!rmap.has(r))rmap.set(r,[]);rmap.get(r).push(it)});
+       rmap.forEach((arr,r)=>{const g=arr.filter(it=>it.mode==='grow'),l=arr.filter(it=>it.mode!=='grow');
+         slots(g,[r[2],r[3]],.55,(a,b)=>vol(b.box)-vol(a.box));g.forEach(it=>{it.m0=it.s0;it.m1=it.s1});
+         slots(l,[r[2],r[3]],.12,(a,b)=>(a.ok==='bcrane'?-1:0)-(b.ok==='bcrane'?-1:0)||vol(b.box)-vol(a.box));l.forEach(it=>{it.m0=it.s0;it.m1=it.s1;it.H=Math.min(10,4+it.box.getSize(new THREE.Vector3()).y*.6)})})}
+     // bund walls and the 102 basin rise with the foundations
+     list.filter(it=>it.kind==='w'||it.tag==='pool102').forEach(it=>{const w=fAll||[BU_T0,BU_T0];it.kind='w';it.f0=-1e9;it.m0=w[0]+(w[1]-w[0])*.15;it.m1=w[1]});
+     // buildings: footings, red steel frame on the schedule of the bearing structures, then the real walls and roof grow
+     list.filter(it=>it.kind==='b').forEach(it=>{it.f0=-1e9;let g0,g1;const s=str||fB||[BU_T0,BU_T0+10];
+       if(fin){g0=Math.max(fin[0],s[0]+(s[1]-s[0])*.5);g1=Math.max(fin[1],g0+5)}else{g0=s[0]+(s[1]-s[0])*.45;g1=s[1]}
+       it.m0=g0;it.m1=g1;const bd=BLD.find(b=>b.id===it.tag);if(!bd)return;
+       const parts=(bd.parts||[{}]).filter((pt,i)=>it.part==null||(it.part===1?buPlanBox(bd,pt).y0>=2420.9:buPlanBox(bd,pt).y0<2420.9));
+       const fw=fB||[s[0]-20,s[0]];
+       parts.forEach(pt=>{const q=buPlanBox(bd,pt),H=Math.max(3,q.H-.3),nx=Math.max(1,Math.ceil((q.x1-q.x0)/6)),ny=Math.max(1,Math.ceil((q.y1-q.y0)/6)),cols=[];
+         for(let i=0;i<=nx;i++)for(let j=0;j<=ny;j++){if(i&&j&&i<nx&&j<ny&&(nx<4||ny<4||i%2||j%2))continue;cols.push([q.x0+(q.x1-q.x0)*i/nx,q.y0+(q.y1-q.y0)*j/ny,i,j])}
+         const n=cols.length,sw=s[1]-s[0];
+         cols.forEach(([X,Y],c)=>{const p=P(X,Y,0),u=c/n;
+           P_.pad.push({x:p.x,z:p.z,y:-.1,sx:1.4,sy:.5,sz:1.4,t0:fw[0]+(fw[1]-fw[0])*.8*u,t1:fw[0]+(fw[1]-fw[0])*(.8*u+.2),t2:g0});
+           P_.col.push({x:p.x,z:p.z,y:0,sx:.32,sy:H,sz:.32,t0:s[0]+sw*.55*u,t1:s[0]+sw*(.55*u+.08),t2:g1})});
+         // eaves beams along both long sides and roof beams across the short span on every column line
+         const along=(q.x1-q.x0)>=(q.y1-q.y0),bt=s[0]+sw*.62;
+         [q.y0,q.y1].forEach(Y=>{const a=P(q.x0,Y,0),b=P(q.x1,Y,0);P_.beam.push({x:(a.x+b.x)/2,z:(a.z+b.z)/2,y:H,sx:.3,sy:.4,sz:Math.abs(a.z-b.z)+.3,t0:bt,t1:bt,t2:g1})});
+         [q.x0,q.x1].forEach(X=>{const a=P(X,q.y0,0),b=P(X,q.y1,0);P_.beam.push({x:(a.x+b.x)/2,z:(a.z+b.z)/2,y:H,sx:Math.abs(a.x-b.x)+.3,sy:.4,sz:.3,t0:bt,t1:bt,t2:g1})});
+         const N=along?nx:ny;for(let i=1;i<N;i++){const t0=s[0]+sw*(.62+.3*i/N);
+           if(along){const X=q.x0+(q.x1-q.x0)*i/nx,a=P(X,q.y0,0),b=P(X,q.y1,0);P_.beam.push({x:(a.x+b.x)/2,z:a.z,y:H,sx:Math.abs(a.x-b.x),sy:.5,sz:.25,t0,t1:t0,t2:g1})}
+           else{const Y=q.y0+(q.y1-q.y0)*i/ny,a=P(q.x0,Y,0),b=P(q.x1,Y,0);P_.beam.push({x:a.x,z:(a.z+b.z)/2,y:H,sx:.25,sy:.5,sz:Math.abs(a.z-b.z),t0,t1:t0,t2:g1})}}})});
+     // piles and excavation under every foundation of the department
+     const pr=buRows(k,'pile'),drive=pr.filter(r=>/Свайн/.test(r[1])),cut=pr.find(r=>/оголовк/.test(r[1])),pw=buWin(drive),ex=buWin(buRows(k,'exc')),fEnd=fAll?fAll[1]:null;
+     const foot=list.filter(it=>it.kind!=='x'&&it.box.min.y<1.5).map(it=>it.box).filter(b=>{const s=b.getSize(new THREE.Vector3());return s.x<130&&s.z<130});
+     if(pw&&foot.length){const pts=[];foot.forEach(b=>{const sx=b.max.x-b.min.x,sz=b.max.z-b.min.z,st=Math.max(2.4,Math.sqrt(sx*sz/40));
+         for(let x=b.min.x+.6;x<=b.max.x-.6+1e-6;x+=st)for(let z=b.min.z+.6;z<=b.max.z-.6+1e-6;z+=st)pts.push([x,z])});
+       pts.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const n=pts.length;
+       pts.forEach(([x,z],i)=>{const t0=pw[0]+(pw[1]-pw[0])*i/n;P_.pile.push({x,z,y:0,sx:.4,sy:1.2,sz:.4,t0,t1:t0,t2:fEnd||BU_T1,cut:cut?cut[2]+(cut[3]-cut[2])*i/n:null,hc:.15})})}
+     const sw0=Math.min(ex?ex[0]:1e9,pw?pw[0]:1e9);
+     if(sw0<1e9)foot.forEach(b=>{const c=b.getCenter(new THREE.Vector3());P_.soil.push({x:c.x,z:c.z,y:.01,sx:b.max.x-b.min.x+3,sy:1,sz:b.max.z-b.min.z+3,t0:sw0,t1:sw0,t2:fEnd||sw0+30})});
+     // pads under equipment that has no concrete base of its own in the model (shown until it is mounted)
+     list.filter(it=>it.kind==='e'&&!it.conc.length&&k!=='сети'&&it.box.min.y>-.4&&it.box.min.y<.7).forEach(it=>{const b=it.box,s=b.getSize(new THREE.Vector3());if(s.x>30||s.z>30)return;
+       const c=b.getCenter(new THREE.Vector3());P_.pad.push({x:c.x,z:c.z,y:-.05,sx:s.x+.3,sy:.3,sz:s.z+.3,t0:it.f0,t1:it.f0+3,t2:it.m0})});
+   });
+   BU.items=it0;
+   // pipe racks 116: footings, columns and then the tiers, in order along the routes
+   const rk=scene.children.filter(c=>c.material===M.rack),rc=rk.filter(c=>!c.isInstancedMesh&&c.geometry.parameters&&c.geometry.parameters.height>1.5),rb=rk.filter(c=>!rc.includes(c));
+   const rS=buRows('116','str')[0],rB=buRows('116','beam')[0],rF=buRows('116','fnd')[0];
+   const ordR=(a,b)=>(a.position.x+a.position.z*.2)-(b.position.x+b.position.z*.2);
+   rc.sort(ordR).forEach((c,i,a)=>{const u=i/a.length;c.userData.bu={y0:c.position.y,t0:rS[2]+(rS[3]-rS[2])*.9*u,t1:rS[2]+(rS[3]-rS[2])*(.9*u+.1)};
+     P_.pad.push({x:c.position.x,z:c.position.z,y:-.05,sx:1,sy:.35,sz:1,t0:rF[2]+(rF[3]-rF[2])*.9*u,t1:rF[2]+(rF[3]-rF[2])*(.9*u+.1),t2:1e9})});
+   rb.sort((a,b)=>{const pa=a.isInstancedMesh?new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().fromArray(a.instanceMatrix.array,0)):a.position,pb=b.isInstancedMesh?new THREE.Vector3().setFromMatrixPosition(new THREE.Matrix4().fromArray(b.instanceMatrix.array,0)):b.position;return (pa.x+pa.z*.2)-(pb.x+pb.z*.2)})
+     .forEach((c,i,a)=>{c.userData.bu={t0:rB[2]+(rB[3]-rB[2])*i/a.length}});
+   BU.rc=rc;BU.rb=rb;BU.rackDone=rB[3];
+   // roads: crushed-stone base, then asphalt (the external highway is not part of the plant)
+   BU.roads=scene.children.filter(c=>c.isMesh&&c.material===M.asphalt&&!((c.geometry.parameters||{}).width===14||(c.geometry.parameters||{}).radius===7)).sort((a,b)=>a.position.x-b.position.x);
+   const rb0=buRows('дороги','rbase')[0],rt0=buRows('дороги','rtop')[0];
+   BU.roads.forEach((c,i,a)=>{const u=i/a.length;c.userData.bu={t0:rb0[2]+(rb0[3]-rb0[2])*u,t1:rt0[2]+(rt0[3]-rt0[2])*u,ro:c.renderOrder}});
+   // pipelines: a department's own lines on its piping row; lines between departments run on the rack, after its tiers are up
+   const keyOfTag=t=>{const o=typeof t==='string'&&byTag[t]&&byTag[t][0];return o?buKey(o):null};
+   const pipeW=k=>{if(!k)return null;const r=buRows(k,'pipe');if(r.length)return buWin(r);const e=buRows(k,/^(eq|ns)$/);if(e.length)return buWin(e);return buWin(buRows(k,/^(el|eng)$/))};
+   const fw={};flowObjs.forEach(fo=>{const u=fo.tube.userData.flow||{},ka=keyOfTag(u.a),kb=keyOfTag(u.b);let w,key;
+     if(ka&&kb&&ka!==kb){const a=pipeW(ka)||[BU.rackDone-40,BU.rackDone],b=pipeW(kb)||a;w=[Math.max(a[0],b[0],buRows('116','beam')[0][2]),Math.max(a[1],b[1],BU.rackDone)];key='x'}
+     else{key=ka||kb;w=pipeW(key)||[BU.rackDone-40,BU.rackDone]}
+     const id=key+w.join();(fw[id]=fw[id]||{w,l:[]}).l.push(fo)});
+   Object.values(fw).forEach(({w,l})=>{l.sort((a,b)=>b.len-a.len);const W=w[1]-w[0],L=Math.max(3,W*.3);l.forEach((fo,i)=>{fo.bu0=w[0]+(W-L)*(l.length>1?i/(l.length-1):0);fo.bu1=fo.bu0+L})});
+   // instanced construction parts
+   const box1=new THREE.BoxGeometry(1,1,1),cyl1=new THREE.CylinderGeometry(.5,.5,1,8),pl1=new THREE.PlaneGeometry(1,1);pl1.rotateX(-Math.PI/2);
+   const mkP=(arr,geo,mat,ro)=>{if(!arr.length)return;const im=new THREE.InstancedMesh(geo,mat,arr.length);im.frustumCulled=false;im.userData.sp=arr;if(ro!=null)im.renderOrder=ro;grp.add(im);BU.pools.push(im)};
+   mkP(P_.soil,pl1,soilM,-95.5);mkP(P_.pile,cyl1,pileM);mkP(P_.pad,box1,cM);mkP(P_.col,box1,skM);mkP(P_.beam,box1,skM);
+   // cranes
+   BU.cranes=[0,1,2,3].map(()=>{const c=buCrane();grp.add(c);return c});
+   BU.obst=it0.filter(it=>it.kind!=='x').map(it=>it.box).filter(b=>{const s=b.getSize(new THREE.Vector3());return s.x<150&&s.z<150});
+   // remember what was visible / where it stood, so leaving the tab gives back exactly the model
+   it0.forEach(it=>{[...it.body,...it.conc].forEach(n=>{n.userData.buV=n.visible;n.userData.buP=n.position.clone();
+       if(!it.grp&&n.parent){const wp=n.getWorldPosition(new THREE.Vector3()),a=n.parent.worldToLocal(wp.clone()),b=n.parent.worldToLocal(wp.clone().add(new THREE.Vector3(0,1,0)));n.userData.buD=b.sub(a)}});
+     it.plane=new THREE.Plane(new THREE.Vector3(0,-1,0),it.box.max.y);it.cl=new Map()});
+   // department boxes for the camera
+   BU.kbox={};it0.forEach(it=>{if(it.kind==='x')return;const s=it.box.getSize(new THREE.Vector3());if(s.x>150||s.z>150)return;(BU.kbox[it.k]=BU.kbox[it.k]||new THREE.Box3()).union(it.box)});
+   BU.kbox['116']=new THREE.Box3();rc.forEach(c=>BU.kbox['116'].expandByObject(c));
+   BU.keys=Object.keys(BU_SCHED).sort((a,b)=>Math.min(...BU_SCHED[a].map(r=>r[2]))-Math.min(...BU_SCHED[b].map(r=>r[2])));
+   buBuildPanel()}
+ function buClip(it,on){it.body.forEach(n=>n.traverse(c=>{if(!(c.isMesh||c.isLine)||!c.material)return;
+   if(on){if(c.userData.buM)return;c.userData.buM=c.material;const cl=m=>{let x=it.cl.get(m);if(!x){x=m.clone();x.clippingPlanes=[it.plane];it.cl.set(m,x)}return x};c.material=Array.isArray(c.material)?c.material.map(cl):cl(c.material)}
+   else if(c.userData.buM){c.material=c.userData.buM;c.userData.buM=null}}))}
+ function buOff(it,h){if(it.grp){it.o.position.y=it.o.userData.buP.y+h;return}it.body.forEach(n=>{const d=n.userData.buD;n.position.copy(n.userData.buP);if(d&&h)n.position.addScaledVector(d,h)})}
+ function buVis(it,on){it.body.forEach(n=>n.visible=on&&n.userData.buV!==false)}
+ function buItem(it,t){
+   const cv=t>=it.f0;if(cv!==it.cv){it.cv=cv;it.conc.forEach(c=>c.visible=cv&&c.userData.buV!==false)}
+   const ph=t<it.m0?0:(t<it.m1?1:2);
+   if(ph!==it.ph){if(it.ph===1){if(it.mode==='grow')buClip(it,false);else buOff(it,0)}it.ph=ph;buVis(it,ph>0);if(ph===1&&it.mode==='grow')buClip(it,true)}
+   if(ph===1){const u=(t-it.m0)/(it.m1-it.m0);if(it.mode==='grow')it.plane.constant=it.box.min.y+(it.box.max.y-it.box.min.y+.2)*u;else buOff(it,it.H*(1-buEase(u/.85)))}}
+ const bu4=new THREE.Matrix4(),buQ=new THREE.Quaternion(),buV1=new THREE.Vector3(),buV2=new THREE.Vector3();
+ function buPools(t){BU.pools.forEach(im=>{im.userData.sp.forEach((s,i)=>{let k=0;if(t>=s.t0&&t<s.t2)k=s.t1>s.t0?Math.min(1,(t-s.t0)/(s.t1-s.t0)):1;
+     if(k<=0){bu4.makeScale(0,0,0)}else{const h=s.sy*k*(s.cut!=null&&t>=s.cut?s.hc:1);bu4.compose(buV1.set(s.x,s.y+h/2,s.z),buQ,buV2.set(s.sx,Math.max(h,.001),s.sz))}
+     im.setMatrixAt(i,bu4)});im.instanceMatrix.needsUpdate=true})}
+ // a crane stands beside every piece being lifted, on the side with the fewest neighbours
+ function buCranes(t){const lift=BU.items.filter(it=>it.mode==='lift'&&it.kind==='e'&&!it.grp0&&it.H>0&&t>=it.m0&&t<it.m1);
+   const fc=BU.fk&&BU.kbox[BU.fk]?BU.kbox[BU.fk].getCenter(new THREE.Vector3()):controls.target;
+   lift.sort((a,b)=>a.box.getCenter(buV1).distanceTo(fc)-b.box.getCenter(buV2).distanceTo(fc));
+   BU.cranes.forEach((cr,i)=>{const it=lift[i];cr.visible=!!it;if(!it)return;const c=it.box.getCenter(new THREE.Vector3()),s=it.box.getSize(new THREE.Vector3());
+     if(!it.cp){const R=Math.max(s.x,s.z)/2+5;let best=null,bn=1e9;for(let a=0;a<12;a++){const an=a/12*Math.PI*2,p=new THREE.Vector3(c.x+Math.cos(an)*R,0,c.z+Math.sin(an)*R),cb=new THREE.Box3(new THREE.Vector3(p.x-3.2,0,p.z-3.2),new THREE.Vector3(p.x+3.2,4,p.z+3.2));
+         let n=0;BU.obst.forEach(b=>{if(b!==it.box&&b.min.y<4&&b.intersectsBox(cb))n++});if(n<bn){bn=n;best=p}}it.cp=best}
+     const p=it.cp,u=cr.userData;cr.position.copy(p);const dir=new THREE.Vector3(c.x-p.x,0,c.z-p.z),ang=Math.atan2(-dir.z,dir.x);u.tu.rotation.y=ang;
+     const top=it.box.max.y,h=it.H*(1-buEase((t-it.m0)/(it.m1-it.m0)/.85)),piv=new THREE.Vector3(1.3*Math.cos(ang),2.6,-1.3*Math.sin(ang)),tip=new THREE.Vector3(c.x-p.x,top+it.H+3.5,c.z-p.z);
+     const d=tip.clone().sub(piv),L=d.length();u.boom.position.copy(piv).addScaledVector(d,.5);u.boom.scale.set(1,L,1);u.boom.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
+     const hy=top+h+.4,rl=Math.max(.2,tip.y-hy);u.rope.position.set(tip.x,tip.y-rl/2,tip.z);u.rope.scale.set(1,rl,1);u.hk.position.set(tip.x,hy,tip.z)})}
+ function buApply(){const t=BU.t;if(!BU.inited)return;
+   BU.items.forEach(it=>buItem(it,t));buPools(t);buCranes(t);
+   BU.rc.forEach(c=>{const b=c.userData.bu,k=t<b.t0?0:Math.min(1,(t-b.t0)/(b.t1-b.t0));c.visible=k>0;c.scale.y=Math.max(k,.001);c.position.y=b.y0*Math.max(k,.001)});
+   BU.rb.forEach(c=>{c.visible=t>=c.userData.bu.t0});
+   BU.roads.forEach(c=>{const b=c.userData.bu;c.visible=t>=b.t0;c.material=t>=b.t1?M.asphalt:BU.gravel});
+   flowObjs.forEach(fo=>{const r=t<fo.bu0?0:Math.min(1,(t-fo.bu0)/(fo.bu1-fo.bu0));fo.bv=r;fo.tube.visible=r>0&&(!active.size||active.has(fo.s));fo.tube.geometry.setDrawRange(0,r>=1?Infinity:Math.ceil(r*fo.segs)*48)});
+   buFocus(t);buPaint()}
+ // the department where the most visible work goes on gets the camera
+ const BU_PRI={ns:4,eq:4,str:3,beam:3,fin:2,fnd:2,pile:1,exc:1,pipe:1,rbase:0,rtop:0};
+ function buActive(t){const a=[];Object.entries(BU_SCHED).forEach(([k,rows])=>rows.forEach(r=>{if(t>=r[2]&&t<r[3])a.push({k,r})}));return a.sort((x,y)=>(BU_PRI[y.r[0]]??-1)-(BU_PRI[x.r[0]]??-1)||y.r[2]-x.r[2])}
+ function buFocus(t){const a=buActive(t).filter(x=>BU.kbox[x.k]&&BU_PRI[x.r[0]]!=null);const now=performance.now();
+   const cur=BU.fk&&a.find(x=>x.k===BU.fk&&BU_PRI[x.r[0]]>=1);
+   if(cur&&now-(BU.fkT||0)<6000)return;const best=a[0];if(!best){BU.fk=null;return}
+   if(cur&&BU_PRI[cur.r[0]]>=BU_PRI[best.r[0]])return;
+   if(best.k!==BU.fk){BU.fk=best.k;BU.fkT=now;if(BU.follow&&BU.play){const b=BU.kbox[best.k],c=b.getCenter(new THREE.Vector3()),s=b.getSize(new THREE.Vector3());
+     const asp=Math.max(.45,Math.min(1,camera.aspect)),d=Math.min(150,Math.max(38,Math.hypot(s.x,s.z)*1.15)/asp),dir=camera.position.clone().sub(controls.target);dir.y=0;if(dir.lengthSq()<1e-6)dir.set(1,0,1);dir.normalize().multiplyScalar(.8);dir.y=.6;
+     flyTo(c,null,c.clone().add(dir.normalize().multiplyScalar(d)))}}}
+ function buRestore(){BU.items.forEach(it=>{if(it.ph===1){if(it.mode==='grow')buClip(it,false);else buOff(it,0)}it.ph=2;buVis(it,true);it.cv=true;it.conc.forEach(c=>c.visible=c.userData.buV!==false)});
+   BU.rc.forEach(c=>{c.visible=true;c.scale.y=1;c.position.y=c.userData.bu.y0});BU.rb.forEach(c=>c.visible=true);BU.roads.forEach(c=>{c.visible=true;c.material=M.asphalt});
+   flowObjs.forEach(fo=>{fo.bv=1;fo.tube.geometry.setDrawRange(0,Infinity)});BU.grp.visible=false;BU.cranes.forEach(c=>c.visible=false);
+   LB.forEach(l=>l.d.classList.remove('su0','su1','su2'));renderer.localClippingEnabled=false;applyFlow()}
+ const BU_LSEC={Hg121:'121',G111:'111',G122:'122',G112:'112',G113:'113',G123:'123',R114:'114',R115:'115',W131:'131',W132:'132',W133:'133/134'};
+ function buSt(k,t){const w=buWin(BU_SCHED[k]);return t<w[0]?0:(t<w[1]?1:2)}
+ function buPaint(){const t=BU.t,uz=currentLang==='uz',now=performance.now();
+   $('buClock').textContent=buDate(t);$('buR').value=t;$('buPlay').textContent=BU.play?'❚❚':'▶';
+   if(now-(BU.pT||0)<200&&BU.play)return;BU.pT=now;
+   LB.forEach(l=>{const k=BU_LSEC[l.sec];l.d.classList.remove('su0','su1','su2');if(k)l.d.classList.add('su'+buSt(k,t))});
+   const a=buActive(t),nm=k=>k+' · '+(BU_NM[k]?BU_NM[k][uz?1:0]:k);
+   $('buNow').textContent=a.length?(uz?'Ishlar: ':'Идут работы: ')+[...new Set(a.map(x=>x.k))].join(', '):(t>=BU_T1-1?(uz?'Qurilish-montaj ishlari tugadi':'Строительно-монтажные работы завершены'):'');
+   const inf=$('buInfo');inf.hidden=!BU.on;
+   $('biSt').textContent=buDate(t)+(uz?' · kun ':' · день ')+Math.round(t-BU_T0+1)+(uz?' / ':' из ')+(BU_T1-BU_T0);
+   const f=BU.fk&&a.find(x=>x.k===BU.fk)||a[0];
+   $('biNm').textContent=f?nm(f.k):(t>=BU_T1-1?(uz?'Zavod qurildi':'Завод построен'):(uz?'Ish boshlanmagan':'Работы ещё не начались'));
+   $('biWhy').innerHTML=a.slice(0,5).map(x=>{const p=Math.round(100*(t-x.r[2])/(x.r[3]-x.r[2]));return `<div><b>${esc(x.k)}</b> ${esc(x.r[1])} <span class="mono">${p}%</span></div>`}).join('')+(a.length>5?`<div class="mono">+${a.length-5}</div>`:'');
+   $('buList').querySelectorAll('[data-k]').forEach(li=>{li.dataset.s=buSt(li.dataset.k,t)});
+   $('buList').querySelectorAll('[data-r]').forEach(li=>{const r=BU_SCHED[li.dataset.k2][li.dataset.r];li.dataset.s=t<r[2]?0:(t<r[3]?1:2)})}
+ function buBuildPanel(){const uz=currentLang==='uz';
+   $('buList').innerHTML=(BU.keys||Object.keys(BU_SCHED)).map((k,i)=>{const rows=BU_SCHED[k],w=buWin(rows);
+     return `<li data-k="${esc(k)}" data-st="${i+1}"><button type="button" class="su-step" data-t="${w[0]}" data-f="${esc(k)}"><span class="su-n">${esc(/^\d/.test(k)?k.slice(0,3):'•')}</span><span class="su-nm">${esc(k+' · '+(BU_NM[k]?BU_NM[k][uz?1:0]:k))}</span><span class="su-tm">${buDate(w[0])}–${buDate(w[1]-1)}</span></button>
+       <ul>${rows.map((r,j)=>`<li data-k2="${esc(k)}" data-r="${j}"><button type="button" class="su-ev" data-t="${r[2]}"><i></i><span class="su-nm">${esc(r[1])}</span><span class="su-tm">${buDate(r[2])}–${buDate(r[3]-1)} · ${r[4]}%</span></button></li>`).join('')}</ul></li>`}).join('');
+   $('buList').querySelectorAll('button[data-t]').forEach(b=>b.onclick=()=>{BU.t=+b.dataset.t;BU.play=false;const k=b.dataset.f;
+     if(k){const li=b.parentNode;li.classList.toggle('open');if(BU.kbox[k]){const bx=BU.kbox[k],c=bx.getCenter(new THREE.Vector3()),s=bx.getSize(new THREE.Vector3());flyTo(c,Math.min(120,Math.max(38,Math.hypot(s.x,s.z)*1.15)))}}
+     buApply()});
+   $('buR').min=BU_T0;$('buR').max=BU_T1;
+   $('buTot').textContent=(uz?'Grafik bo‘yicha: ':'По графику: ')+buDate(BU_T0)+' – '+buDate(BU_T1-1)+(uz?'. Foiz — grafik bo‘yicha bajarilgan.':'. Проценты — выполнение по графику. Сроки и состав работ — «График для работы», раздел «Строительство» каждого объекта.')}
+ const bubar=$('bubar');
+ function buLayout(){if(!BU.on){if(!SU.on){stage.style.height='';document.documentElement.style.removeProperty('--suH')}return}
+   const sh=bubar.offsetHeight;document.documentElement.style.setProperty('--suH',sh+'px');
+   if(document.body.classList.contains('fs-mode')){stage.style.height='';return}
+   const top=stage.getBoundingClientRect().top+scrollY;stage.style.height=Math.max(260,innerHeight-top-sh-14)+'px'}
+ new ResizeObserver(()=>buLayout()).observe(bubar);addEventListener('resize',()=>buLayout());
+ function setBuild(on){if(on===BU.on)return;
+   if(on){setTab(false);}
+   const tb=$('tabBuild');tb.setAttribute('aria-pressed',on);tb.setAttribute('aria-selected',on);
+   bubar.hidden=!on;if(bubar.parentNode!==stage.parentNode)stage.after(bubar);document.body.classList.toggle('su-mode',on);
+   if(on){buInit();BU.on=true;BU.grp.visible=true;renderer.localClippingEnabled=true;tabModel.setAttribute('aria-pressed',false);tabModel.setAttribute('aria-selected',false);
+     if(fsOn){bFsMenu.setAttribute('aria-expanded',false);fsPanelState(false)}
+     if(isolated)unIso();else flyTo(HOME.tgt,null,HOME.pos);
+     if(BU.t>=BU_T1)BU.t=BU_T0;BU.play=true;BU.fk=null;buApply();scrollTo(0,0);buLayout()}
+   else{BU.on=false;BU.play=false;$('buInfo').hidden=true;buRestore();buLayout()}}
+ function buTick(dt){if(!BU.on)return;
+   if(BU.play){BU.t=Math.min(BU_T1,BU.t+dt*BU.spd);if(BU.t>=BU_T1){BU.play=false;if(BU.follow)flyTo(HOME.tgt,null,HOME.pos)}buApply()}
+   flowObjs.forEach(f=>f.dots.forEach(d=>d.visible=false))}
+ $('tabBuild').onclick=()=>{if(!BU.on)setBuild(true)};
+ $('buPlay').onclick=()=>{if(BU.t>=BU_T1)BU.t=BU_T0;BU.play=!BU.play;buApply()};
+ $('buReset').onclick=()=>{BU.t=BU_T0;BU.play=false;BU.fk=null;flyTo(HOME.tgt,null,HOME.pos);buApply()};
+ $('buToday').onclick=()=>{BU.t=buToday();BU.play=false;buApply()};
+ $('buR').oninput=e=>{BU.t=+e.target.value;BU.play=false;buApply()};
+ $('buSpd').onchange=e=>{BU.spd=+e.target.value};
+ const buFollowUI=()=>{const b=$('buFollow'),uz=currentLang==='uz';b.setAttribute('aria-pressed',BU.follow);b.textContent=BU.follow?(uz?'🎯 Kuzatish':'🎯 Следить'):(uz?'✋ Erkin':'✋ Свободно')};
+ $('buFollow').onclick=()=>{BU.follow=!BU.follow;buFollowUI();BU.fk=null;if(BU.on)buApply()};
+ controls.addEventListener('start',()=>{if(BU.on&&BU.follow&&BU.play){BU.follow=false;buFollowUI()}});
+ $('buMore').onclick=()=>{const o=bubar.classList.toggle('open');$('buMore').setAttribute('aria-expanded',o);$('buMore').textContent=(currentLang==='uz'?'Obyektlar':'Объекты')+(o?' ▾':' ▴');BU.pT=0;if(BU.on)buPaint()};
+ function buVisUp(o){for(;o;o=o.parent)if(!o.visible)return false;return true}
  // chips
  const chips=$('chips'); const active=new Set();
  const lbl=document.createElement('span');lbl.className='eyebrow';lbl.textContent=L().streamsLbl;chips.appendChild(lbl);
@@ -4535,7 +4822,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    Object.entries(STREAMS).forEach(([k,v])=>{const s=chips.querySelector(`[data-k="${k}"] .chiptxt`);if(s)s.textContent=currentLang==='uz'?(v.nu||v.n):v.n});
  }
  function applyFlow(){chips.querySelectorAll('.chip').forEach(c=>{const on=active.has(c.dataset.k);c.setAttribute('aria-pressed',on);c.classList.toggle('dim',active.size>0&&!on)});
-   flowObjs.forEach(f=>{const on=(!active.size||active.has(f.s))&&(!SU.on||f.rev>0);f.tube.visible=on;const dim=SU.on&&f.tube.material===suDim[f.s];f.dots.forEach(d=>d.visible=on&&anim&&!dim)})}
+   flowObjs.forEach(f=>{const on=(!active.size||active.has(f.s))&&(!SU.on||f.rev>0)&&(!BU.on||f.bv>0);f.tube.visible=on;const dim=SU.on&&f.tube.material===suDim[f.s];f.dots.forEach(d=>d.visible=on&&anim&&!dim&&!BU.on)})}
  // toggles
  let anim=!matchMedia('(prefers-reduced-motion: reduce)').matches; $('bAnim').setAttribute('aria-pressed',anim);
  $('bAnim').onclick=()=>{anim=!anim;$('bAnim').setAttribute('aria-pressed',anim);applyFlow()};
@@ -5001,7 +5288,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
      c.rope.scale.y=L;c.rope.position.y=c.hookY-L/2;c.hk.position.y=c.hookY-L;
      if(c.hk.userData.jaws){const a=.25+.35*Math.max(0,(L-o.L[0])/(o.L[1]-o.L[0])-.5);c.hk.userData.jaws.forEach((j,i)=>{j.rotation.x=(i?-1:1)*a})}});
    if(anim){flowObjs.forEach(f=>{if(!f.tube.visible)return;f.off=(f.off+dt*6/f.len)%1;const n=f.dots.length,lim=SU.on?f.rev:1,dim=SU.on&&f.tube.material&&f.tube.material===suDim[f.s];f.dots.forEach((d,i)=>{const u=((i/n)+f.off)%1;if(SU.on)d.visible=!dim&&u<=lim;const q=f.path.getPointAt(Math.min(u,.9995));if(q)d.position.copy(q)})})}
-   suTick(dt);
+   suTick(dt);buTick(dt);
    suGunAnim();suRainAnim();suShotAnim();const vp=suRender();
    const w=vp.w,h=vp.h;
    LB.forEach(l=>{tmp.copy(l.p).project(camera);const vis=showL&&tmp.z<1&&Math.abs(tmp.x)<1.1&&Math.abs(tmp.y)<1.1&&(!isolated||l.sec===isolated);l.d.classList.toggle('hide',!vis);if(vis){l.d.style.left=((tmp.x+1)/2*w)+'px';l.d.style.top=((1-tmp.y)/2*h)+'px'}});
@@ -5013,7 +5300,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    $('tEyebrow').textContent=T.eyebrow; $('tH1').textContent=T.h1;
    $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim; $('bLbl').textContent=T.bLbl;$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
    $('bHelp').title=T.bHelpTitle;
-   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода'; $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
+   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода';$('tabBuild').textContent=lang==='uz'?'Qurilish':'Строительство';if(BU.inited){buBuildPanel();buPaint();buFollowUI();$('buToday').textContent=lang==='uz'?'Bugun':'Сегодня';$('buMore').textContent=(lang==='uz'?'Obyektlar':'Объекты')+(bubar.classList.contains('open')?' ▾':' ▴')} $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
    bCutFab.title=T.tabCut; bCutFab.setAttribute('aria-label',T.tabCut);
    $('tCutEyebrow').textContent=T.cutEyebrow; $('tCutOnly').textContent=T.cutOnly;
    $('cutSegOff').textContent=T.cutOff;
