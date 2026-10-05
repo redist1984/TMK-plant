@@ -661,7 +661,7 @@ const E = [
 {t:'RW-1…6',k:'railnet',lines:{"1": [[5390.32, 2063], [5391.94, 2158.7], [5398.07, 2521.58]], "2": [[5388.5, 2205.32], [5388.42, 2227.57], [5388.5, 2239.64], [5391.5, 2416.73], [5393.48, 2448.32], [5395.37, 2465.9], [5397.46, 2485.13]], "L": [[5392.08, 2167.07], [5390.61, 2182.88], [5377.66, 2320.67]], "3": [[5384.43, 2248.54], [5384.37, 2270.6], [5384.45, 2282.64], [5388.49, 2521.58]], "4": [[5380.36, 2291.76], [5380.29, 2313.39], [5380.37, 2325.38], [5383.69, 2521.56]], "5": [[5377.66, 2320.67], [5376.68, 2339.99], [5376.16, 2359.31], [5378.91, 2521.55]], "6": [[5390.61, 2080.0], [5390.68, 2086.11], [5390.69, 2091.85], [5390.63, 2097.24], [5390.51, 2102.31], [5390.32, 2107.08], [5390.08, 2111.58], [5389.78, 2115.82], [5389.41, 2119.84], [5389.0, 2123.66], [5388.53, 2127.29], [5388.0, 2130.77], [5387.43, 2134.11], [5386.8, 2137.34], [5386.13, 2140.49], [5385.4, 2143.57], [5384.64, 2146.62], [5383.83, 2149.65], [5382.98, 2152.69], [5382.08, 2155.76], [5381.15, 2158.88], [5380.9, 2159.71], [5379.61, 2163.57], [5378.16, 2167.41], [5372.82, 2181.3], [5370.08, 2189.05], [5367.77, 2196.98], [5365.88, 2204.97], [5364.45, 2213.06], [5363.45, 2221.26], [5362.92, 2229.45], [5362.84, 2237.68], [5364.13, 2313.98]]},stops:[[5398.09, 2522.48], [5388.51, 2522.64], [5383.71, 2522.72], [5378.93, 2522.8], [5364.09, 2311.63]],plan:'UZLS-3147-4T100-01 Rev.E'},
  {t:'SM-12303A~D',k:'rail',norails:1,X:5377.8,y:[2412,2482],pl:{X:5372.8,w:3,top:6.2,y:[2426.4,2473.4]},plan:'3147-5G123-05'},
  {t:'VE-12301AB',k:'atank',X:5347.606,Y:2460.54,d:24,h:14,R:24,base:1.2,nso:'3147-5H123-01-01',plan:'3147-5G123-05'},
- {t:'TW-12301',k:'scrtw',X:5347.6,Y:2427.04,d:0.53,h:4.48,base:17.7,roof:18.4,plan:'3147-5G123-05',nso:'3147-5H123-04-01'},
+ {t:'TW-12301',k:'scrtw',X:5347.6,Y:2427.04,d:0.53,h:4.48,base:17.7,roof:18.4,sup:[[5346.464,2436.9],[5346.464,2448.826]],dims:'Ø530 × ≈4477; N1 DN200 вход воздушек VT-12301/12302 от VE-12301A/B (180°, EL 20,065), N4 DN200 выход в атмосферу',plan:'3147-5G123-05, 5G123-06, штуцеры 5G123-09, изометрии 5G123-19-002/-003',nso:'3147-5H123-04-01'},
  {t:'VE-11401',k:'flash',X:5240.3,Y:2324.1,y0:.3,d:1.216,h:3.82,hs:2.66,leg:.652,bc:.84,legA:[180,300,60],lgA:225,side:[[90,2.9,.11],[270,1.2,.08],[270,2.3,.08],[0,3.1,.11]],dims:'DN1200 × H≈3818, V=3,5 м³, 3 опоры на Ø840',vend:'SOPO CERE 37SCG2504-0',plan:'3147-5R114-14'},
  {t:'VE-11402',k:'flash',X:5240.9,Y:2317.1,y0:0,d:2.024,h:4.13,hs:2.5,leg:.846,bc:1.5,legA:[90,210,330],lgA:90,side:[[270,2.4,.14],[90,1.6,.08],[270,1.6,.08],[0,3.0,.11]],dims:'DN2000 × H≈4132, V=10 м³, 3 опоры на Ø1500',vend:'SOPO CERE 38SCG2504-0',plan:'3147-5R114-14'},
  {t:'MZ-114.101',k:'dose111',dims:'1900 × 1900 × H 1450, бак Ø1000 × 1450, мешалка 0,75 кВт, 2 дозировочных насоса',X:5239.5,Y:2332.6,sx:1.9,sz:1.9,h:1.9,y0:6,plan:'3147-5R114.1-04',vend:'Henan Zhengyi, установка дозирования в котёл'},
@@ -986,8 +986,11 @@ const F = [
 {s:"alkali",a:["DM-34",0.6],b:["DM-11",0.6],r:0.05,code:"химическая промывка ОО",dashed:1,p3:[[5310.6,2492.9,0.6],[5310.6,2492.9,1.4],[5310.6,2494.0,1.4],[5299.4,2494.0,1.4],[5299.4,2494.75,1.4],[5299.4,2494.75,0.6]]},
  {s:"fuel",a:["XX-13501",1.8],b:["FU-13501",1.8],e:3.3},
  {s:"fuel",a:["FU-13501",3.3],b:["SK-13501",5.8],e:3.3},
- {s:"air",a:["VE-12301AB",3.2],b:["TW-12301",20.4],e:21.45,r:0.25},
- {s:"air",a:[5369.7,2403.0,1.08],ea:"VE-12302",b:["TW-12301",20.4],w:[[5369.7,2427.04]],e:21.45,r:0.25},
+ // tank vents DN200 → TW-12301 N1 (P&ID 3147-5G123-03, isometrics 5G123-19-002/-003, plan 5G123-06): VE-12301A d1 (roof centre,
+ // EL 19.020) up to EL 20.154, 1142 to the south-west side, 1000 north to the tee DN200×200 beside TW-12301, branch to N1 (EL 20.065);
+ // VE-12301B d1 (EL 19.010) up, 1142 aside, 33.3 m south on two T-frames S123021 to the same tee
+ {s:"air",code:"VT-12301-200-DE3 (VE-12301A, штуцер d → тройник у TW-12301)",a:["VE-12301AB",19.02],ea:"VE-12301AB",b:["TW-12301",20.15],eb:"TW-12301",r:0.11,p3:[[5347.606,2426.04,19.02],[5347.606,2426.04,20.154],[5346.464,2426.04,20.154],[5346.464,2427.04,20.154],[5346.95,2427.04,20.154],[5346.93,2427.04,20.065]]},
+ {s:"air",code:"VT-12302-200-DE3 (VE-12301B, штуцер d → TW-12301 N1)",a:["VE-12301AB",19.01],ea:"VE-12301AB",b:["TW-12301",20.15],eb:"TW-12301",r:0.11,p3:[[5347.606,2460.54,19.01],[5347.606,2460.54,20.154],[5346.464,2460.54,20.154],[5346.464,2427.04,20.154],[5346.95,2427.04,20.154],[5346.93,2427.04,20.065]]},
  {s:"gas",code:"PG-11201-2488/3936-AC4 (штуцер b → котёл, EL +2,900)",a:["FU-11201",0],b:["EX-11201",0],r:1.97,p3:[[5258.3,2332.4,2.9],[5250.9,2332.4,2.9]]},
  {s:"gas",code:"PG-11202-1000/2220-AC4 (горячий байпас)",a:["FU-11201",0],b:["XX-11201",0],r:1.11,p3:[[5254.86,2332.4,4.6],[5254.86,2332.4,5.7]]},
  {s:"gas",code:"PG-11203-2000-AC2-H7 (P → g, EL +7,100)",a:["EX-11201",0],b:["XX-11201",0],r:1.01,p3:[[5249.66,2320.6,3.6],[5249.66,2318.7,3.6],[5251.0,2317.6,4.6],[5253.4,2317.6,6.4],[5254.86,2318.4,7.1],[5254.86,2320.0,7.1],[5254.86,2330.7,7.1]]},
@@ -1902,7 +1905,16 @@ function start(){
      const nk=cyl(.22,.22,.45,M.steelDark,14);nk.position.y=4.55;g.add(nk);
      const gn=new THREE.Mesh(new THREE.TorusGeometry(.35,.11,8,16,Math.PI),M.steelDark);gn.position.set(.35,4.78,0);g.add(gn);
      const dn=cyl(.22,.22,.25,M.steelDark,14);dn.position.set(.7,4.65,0);g.add(dn);
-     const n1=cyl(.22,.22,.5,M.steelDark,14);n1.rotation.z=Math.PI/4;n1.position.set(-.42,.7,0);g.add(n1);
+     // N1 DN200 gas inlet at 180° (west-south-west in the model, −X), EL 20.065 (orientation 3147-5G123-09)
+     const n1=cyl(.22,.22,.42,M.steelDark,14);n1.rotation.x=Math.PI/2;n1.position.set(0,20.065-o.base,.475);g.add(n1);
+     const n1f=cyl(.34,.34,.03,M.steelDark,14);n1f.rotation.x=Math.PI/2;n1f.position.set(0,20.065-o.base,.67);g.add(n1f);
+     // T-frames S123021 (HG/T 21629 D12-1-E) under the vent header VT-12302 on the tank roofs: post from the dome, cross arm, pipe shoe
+     (o.sup||[]).forEach(([Xs,Ys])=>{const cx=Ys-o.Y,cz=-(Xs-o.X),tk=Ys<2443.3?[5347.606,2426.04]:[5347.606,2460.54],rr=Math.hypot(Xs-tk[0],Ys-tk[1]),
+       rf=15.2+Math.sqrt(24*24-rr*rr)-Math.sqrt(24*24-144),top=20.154-.11-.1;
+       const pc=new THREE.Mesh(new THREE.BoxGeometry(.16,top-rf+.05,.16),M.steelDark);pc.position.set(cx,(rf+top)/2-o.base,cz);g.add(pc);
+       const ar=new THREE.Mesh(new THREE.BoxGeometry(.12,.12,.9),M.steelDark);ar.position.set(cx,top-.06-o.base,cz);g.add(ar);
+       const sh=new THREE.Mesh(new THREE.BoxGeometry(.3,.1,.16),M.steelDark);sh.position.set(cx,top+.05-o.base,cz);g.add(sh);
+       const bp=new THREE.Mesh(new THREE.BoxGeometry(.4,.04,.4),M.steelDark);bp.position.set(cx,rf+.02-o.base,cz);g.add(bp)});
      // support stand: 4 legs from the lugs (EL 19.600) down to the dome roof, ring beam on the roof
      const rf=o.roof??(o.base+.7);for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4,l=cyl(.08,.08,1.9-(rf-o.base),M.steelDark,6);l.position.set(Math.cos(a)*.42,(rf-o.base+1.9)/2,-Math.sin(a)*.42);g.add(l)}
      const rb=new THREE.Mesh(new THREE.TorusGeometry(.42,.04,4,24),M.steelDark);rb.rotation.x=Math.PI/2;rb.position.y=rf-o.base+.04;g.add(rb);
@@ -1926,6 +1938,9 @@ function start(){
      // nozzles: [bearing, height above grade, DN]
      const nz=(t,h,d,l=.35)=>{const[x,z]=dir(t),q=cyl(d,d,l,M.steelDark,16);q.position.set(x*(r+l/2),h,z*(r+l/2));q.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(x,0,z));g.add(q);
        const f=cyl(d+.15,d+.15,.05,M.steelDark,16);f.quaternion.copy(q.quaternion);f.position.set(x*(r+l),h,z*(r+l));g.add(f)};
+     // roof vent nozzle d DN200 in the roof centre, flange EL ≈19.0 (5G123-07, isometrics 5G123-19-002/-003)
+     const dh=b+o.h+o.R-Math.sqrt(o.R*o.R-r*r),vd=cyl(.22,.22,19.0-dh+.1,M.steelDark,16);vd.position.y=(dh-.1+19.0)/2;g.add(vd);
+     const vf=cyl(.34,.34,.04,M.steelDark,16);vf.position.y=19.0;g.add(vf);
      nz(298,b+.9,.62);nz(180,b+.9,.62);                                                    // manholes a, c
      [[332,.15],[349,.2],[3,.2],[33,.2],[45,.2],[312,.15]].forEach(([t,d])=>nz(t,b+.45,d));  // b2, f1, f2, g, h, e
      g.position.copy(P(o.X,o.Y,0))}
