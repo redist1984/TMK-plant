@@ -177,10 +177,30 @@ footer{margin-top:22px;font-size:12px;color:var(--ink3);max-width:110ch}
   display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;font:700 16px var(--sans)}
 body.fs-mode .help-fab{position:fixed;right:14px;top:calc(env(safe-area-inset-top,0px) + 14px)}
 body.fs-mode header.top,body.fs-mode .bar,body.fs-mode section.table,body.fs-mode footer{display:none}
+body.fs-mode{margin:0;padding:0;overflow:hidden}
 body.fs-mode .stage{height:100dvh}
 body.fs-mode .diagram{height:100%;border-radius:0}
 body.fs-mode .zoombar{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:6;margin-top:0}
 body.fs-mode .fs-fab{position:fixed;left:14px;top:calc(env(safe-area-inset-top,0px) + 14px)}
+/* full-screen control panel (☰), same idea as in model.html: the stream filter bar and
+   a section/equipment picker are moved into a collapsible panel over the diagram */
+.fsmenu-fab{display:none;position:fixed;z-index:7;right:14px;top:calc(env(safe-area-inset-top,0px) + 14px);width:38px;height:38px;border-radius:9px;
+  border:1px solid var(--line);background:var(--panel);color:var(--ink);box-shadow:var(--shadow);font-size:18px;line-height:1;cursor:pointer;padding:0}
+.fsmenu-fab[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+body.fs-mode .fsmenu-fab{display:block}
+body.fs-mode .help-fab{right:62px}
+.fspanel{display:none;position:fixed;z-index:6;right:14px;top:calc(env(safe-area-inset-top,0px) + 62px);width:min(280px,calc(100vw - 28px));
+  max-height:calc(100dvh - env(safe-area-inset-top,0px) - 140px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  background:color-mix(in srgb,var(--panel) 95%,transparent);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px}
+body.fs-mode .fspanel.open{display:flex;flex-direction:column;gap:8px}
+body.fs-mode .fspanel .bar{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:0 0 8px;border-bottom:1px solid var(--line)}
+.fspanel .bar #chips{display:flex;flex-direction:column;gap:5px}
+.fspanel .bar .chip,.fspanel .bar .btn{justify-content:flex-start;text-align:left;width:100%}
+.fspanel .bar .gost{margin-left:0}
+.fsnav{display:none;flex-direction:column;gap:6px}
+body.fs-mode .fspanel .fsnav{display:flex}
+.fsnav select{font:13px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:100%}
+@media (min-width:761px){body.fs-mode.fs-panel-open aside.detail{right:306px;width:min(400px,calc(100vw - 334px))}}
 </style>
 </head>
 <body>
@@ -214,6 +234,14 @@ body.fs-mode .fs-fab{position:fixed;left:14px;top:calc(env(safe-area-inset-top,0
       <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
     </svg>
   </button>
+  <button class="fsmenu-fab" type="button" id="bFsMenu" aria-expanded="true" aria-controls="fsPanel" title="Панель управления" aria-label="Панель управления">☰</button>
+  <div class="fspanel" id="fsPanel">
+    <div class="fsnav" id="fsNav">
+      <span class="eyebrow" id="tFsNavLbl">Отделения и оборудование</span>
+      <select id="fsSec" aria-label="Отделение"></select>
+      <select id="fsEq" aria-label="Оборудование"></select>
+    </div>
+  </div>
   <button class="help-fab" type="button" id="bHelp" title="Подсказка по управлению" aria-label="Подсказка по управлению">?</button>
   <div class="diagram" id="diagram"></div>
   <aside class="detail closed" id="detail" aria-live="polite"></aside>
@@ -330,6 +358,7 @@ const UI = {
     findIn3d:(code)=>`<div class="how"><b>Найти в 3D:</b> откройте модель в Autodesk Viewer → «Model Browser» (дерево модели) → поиск → введите <span class="tag">${code}</span>. Затем «Isolate», чтобы оставить на экране только этот аппарат.</div>`,
     footer:'Источники: технологические схемы 3147-5G111-03…05, 3147-5G112-03 (листы 1–2), 3147-5G113-03, 3147-5Hg121-02; перечни оборудования 5G111, 5G112, 5G113, 5G122, 5G123, 5G136, 5R114, 5R114.1, 5R115, 5R135; пояснительная записка 3147-5R114-01. Наличие в 3D проверено по модели «Модель всего предприятия 26.6.10.nwd». Массы — по перечням (общая масса позиции). Схема упрощена: показаны основные потоки, без арматуры, КИП и обвязки насосов. Водоочистная станция 131 и деминерализация 132 — по документации поставщика Sichuan Shengjiuyuan (SJY-GY-01…14; Rev.A 2026.5.29); оборотная вода — по регламенту §4.2.10–4.2.12. Потоки сверены с временным технологическим регламентом (раздел 4) и P&ID 3147-5G111/5G112/5G113.',
     fsEnter:'Во весь экран', fsExit:'Выйти из полноэкранного режима',
+    fsMenu:'Панель управления: потоки, нормы режима, отделения и оборудование', fsNavLbl:'Отделения и оборудование', fsSecPh:'Отделение…', fsEqPh:'Оборудование…',
   },
   uz: {
     eyebrow:'3147-loyiha · TMK Chemical LLC',
@@ -358,6 +387,7 @@ const UI = {
     findIn3d:(code)=>`<div class="how"><b>3D-da topish:</b> modelni Autodesk Viewer’da oching → «Model Browser» (model daraxti) → qidiruv → <span class="tag">${code}</span> deb kiriting. So‘ng «Isolate» — faqat shu apparat ekranda qoladi.</div>`,
     footer:'Manbalar: 3147-5G111-03…05, 3147-5G112-03 (1–2-varaq), 3147-5G113-03, 3147-5Hg121-02 texnologik sxemalari; 5G111, 5G112, 5G113, 5G122, 5G123, 5G136, 5R114, 5R114.1, 5R115, 5R135 jihozlar ro‘yxatlari; 3147-5R114-01 tushuntirish xati. 3D-modelda mavjudligi «Модель всего предприятия 26.6.10.nwd» modeli bo‘yicha tekshirilgan. Massalar — ro‘yxatlar bo‘yicha (pozitsiyaning umumiy massasi). Sxema soddalashtirilgan: faqat asosiy oqimlar ko‘rsatilgan, armatura, KIP va nasos ulanishlarisiz. 131-suv tozalash va 132-demineralizatsiya stansiyalari — Sichuan Shengjiuyuan yetkazib beruvchisi hujjatlari bo‘yicha (SJY-GY-01…14; Rev.A 2026.5.29); aylanma suv — §4.2.10–4.2.12 reglamenti bo‘yicha. Oqimlar vaqtinchalik texnologik reglament (4-bo‘lim) va 3147-5G111/5G112/5G113 P&ID bilan solishtirilgan.',
     fsEnter:'To‘liq ekran', fsExit:'To‘liq ekrandan chiqish',
+    fsMenu:'Boshqaruv paneli: oqimlar, rejim normalari, bo‘limlar va jihozlar', fsNavLbl:'Bo‘limlar va jihozlar', fsSecPh:'Bo‘lim…', fsEqPh:'Jihoz…',
   }
 };
 let currentLang = 'ru';
@@ -1085,6 +1115,7 @@ function paintFlowUI(lang){
   document.getElementById('bHelp').title = L.helpBtnTitle;
   document.getElementById('tFooter').textContent = L.footer;
   paintFsBtn();
+  if(typeof paintFsNav==='function')paintFsNav();
   paintChips(lang);
   sec.innerHTML = `<option value="">${esc(L.allSec)}</option>` + Object.entries(SEC).map(([k,s])=>`<option value="${k}">${esc(s.code)} · ${esc(lang==='uz'&&s.nameu?s.nameu:s.name)}</option>`).join('');
   rsec.innerHTML = `<option value="">${esc(L.allSec)}</option>` + Object.entries(SEC).filter(([k])=>(DATA.reg||[]).some(r=>r.s===k)).map(([k,s])=>`<option value="${k}">${esc(s.code)} · ${esc(lang==='uz'&&s.nameu?s.nameu:s.name)}</option>`).join('');
@@ -1104,8 +1135,42 @@ function paintFsBtn(){
   bFullscreen.title=fsOn?L.fsExit:L.fsEnter;
   fsIcon.innerHTML=fsOn?FS_ICON_EXIT:FS_ICON_ENTER;
 }
+// In full-screen mode the stream filter bar (chips, «Показать все», «Нормы режима») is moved
+// into a collapsible panel over the diagram (☰), next to a section/equipment picker that
+// replaces the hidden tables; the bar goes back to its place on exit.
+const tBar=document.getElementById('tBar'), tBarSlot=document.createComment('fs-slot');tBar.parentNode.insertBefore(tBarSlot,tBar);
+const fsPanel=document.getElementById('fsPanel'), bFsMenu=document.getElementById('bFsMenu'), fsSec=document.getElementById('fsSec'), fsEq=document.getElementById('fsEq');
+// until the user toggles it, the panel opens with full screen on a wide screen and stays
+// collapsed on a phone so it does not cover the diagram (checked on entry: the iframe may be
+// hidden, and so zero-width, when the page loads)
+let fsMenuTouched=false;const fsNarrow=()=>window.innerWidth<=760;
+function fsPanelState(){const o=fsOn&&bFsMenu.getAttribute('aria-expanded')==='true';fsPanel.classList.toggle('open',o);document.body.classList.toggle('fs-panel-open',o)}
+function fsPanelSet(o){bFsMenu.setAttribute('aria-expanded',String(o));fsPanelState()}
+bFsMenu.addEventListener('click',()=>{fsMenuTouched=true;fsPanelSet(bFsMenu.getAttribute('aria-expanded')!=='true')});
+function paintFsNav(){
+  const L=UI[currentLang]||UI.ru;
+  bFsMenu.title=L.fsMenu;bFsMenu.setAttribute('aria-label',L.fsMenu);
+  document.getElementById('tFsNavLbl').textContent=L.fsNavLbl;
+  const k0=fsSec.value;
+  fsSec.innerHTML=`<option value="">${esc(L.fsSecPh)}</option>`+Object.entries(SEC).map(([k,s])=>`<option value="${k}">${esc(s.code)} · ${esc(currentLang==='uz'&&s.nameu?s.nameu:s.name)}</option>`).join('');
+  fsSec.value=k0;fillFsEq();
+}
+function fillFsEq(){
+  const L=UI[currentLang]||UI.ru, k=fsSec.value;
+  fsEq.innerHTML=`<option value="">${esc(L.fsEqPh)}</option>`+DATA.eq.filter(e=>!k||e.s===k).map(e=>`<option value="${esc(e.t)}">${esc(e.t)} · ${esc((currentLang==='uz'&&e.nu)?e.nu:e.n)}</option>`).join('');
+}
+fsSec.addEventListener('change',()=>{fillFsEq();if(fsSec.value){showSection(fsSec.value);if(fsNarrow())fsPanelSet(false)}});
+fsEq.addEventListener('change',()=>{const t=fsEq.value;if(!t)return;
+  const nid=Object.keys(nodeEls).find(i=>nodeEls[i].tag===t);for(const id in nodeEls)nodeEls[id].g.classList.remove('sel');
+  if(nid){nodeEls[nid].g.classList.add('sel');const r=nodeEls[nid].g.getBoundingClientRect(),dg=document.getElementById('diagram'),d=dg.getBoundingClientRect();
+    dg.scrollLeft+=r.left+r.width/2-(d.left+d.width/2);dg.scrollTop+=r.top+r.height/2-(d.top+d.height/2)}
+  showEq(t);fsEq.value='';if(fsNarrow())fsPanelSet(false)});
 function setFullscreen(on,notifyParent){
   fsOn=on; document.body.classList.toggle('fs-mode',fsOn); paintFsBtn();
+  if(fsOn)window.scrollTo(0,0);
+  if(fsOn)fsPanel.insertBefore(tBar,fsPanel.firstChild);else tBarSlot.parentNode.insertBefore(tBar,tBarSlot.nextSibling);
+  if(fsOn&&!fsMenuTouched)bFsMenu.setAttribute('aria-expanded',String(!fsNarrow()));
+  fsPanelState();
   if(notifyParent!==false){try{window.parent.postMessage({__tmkFullscreen:true,on:fsOn},'*')}catch(e){}}
 }
 bFullscreen.addEventListener('click',()=>setFullscreen(!fsOn));
