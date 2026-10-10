@@ -46,7 +46,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .seg button{border:0;background:transparent;padding:6px 11px;cursor:pointer;font-weight:500;font-size:12.5px;color:var(--ink2);white-space:nowrap}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
-.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 11px;font-weight:500;font-size:12.5px;cursor:pointer}
+.btn{white-space:nowrap;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 11px;font-weight:500;font-size:12.5px;cursor:pointer}
 .btn:active{background:var(--panel2)}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
@@ -76,6 +76,7 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
 #tip small{display:block;color:var(--ink2);font-size:11.5px}
 #card{flex:0 0 340px;border-left:1px solid var(--line);background:var(--panel);overflow:auto;padding:14px 14px 22px;display:none}
 #card.open{display:block}
+#card.open~.hint,.main:has(#card.open) .hint{display:none}
 #card .x{float:right;border:0;background:transparent;font-size:22px;line-height:1;cursor:pointer;color:var(--ink2);padding:2px 6px}
 .eyebrow{font:11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
 #card h2{font-size:17px;line-height:1.25;margin:4px 0 8px}
@@ -191,9 +192,11 @@ function fit(anim){computeFit();k=fitK;tx=ty=0;go(anim)}
 function go(anim){if(anim){stage.classList.add('anim');setTimeout(()=>stage.classList.remove('anim'),500)}applyView()}
 function zoomAt(nk,cx,cy){nk=Math.min(Math.max(nk,fitK),Math.max(2.2,fitK*8));tx=cx-(cx-tx)*nk/k;ty=cy-(cy-ty)*nk/k;k=nk;applyView()}
 function zoomBox(b,pad,maxK){ // b = [x0,y0,x1,y1] in sheet px
-  const vw=vp.clientWidth,vh=vp.clientHeight;const bw=(b[2]-b[0])+2*pad,bh=(b[3]-b[1])+2*pad;
+  const vw=vp.clientWidth;let vh=vp.clientHeight;if(card.classList.contains('open')&&matchMedia('(max-width:760px)').matches)vh=Math.round(vh*0.46);
+  const bw=(b[2]-b[0])+2*pad,bh=(b[3]-b[1])+2*pad;
   let nk=Math.min(vw/bw,vh/bh);nk=Math.min(Math.max(nk,fitK),maxK||Math.max(1.4,fitK*6));
   k=nk;tx=vw/2-((b[0]+b[2])/2)*k;ty=vh/2-((b[1]+b[3])/2)*k;go(true)}
+const card=$('card');
 vp.addEventListener('wheel',e=>{e.preventDefault();const r=vp.getBoundingClientRect();
   const f=Math.exp(-e.deltaY*(e.ctrlKey?0.012:0.0016));zoomAt(k*f,e.clientX-r.left,e.clientY-r.top)},{passive:false});
 const ptrs=new Map(); let pan=null,pinch=null,moved=0,downEl=null;
@@ -303,7 +306,7 @@ function selectEq(key,o){ // key — тег на PFD или тег модели
   if(pref.sheet!==sheet)showSheet(pref.sheet,true);
   sel={t:'eq',tag:pref.eq.tag,app};
   paintSel();openEqCard(pref.eq,pref.sheet);
-  if(o.zoom!==false)zoomBox(pref.eq.box,160);
+  if(o.zoom!==false)zoomBox(pref.eq.box,300,1.0);
   return true;
 }
 function selectStream(id,o){
@@ -320,7 +323,6 @@ function selectStream(id,o){
 }
 
 // ---------- card ----------
-const card=$('card');
 function closeCard(){card.classList.remove('open');sel=null;paintSel()}
 function openCard(html){card.innerHTML=`<button class="x" type="button" id="cx" aria-label="${esc(L().close)}">×</button>`+html;card.classList.add('open');card.scrollTop=0;$('cx').onclick=closeCard}
 function openEqCard(e,shn){
