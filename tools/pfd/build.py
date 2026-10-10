@@ -13,6 +13,7 @@ sys.path.insert(0,HERE)
 import trace as T
 import vec
 from eqboxes import EQ
+from sym import SYM,targets
 import tables as TB
 import manual as M
 
@@ -190,6 +191,8 @@ for sh in '123':
             if not (20<=w<=36 and 14<=h<=34 and a/(w*h)>0.42): text[lab==i]=255
     drop|=cv2.dilate(text,np.ones((3,3),np.uint8))
     drop[CUT[sh]:,:]=255; drop[:,:178]=255; drop[:,2915:]=255; drop[:112,:]=255
+    for tag,t,p,z in SYM.get(sh,[]):
+        for q in (z if isinstance(z[0],list) else [z]): drop[q[1]:q[3],q[0]:q[2]]=255      # контур этого аппарата рисует символ
     paths,fills=vec.vectorize(g,drop)
     art='M'.join('%d %dL'%(p[0][0],p[0][1])+'L'.join('%d %d'%(x,y) for x,y in p[1:]) for p in paths if len(p)>1)
     art='M'+art
@@ -211,6 +214,29 @@ for sh in '123':
                 if a[2]>q[4]: a[2]=q[4]
                 elif a[4]<q[2]: a[4]=q[2]
                 break
+    # концы труб и стрелок, не дошедшие до корпуса или штуцера символа (скан обрывал их у фланца), дотягиваем до него
+    tg=[r for tag,t,p,z in SYM.get(sh,[]) for r in targets(t,p)]
+    def reach(x,y,dx,dy):
+        for x0,y0,x1,y1 in tg:
+            if dy>0 and y<y0 and y0-y<=26 and x0-2<=x<=x1+2: return (x,y0)
+            if dy<0 and y>y1 and y-y1<=26 and x0-2<=x<=x1+2: return (x,y1)
+            if dx>0 and x<x0 and x0-x<=26 and y0-2<=y<=y1+2: return (x0,y)
+            if dx<0 and x>x1 and x-x1<=26 and y0-2<=y<=y1+2: return (x1,y)
+    sg=lambda v:(v>0)-(v<0)
+    for a in pipes:
+        for e,o in ((2,4),(4,2)):
+            ex,ey=a[e],a[e+1];ox,oy=a[o],a[o+1]
+            if ex!=ox and ey!=oy: continue
+            r=reach(ex,ey,sg(ex-ox),sg(ey-oy))
+            if r: a[e],a[e+1]=r[0],r[1]
+    for ar in arrows:
+        x,y,dx,dy=ar[:4]
+        r=reach(x,y,dx,dy)
+        if r:
+            for a in pipes:
+                for e in (2,4):
+                    if abs(a[e]-x)<=4 and abs(a[e+1]-y)<=4: a[e],a[e+1]=r[0],r[1]
+            ar[0],ar[1]=r[0],r[1]
     stl=[dict(id=sid,c=list(pos[sid]),ref=int(sh=='3' and sid in M.REF3),lines=[P(k) for k in trace[sid]]) for sid in sorted(pos)]
     for sid in sorted(pos):
         if sh=='3' and sid in M.REF3: continue
@@ -244,7 +270,7 @@ for sh in '123':
             ex=opt['ex']
         terms.append([round(ex),round(ey),ux,uy,fl,txt,lx,ly,anc])
     sheets.append(dict(n=int(sh),w=W,h=H,eq=eq,st=stl,art=art,fill=fillp,pipes=pipes,
-                       arrows=arrows,dash=[],darr=M.DARR.get(sh,[]),valves=M.VALVES.get(sh,[]),dashm=M.DASHM.get(sh,[]),lines=M.LINES.get(sh,[]),terms=terms,texts=M.TEXTS.get(sh,[]),instr=M.INSTR.get(sh,[])))
+                       arrows=arrows,dash=[],darr=M.DARR.get(sh,[]),valves=M.VALVES.get(sh,[]),dashm=M.DASHM.get(sh,[]),lines=M.LINES.get(sh,[]),terms=terms,texts=M.TEXTS.get(sh,[]),instr=M.INSTR.get(sh,[]),sym=[dict(tag=tag,t=t,p=p) for tag,t,p,z in SYM.get(sh,[])]))
     print('лист',sh,'потоков',len(pos),'кусков труб',len(pipes),'стрелок',len(arrows),'линий-аппаратов',len(paths),'заливок',len(fills),'предупреждений',len(warn))
     for w in warn: print('  ',w)
 # 50 (сера) указана в таблице листа 2; 101/102 — по таблице листа 3

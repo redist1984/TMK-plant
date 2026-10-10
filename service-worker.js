@@ -1,4 +1,4 @@
-const CACHE = 'tmk-plant-v91';
+const CACHE = 'tmk-plant-v92';
 const ASSETS = [
   "logo.png",
   "sec_img/eq_EX-13501_2.jpg",
@@ -60,6 +60,7 @@ const ASSETS = [
   "flow.html",
   "pfd.html",
   "pfd/pfd-data.js",
+  "pfd/symbols.js",
   "help.html",
   "icon-192.png",
   "icon-512.png",
