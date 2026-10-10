@@ -362,7 +362,6 @@ function showSheet(n,keepView){
   const gz=mk('g',{},ov);
   [...s.eq].sort((a,b)=>area(b.box)-area(a.box)).forEach(e=>{
     const r=mk('rect',{x:e.box[0],y:e.box[1],width:e.box[2]-e.box[0],height:e.box[3]-e.box[1],rx:8,class:'eqz','data-k':'eq','data-tag':e.tag,'data-app':e.app},gz);
-    const t=mk('title',{},r);t.textContent=e.tag;
   });
   s.st.forEach(x=>{mk('circle',{cx:x.c[0],cy:x.c[1],r:34,class:'stz','data-k':'st','data-id':x.id},gz)});
   mk('g',{class:'hl',id:'hl'},ov);
