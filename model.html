@@ -3867,14 +3867,21 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    ${e&&e.d.length?`<ul class="specs">${e.d.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
    ${(IMGS[tag]||[]).length?`<div class="eyebrow" style="margin-top:12px">${esc(T.eqDrawingsTitle)}</div><div class="gal">${IMGS[tag].map(([f,c],i)=>`<button type="button" data-i="${i}" title="${esc(c)}"><img src="sec_img/${esc(f)}" alt="${esc(c)}" loading="lazy"></button>`).join('')}</div>`:''}
    ${regBlock(regFor(tag))}
-   <div class="cutbtns">${o?`<button class="btn" type="button" id="cutEq">${esc(T.cutEqBtn)}</button>`:''}${cut.m!=='off'?`<button class="btn" type="button" id="cutOff">${esc(T.removeCutBtn)}</button>`:''}${e?`<button class="btn" type="button" id="toSec">${esc(T.wholeSectionBtn)}</button>`:''}</div>
+   <div class="cutbtns">${o?`<button class="btn" type="button" id="cutEq">${esc(T.cutEqBtn)}</button>`:''}${cut.m!=='off'?`<button class="btn" type="button" id="cutOff">${esc(T.removeCutBtn)}</button>`:''}${e?`<button class="btn" type="button" id="toSec">${esc(T.wholeSectionBtn)}</button>`:''}${PFD_TAGS.has(tag)?`<button class="btn" type="button" id="toPfd">${currentLang==='uz'?'PFD da ko‘rsatish':'Показать на PFD'}</button>`:''}</div>
    ${o&&/^(RE|TW-113|FU-11201|EX-11203|EX-11204|EX-11208|TK-11101|VE-122|VE-123|VE-11301)/.test(tag)?`<p class="note">${esc(T.innerNote)}</p>`:''}
    ${e?`<div class="doc">${esc(T.sourceLabel)}${esc(SEC[e.s].doc)}</div>`:''}`);
    if(e)$('toSec').onclick=()=>focusSec(e.s);
+   if($('toPfd'))$('toPfd').onclick=()=>{try{window.parent.postMessage({__tmkGoto:{to:'pfd',tag,from:'model'}},'*')}catch(err){}};
    if(o&&$('cutEq'))$('cutEq').onclick=()=>cutEq(o);
    detail.querySelectorAll('.gal button').forEach(x=>x.onclick=()=>lbOpen(IMGS[tag],+x.dataset.i));
    if($('cutOff'))$('cutOff').onclick=()=>{setCutObj(null,false);setCut('off');closeD()};
  }
+ // Вкладка PFD: «Показать в 3D» — камера летит к аппарату, открывается карточка (index.html передаёт __tmkFocus).
+ const PFD_TAGS=new Set(["BO-11301", "DA-114.101", "EX-11201", "EX-11202", "EX-11203", "EX-11204", "EX-11205", "EX-11206", "EX-11207", "EX-11301", "EX-11302", "EX-11303", "EX-11304", "EX-11305", "FU-11201", "PP-11301", "PP-11302", "PP-11303", "PP-11304AB", "PP-114.101AB", "RE-11201", "SK-11301", "SM-11301", "TW-11301", "TW-11302", "TW-11303", "TW-11304", "VE-11301", "VE-11302", "VE-11401"]);
+ window.addEventListener('message',ev=>{const d=ev.data;if(!d||!d.__tmkFocus||!d.tag)return;const tag=d.tag;
+   if(byTag[tag]&&byTag[tag].length){lockedTag=tag;select(tag);lockCameraOn(tag)}
+   showEq(tag)});
+ try{window.parent.postMessage({__tmkReady:'model'},'*')}catch(err){}
  function showBldg(b){
    const T=L();
    const list=E.filter(o=>{const X=o.X??(o.a?o.a[0]:NaN),Y=o.Y??(o.a?o.a[1]:o.y?(o.y[0]+o.y[1])/2:NaN);if(!isFinite(X)||!isFinite(Y))return false;return X>=b.x[0]&&X<=b.x[1]&&Y>=b.y[0]&&Y<=b.y[1]}).map(o=>o.t).filter((t,i,a)=>a.indexOf(t)===i);

@@ -63,6 +63,7 @@
 <main>
   <iframe id="f-model" class="on" src="model.html" title="3D-модель"></iframe>
   <iframe id="f-flow" src="flow.html" title="Схема потоков"></iframe>
+  <iframe id="f-pfd" src="pfd.html" title="PFD"></iframe>
   <iframe id="f-docs" src="docs.html" title="Документы"></iframe>
   <iframe id="f-settings" src="settings.html" title="Настройки"></iframe>
   <iframe id="f-help" src="help.html" title="Помощь"></iframe>
@@ -73,6 +74,7 @@
 <nav class="tabs" role="tablist" aria-label="Разделы приложения" id="tabs">
   <button data-t="model" role="tab" aria-selected="true"><span class="ic">◧</span><span class="lbl">3D-модель</span></button>
   <button data-t="flow" role="tab" aria-selected="false"><span class="ic">⌁</span><span class="lbl">Схема потоков</span></button>
+  <button data-t="pfd" role="tab" aria-selected="false"><span class="ic">▦</span><span class="lbl">PFD</span></button>
   <button data-t="docs" role="tab" aria-selected="false"><span class="ic">▤</span><span class="lbl">Документы</span></button>
   <button data-t="settings" role="tab" aria-selected="false"><span class="ic">⚙</span><span class="lbl">Настройки</span></button>
   <button data-t="help" role="tab" aria-selected="false"><span class="ic">?</span><span class="lbl">Помощь</span></button>
@@ -82,11 +84,12 @@
 <script src="theme.js"></script>
 <script>
 const btns = document.querySelectorAll('nav.tabs button');
-const frames = { model: document.getElementById('f-model'), flow: document.getElementById('f-flow'), docs: document.getElementById('f-docs'), settings: document.getElementById('f-settings'), help: document.getElementById('f-help') };
-btns.forEach(b=>b.addEventListener('click',()=>{
-  btns.forEach(x=>x.setAttribute('aria-selected', x===b ? 'true':'false'));
-  Object.entries(frames).forEach(([k,f])=>f.classList.toggle('on', k===b.dataset.t));
-}));
+const frames = { model: document.getElementById('f-model'), flow: document.getElementById('f-flow'), pfd: document.getElementById('f-pfd'), docs: document.getElementById('f-docs'), settings: document.getElementById('f-settings'), help: document.getElementById('f-help') };
+function showTab(t){
+  btns.forEach(x=>x.setAttribute('aria-selected', x.dataset.t===t ? 'true':'false'));
+  Object.entries(frames).forEach(([k,f])=>f.classList.toggle('on', k===t));
+}
+btns.forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.t)));
 
 if(!navigator.onLine){document.getElementById('offline').classList.add('show')}
 window.addEventListener('online',()=>document.getElementById('offline').classList.remove('show'));
@@ -100,7 +103,7 @@ const UI = {
     sync: 'Проверить обновления',
     offline: 'Автономный режим — часть данных может не загрузиться',
     tabs: 'Разделы приложения',
-    model: '3D-модель', flow: 'Схема потоков', docs: 'Документы', settings: 'Настройки', help: 'Помощь',
+    model: '3D-модель', flow: 'Схема потоков', pfd: 'PFD', docs: 'Документы', settings: 'Настройки', help: 'Помощь',
     helpTitle: 'Помощь',
   },
   uz: {
@@ -108,7 +111,7 @@ const UI = {
     sync: 'Yangilanishlarni tekshirish',
     offline: 'Oflayn rejim — ba’zi ma’lumotlar yuklanmasligi mumkin',
     tabs: 'Ilova bo‘limlari',
-    model: '3D-model', flow: 'Oqim sxemasi', docs: 'Hujjatlar', settings: 'Sozlamalar', help: 'Yordam',
+    model: '3D-model', flow: 'Oqim sxemasi', pfd: 'PFD', docs: 'Hujjatlar', settings: 'Sozlamalar', help: 'Yordam',
     helpTitle: 'Yordam',
   }
 };
@@ -120,11 +123,13 @@ function paintUI(lang){
   document.getElementById('tabs').setAttribute('aria-label', L.tabs);
   document.querySelector('[data-t="model"] .lbl').textContent = L.model;
   document.querySelector('[data-t="flow"] .lbl').textContent = L.flow;
+  document.querySelector('[data-t="pfd"] .lbl').textContent = L.pfd;
   document.querySelector('[data-t="docs"] .lbl').textContent = L.docs;
   document.querySelector('[data-t="settings"] .lbl').textContent = L.settings;
   document.querySelector('[data-t="help"] .lbl').textContent = L.help;
   document.getElementById('f-model').title = L.model;
   document.getElementById('f-flow').title = L.flow;
+  document.getElementById('f-pfd').title = L.pfd;
   document.getElementById('f-docs').title = L.docs;
   document.getElementById('f-settings').title = L.settings;
   document.getElementById('f-help').title = L.helpTitle;
@@ -201,6 +206,30 @@ window.addEventListener('message', e=>{
   if(!helpBtn) return;
   btns.forEach(x=>x.setAttribute('aria-selected', x===helpBtn ? 'true':'false'));
   Object.entries(frames).forEach(([k,f])=>f.classList.toggle('on', k==='help'));
+});
+
+// Переходы между вкладками model / flow / pfd: «Показать в 3D», «Показать в схеме
+// потоков», «Показать на PFD». Вкладка шлёт {__tmkGoto:{to,tag}}; мы включаем нужную
+// вкладку и передаём ей {__tmkFocus:true,tag}. Если страница вкладки ещё не
+// загрузилась (модель тяжёлая), команда ждёт её сообщения {__tmkReady}.
+const tabReady = {}, tabPending = {};
+function sendFocus(to, msg){
+  const f = frames[to]; if(!f || !f.contentWindow) return;
+  try{ f.contentWindow.postMessage(Object.assign({__tmkFocus:true}, msg), '*'); }catch(e){}
+}
+window.addEventListener('message', e=>{
+  const d=e.data; if(!d) return;
+  if(d.__tmkReady && frames[d.__tmkReady]){
+    tabReady[d.__tmkReady] = true;
+    const p = tabPending[d.__tmkReady]; delete tabPending[d.__tmkReady];
+    if(p) sendFocus(d.__tmkReady, p);
+  }
+  if(d.__tmkGoto && frames[d.__tmkGoto.to]){
+    const g = d.__tmkGoto;
+    showTab(g.to);
+    const msg = {tag:g.tag}; if(g.stream!==undefined) msg.stream = g.stream;
+    if(tabReady[g.to]) setTimeout(()=>sendFocus(g.to, msg), 60); else tabPending[g.to] = msg;
+  }
 });
 
 if('serviceWorker' in navigator){

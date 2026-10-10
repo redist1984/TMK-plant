@@ -961,8 +961,11 @@ function showEq(tag,bed){
    ${(IMGS[e.t]||[]).length?`<div class="eyebrow" style="margin-top:12px">${currentLang==='uz'?'Apparat chizmalari':'Чертежи аппарата'}</div><div class="gal">${IMGS[e.t].map(([f,c],i)=>`<button type="button" data-i="${i}" title="${esc(c)}"><img src="sec_img/${esc(f)}" alt="${esc(c)}" loading="lazy"></button>`).join('')}</div>`:''}
    ${e.m?howTo(e.t):''}
    <button class="btn ghost" type="button" id="toSec" style="margin-top:12px">${esc(L.allEqSection)}</button>
+   ${PFD_TAGS.has(e.t)?`<button class="btn ghost" type="button" id="toPfd" style="margin-top:12px;margin-left:8px">${currentLang==='uz'?'PFD da ko‘rsatish':'Показать на PFD'}</button>`:''}
    <div class="doc">${esc(L.sourceLabel)}${esc(SEC[e.s].doc)}</div>`);
   document.getElementById('toSec').onclick=()=>showSection(e.s);
+  const bPfd=document.getElementById('toPfd');
+  if(bPfd)bPfd.onclick=()=>{try{window.parent.postMessage({__tmkGoto:{to:'pfd',tag:e.t,from:'flow'}},'*')}catch(err){}};
   detail.querySelectorAll('.gal button').forEach(x=>x.onclick=()=>lbOpen(IMGS[e.t],+x.dataset.i));
   document.getElementById('cp').onclick=async()=>{const flag=document.getElementById('cpd');try{await navigator.clipboard.writeText(e.t);flag.hidden=false;flag.textContent=L.copied}catch(err){flag.hidden=false;flag.textContent=e.t+L.selectAndCopy}};
 }
@@ -1181,6 +1184,20 @@ bHelp.addEventListener('click',()=>{
   document.getElementById('bFullHelp').onclick=()=>{try{window.parent.postMessage({__tmkOpenHelp:true},'*')}catch(e){}};
 });
 window.addEventListener('message',e=>{const d=e.data;if(d&&d.__tmkFullscreen)setFullscreen(!!d.on,false)});
+// Вкладка PFD: «Показать в схеме потоков» — выделяем аппарат, подсвечиваем его линии, открываем карточку.
+const PFD_TAGS=new Set(["BO-11301", "DA-114.101", "EX-11201", "EX-11202", "EX-11203", "EX-11204", "EX-11205", "EX-11206", "EX-11207", "EX-11301", "EX-11302", "EX-11303", "EX-11304", "EX-11305", "FU-11201", "PP-11301", "PP-11302", "PP-11303", "PP-11304AB", "PP-114.101AB", "RE-11201", "SK-11301", "SM-11301", "TW-11301", "TW-11302", "TW-11303", "TW-11304", "VE-11301", "VE-11302", "VE-11401"]);
+window.addEventListener('message',e=>{const d=e.data;if(!d||!d.__tmkFocus||!d.tag)return;
+  const tag=d.tag, ids=Object.keys(nodeEls).filter(i=>nodeEls[i].tag===tag);
+  if(!ids.length){showEq(tag);return}
+  active.clear();
+  chipsBox.querySelectorAll('.chip').forEach(c=>{c.setAttribute('aria-pressed','false');c.classList.remove('dim')});
+  const touched=new Set(ids);
+  edgeEls.forEach(x=>{const ends=[x.pts[0],x.pts[x.pts.length-1]].map(nearNode);const on=ends.some(n=>ids.includes(n));
+    x.g.classList.toggle('hot',on);x.g.classList.toggle('faded',!on);if(on)ends.forEach(n=>n&&touched.add(n))});
+  for(const id in nodeEls)nodeEls[id].g.classList.toggle('faded',!touched.has(id));
+  selectNode(ids[0]);
+  try{nodeEls[ids[0]].g.scrollIntoView({block:'center',inline:'center',behavior:'smooth'})}catch(err){}
+});
 const tmkLang = TmkLang.initChild(paintFlowUI);
 currentLang = tmkLang.getLang();
 // theme sync (light/dark/system, set from the "Настройки" tab) — this page
@@ -1188,6 +1205,7 @@ currentLang = tmkLang.getLang();
 // TmkTheme.initChild() setting/clearing data-theme is enough.
 TmkTheme.initChild();
 paintFlowUI(currentLang);
+try{window.parent.postMessage({__tmkReady:'flow'},'*')}catch(err){}
 </script>
 
 </body>

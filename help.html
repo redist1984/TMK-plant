@@ -46,6 +46,7 @@ h1{font-size:20px;margin:6px 0 4px}
 <div class="tabsdemo" id="tabsdemo">
   <span><i>◧</i><b id="tdModel">3D-модель</b></span>
   <span><i>⌁</i><b id="tdFlow">Схема потоков</b></span>
+  <span><i>▦</i><b id="tdPfd">PFD</b></span>
   <span><i>▤</i><b id="tdDocs">Документы</b></span>
   <span><i>⚙</i><b id="tdSettings">Настройки</b></span>
   <span><i>?</i><b id="tdHelp">Помощь</b></span>
@@ -76,6 +77,11 @@ h1{font-size:20px;margin:6px 0 4px}
   <div class="body" id="hFlowBody"></div>
 </details>
 
+<details class="sec" id="secPfd">
+  <summary><span class="ic">▦</span><span id="hPfdT">PFD</span><span class="car">▾</span></summary>
+  <div class="body" id="hPfdBody"></div>
+</details>
+
 <details class="sec" id="secDocs">
   <summary><span class="ic">▤</span><span id="hDocsT">Документы и архив чертежей</span><span class="car">▾</span></summary>
   <div class="body" id="hDocsBody"></div>
@@ -95,9 +101,9 @@ const UI = {
 ru: {
   eyebrow:'Завод TMK', h1:'Помощь по приложению',
   sub:'Как пользоваться приложением: куда нажимать и что это даёт. Разделы ниже можно раскрывать по очереди.',
-  tdModel:'3D-модель', tdFlow:'Схема потоков', tdDocs:'Документы', tdSettings:'Настройки', tdHelp:'Помощь',
+  tdModel:'3D-модель', tdFlow:'Схема потоков', tdPfd:'PFD', tdDocs:'Документы', tdSettings:'Настройки', tdHelp:'Помощь',
   h3dT:'3D-модель завода', hCardT:'Карточка оборудования и здания', hImgT:'Чертежи и фото: увеличение',
-  hCutT:'Разрез оборудования', hFlowT:'Схема потоков', hDocsT:'Документы и архив чертежей', hSetT:'Настройки',
+  hCutT:'Разрез оборудования', hFlowT:'Схема потоков', hPfdT:'PFD — схема материальных потоков', hPfdBody:'<p>Три листа чертежа WZ-POT-262: дымогазовая, кислотная и паровая системы. Колесо мыши или щипок — масштаб, перетаскивание — сдвиг.</p><ul><li>Нажмите на аппарат (пунктирная зона) — откроется карточка с параметрами из модели, кнопки «Показать в 3D» и «Показать в схеме потоков».</li><li>Нажмите на ромб с номером потока — подсветится линия потока и откроются его параметры из таблицы чертежа (температура, давление, расход, состав).</li><li>В карточках 3D-модели и схемы потоков есть кнопка «Показать на PFD».</li><li>Линии потоков выделены по скану автоматически и могут слегка отличаться от чертежа; ориентируйтесь на стрелки самого чертежа.</li></ul>', hDocsT:'Документы и архив чертежей', hSetT:'Настройки',
   h3dBody: [
     row('👆','Один палец — провести по экрану','По умолчанию палец сдвигает (двигает) камеру в сторону — «панорамирование». Если нужно именно вращать сцену одним пальцем, включите режим вращения кнопкой ⟳ внизу экрана.'),
     row('⟳','Кнопка со стрелкой по кругу (внизу экрана)','Переключает, что делает один палец: вращать сцену вокруг объекта или сдвигать камеру в сторону. Нажатая (подсвеченная) кнопка — включено вращение.'),
@@ -161,9 +167,9 @@ ru: {
 uz: {
   eyebrow:'TMK zavodi', h1:'Ilova bo‘yicha yordam',
   sub:'Ilovadan qanday foydalanish: qayerga bosish va bu nimaga olib kelishi. Quyidagi bo‘limlarni birma-bir ochish mumkin.',
-  tdModel:'3D-model', tdFlow:'Oqim sxemasi', tdDocs:'Hujjatlar', tdSettings:'Sozlamalar', tdHelp:'Yordam',
+  tdModel:'3D-model', tdFlow:'Oqim sxemasi', tdPfd:'PFD', tdDocs:'Hujjatlar', tdSettings:'Sozlamalar', tdHelp:'Yordam',
   h3dT:'Zavodning 3D-modeli', hCardT:'Jihoz va bino kartochkasi', hImgT:'Chizmalar va fotolar: kattalashtirish',
-  hCutT:'Jihoz kesimi', hFlowT:'Oqim sxemasi', hDocsT:'Hujjatlar va chizmalar arxivi', hSetT:'Sozlamalar',
+  hCutT:'Jihoz kesimi', hFlowT:'Oqim sxemasi', hPfdT:'PFD — moddiy oqimlar sxemasi', hPfdBody:'<p>WZ-POT-262 chizmasining uchta varag‘i: tutun-gaz, kislota va bug‘ tizimlari. G‘ildirak yoki chimchilash — masshtab, sudrash — siljitish.</p><ul><li>Apparat ustiga (punktir zona) bosing — modeldagi parametrlar kartochkasi, «3D da ko‘rsatish» va «Oqim sxemasida ko‘rsatish» tugmalari ochiladi.</li><li>Oqim raqamli rombga bosing — oqim chizig‘i ajratiladi va chizma jadvalidagi parametrlari (harorat, bosim, sarf, tarkib) ochiladi.</li><li>3D-model va oqim sxemasi kartochkalarida «PFD da ko‘rsatish» tugmasi bor.</li><li>Oqim chiziqlari skandan avtomatik ajratilgan, chizmadan biroz farq qilishi mumkin; chizma strelkalariga tayaning.</li></ul>', hDocsT:'Hujjatlar va chizmalar arxivi', hSetT:'Sozlamalar',
   h3dBody: [
     row('👆','Bitta barmoq — ekranda yurgizish','Odatda barmoq kamerani yon tomonga siljitadi («panoramalash»). Agar bitta barmoq bilan aylantirish kerak bo‘lsa, ekran pastidagi ⟳ tugmasi bilan aylantirish rejimini yoqing.'),
     row('⟳','Doira shaklidagi strelka tugmasi (ekran pastida)','Bitta barmoq nima qilishini almashtiradi: obyekt atrofida aylantirish yoki kamerani yon tomonga siljitish. Yoqilgan (yorqin) tugma — aylantirish rejimi faol.'),
@@ -240,6 +246,9 @@ function paintUI(lang){
   document.getElementById('hImgT').textContent = L.hImgT;
   document.getElementById('hCutT').textContent = L.hCutT;
   document.getElementById('hFlowT').textContent = L.hFlowT;
+  document.getElementById('hPfdT').textContent = L.hPfdT;
+  document.getElementById('tdPfd').textContent = L.tdPfd;
+  document.getElementById('hPfdBody').innerHTML = L.hPfdBody;
   document.getElementById('hDocsT').textContent = L.hDocsT;
   document.getElementById('hSetT').textContent = L.hSetT;
   document.getElementById('h3dBody').innerHTML = L.h3dBody;
