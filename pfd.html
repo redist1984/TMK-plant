@@ -62,7 +62,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #stage img{position:absolute;inset:0;display:none;width:100%;height:100%;filter:var(--imgfilter);pointer-events:none;-webkit-user-drag:none;opacity:.5;z-index:2}
 body.scan #stage img,body.cmp #stage img{display:block}
 body.scan #stage img{opacity:1}
-body.scan #art{visibility:hidden}
+body.scan:not(.scanwait) #art{visibility:hidden}
+#scanNote{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:6;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer}
+#scanNote.err{border-color:#c0392b;color:#c0392b}
+#scanNote[hidden]{display:none}
 #art{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #art .ln{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 #art .fl{fill:var(--ink);stroke:none}
@@ -140,6 +143,36 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
 .regmini td:first-child{color:var(--ink2);padding-right:8px}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
 .hint{position:absolute;left:10px;bottom:10px;z-index:4;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--ink2);max-width:calc(100% - 20px);pointer-events:none;opacity:.92}
+
+#io{flex:0 0 auto;max-height:40%;display:flex;flex-direction:column;border-top:1px solid var(--line);background:var(--panel)}
+#io[hidden]{display:none}
+#io .ioh{display:flex;align-items:center;gap:8px;padding:6px 10px;flex:0 0 auto}
+#io .ioh b{font-size:13px}
+#io .ioh span{color:var(--ink3);font-size:12px;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#io .ioh button{border:0;background:transparent;color:var(--ink2);cursor:pointer;font-size:12.5px;padding:3px 8px;border-radius:6px}
+#io .ioh button:hover{background:var(--panel2)}
+#io.min .iob{display:none}
+.iob{display:flex;gap:10px;overflow:auto;padding:0 10px 10px;align-items:flex-start}
+.ioc{flex:0 0 auto;min-width:min(100%,470px);max-width:100%;border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:8px 10px}
+.ioc h3{margin:0 0 6px;font-size:13px;line-height:1.3}
+.ioc h3 .tag{margin-right:6px}
+.iot{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.iot th{font:600 10.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:3px 6px 3px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.iot th.r,.iot td.r{text-align:right}
+.iot td{padding:3px 6px 3px 0;border-bottom:1px solid var(--line);vertical-align:baseline}
+.iot tr.sec td{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding-top:8px;border-bottom:0}
+.iot tr.sec.in td{color:var(--s-water)}
+.iot tr.sec.out td{color:var(--s-alkali)}
+.iot tr[data-id]{cursor:pointer}
+.iot tr[data-id]:hover td,.iot tr.act td{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.iot td.n b{font-family:var(--mono)}
+.iot td small{color:var(--ink3)}
+.iot tr.sum td{font-weight:600;border-bottom:0}
+.iot tr.bal td{font-weight:600}
+.iot tr.bal.warn td{color:#c0392b}
+.iot tr.bal.good td{color:var(--accent)}
+.ionote{margin:6px 0 0;font-size:11.5px;color:var(--ink3)}
+@media (max-width:760px){body.ioopen #card{display:none}#io{max-height:46%}.ioc{min-width:calc(100vw - 22px)}.iot td.nm{max-width:110px}}
 @media (max-width:760px){
   .leg{flex:1 1 100%;flex-wrap:nowrap;overflow-x:auto;order:3;padding-bottom:2px}
   .leg button{flex:0 0 auto;white-space:nowrap}
@@ -168,10 +201,12 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
   <div id="vp">
     <div id="stage"><svg id="art" preserveAspectRatio="none"></svg><img id="img" alt="" draggable="false"><svg id="ov" preserveAspectRatio="none"></svg></div>
     <div id="tip"></div>
+    <div id="scanNote" hidden role="status"></div>
     <div class="hint" id="hint"></div>
   </div>
   <aside id="card" aria-live="polite"></aside>
 </div>
+<section id="io" hidden aria-label="Входы и выходы"><div class="ioh"><b id="ioT"></b><span id="ioS"></span><button type="button" id="ioMin"></button><button type="button" id="ioX" aria-label="×">×</button></div><div class="iob" id="iob"></div></section>
 <script src="lang.js"></script>
 <script src="theme.js"></script>
 <script src="pfd/pfd-data.js"></script>
@@ -187,7 +222,10 @@ const KCOL={gas:'--s-gas',air:'--s-air',acid:'--s-acid',water:'--s-water',steam:
 
 const UI={
   ru:{
-    allm:'Все среды', scan:'Скан', cmp:'Наложение', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист',
+    allm:'Все среды', scan:'Скан', cmp:'Наложение', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист', scanLoad:'Загрузка скана…', scanErr:'Скан не загрузился. Нажмите, чтобы повторить.',
+
+    ioT:'Входы и выходы', ioIn:'Вход', ioOut:'Выход', ioN:'№', ioMed:'Среда', ioQ:'Расход', ioTemp:'T, °C', ioP:'P', ioSumIn:'Σ вход', ioSumOut:'Σ выход', ioBal:'Баланс (вход − выход)', ioOk:'сходится', ioDiff:'не сходится по таблице чертежа',
+    ioPump:'через насос', ioNone:'Для этого потока на схеме нет аппаратов.', ioMin:'Свернуть', ioMax:'Развернуть', ioNote:'Баланс по данным таблицы PFD без поправок. Расходы газа в Нм³/ч, остальных сред в т/ч; разные единицы не суммируются. Нажмите строку — поток подсветится на схеме.', ioOfStream:'поток', ioOfEq:'аппарат', nm3:'Нм³/ч', tph:'т/ч', ioNoOut:'выходы на схеме не обозначены', ioNoIn:'входы на схеме не обозначены',
     hint:'Колесо / щипок — масштаб, перетаскивание — сдвиг. Нажмите на аппарат или на ромб с номером потока.',
     close:'Закрыть', qty:'Количество', mass:'Масса, кг', also:'Также на листах', streams:'Потоки у аппарата',
     to3d:'Показать в 3D', toFlow:'Показать в схеме потоков', stream:'Поток', onSheets:'На листах', joins:'Связывает аппараты',
@@ -200,7 +238,10 @@ const UI={
     unit:{th:'т/ч'}, gas:'газ', acid:'кислота', water:'вода', steam:'пар', sulfur:'сера', reagent:'реагент', air:'воздух'
   },
   uz:{
-    allm:'Barcha muhitlar', scan:'Skan', cmp:'Ustma-ust', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq',
+    allm:'Barcha muhitlar', scan:'Skan', cmp:'Ustma-ust', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq', scanLoad:'Skan yuklanmoqda…', scanErr:'Skan yuklanmadi. Qayta urinish uchun bosing.',
+
+    ioT:'Kirish va chiqishlar', ioIn:'Kirish', ioOut:'Chiqish', ioN:'№', ioMed:'Muhit', ioQ:'Sarf', ioTemp:'T, °C', ioP:'P', ioSumIn:'Σ kirish', ioSumOut:'Σ chiqish', ioBal:'Balans (kirish − chiqish)', ioOk:'mos keladi', ioDiff:'chizma jadvali bo‘yicha mos kelmaydi',
+    ioPump:'nasos orqali', ioNone:'Bu oqim uchun sxemada apparat yo‘q.', ioMin:'Yig‘ish', ioMax:'Yoyish', ioNote:'Balans PFD jadvali ma’lumotlari bo‘yicha, tuzatishsiz. Gaz sarfi Nm³/soat, boshqa muhitlar t/soat; turli birliklar qo‘shilmaydi. Qatorni bossangiz, oqim sxemada ajratiladi.', ioOfStream:'oqim', ioOfEq:'apparat', nm3:'Nm³/soat', tph:'t/soat', ioNoOut:'chiqishlar sxemada ko‘rsatilmagan', ioNoIn:'kirishlar sxemada ko‘rsatilmagan',
     hint:'G‘ildirak / chimchilash — masshtab, sudrash — siljitish. Apparatni yoki oqim raqamli romb ustiga bosing.',
     close:'Yopish', qty:'Soni', mass:'Massa, kg', also:'Boshqa varaqlarda', streams:'Apparatdagi oqimlar',
     to3d:'3D da ko‘rsatish', toFlow:'Oqim sxemasida ko‘rsatish', stream:'Oqim', onSheets:'Varaqlarda', joins:'Bog‘laydigan apparatlar',
@@ -281,10 +322,22 @@ $('zFit').onclick=()=>fit(true);
 function setScan(mode){          // '' — вектор, 'scan' — оригинальный скан, 'cmp' — скан поверх вектора
   document.body.classList.toggle('scan',mode==='scan');document.body.classList.toggle('cmp',mode==='cmp');
   $('bScan').setAttribute('aria-pressed',mode==='scan');$('bCmp').setAttribute('aria-pressed',mode==='cmp');
-  if(mode)img.src='pfd/scan/sheet'+sheet+'.jpg'}
+  if(mode)loadScan();else scanNote('')}
+// скан грузится отдельно: пока файл не пришёл, вектор не прячем и показываем статус
+let scanTok=0,scanFail=false;
+function scanNote(t,err){const n=$('scanNote');n.textContent=t;n.hidden=!t;n.classList.toggle('err',!!err);document.body.classList.toggle('scanwait',!!t)}
+function loadScan(){
+  const u='pfd/scan/sheet'+sheet+'.jpg',t=++scanTok,T=L();
+  if((img.getAttribute('src')||'').split('?')[0]===u&&img.complete&&img.naturalWidth){scanNote('');return}
+  scanNote(T.scanLoad);
+  img.onload=()=>{if(t===scanTok)scanNote('')};
+  img.onerror=()=>{if(t===scanTok){scanFail=true;scanNote(T.scanErr,true)}};
+  img.removeAttribute('src');img.src=scanFail?u+'?r='+Date.now():u;scanFail=false}
 const scanMode=()=>document.body.classList.contains('scan')?'scan':document.body.classList.contains('cmp')?'cmp':'';
 $('bScan').onclick=()=>setScan(scanMode()==='scan'?'':'scan');
 $('bCmp').onclick=()=>setScan(scanMode()==='cmp'?'':'cmp');
+$('scanNote').addEventListener('pointerdown',e=>e.stopPropagation());
+$('scanNote').onclick=()=>{if(scanMode())loadScan()};
 $('bZones').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('zones',on)};
 window.addEventListener('resize',()=>{const was=k/fitK;computeFit();k=Math.max(fitK,was*fitK);applyView()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard();else if(e.key==='+'||e.key==='=')$('zIn').click();else if(e.key==='-')$('zOut').click()});
@@ -357,7 +410,7 @@ function drawArt(s){
 // ---------- sheets ----------
 function mk(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const a in attrs)n.setAttribute(a,attrs[a]);if(parent)parent.appendChild(n);return n}
 function showSheet(n,keepView){
-  sheet=n;const s=sheetOf(n);if(scanMode())img.src='pfd/scan/sheet'+n+'.jpg';drawArt(s);
+  sheet=n;ioHide();const s=sheetOf(n);if(scanMode())loadScan();drawArt(s);
   ov.textContent='';
   const gz=mk('g',{},ov);
   [...s.eq].sort((a,b)=>area(b.box)-area(a.box)).forEach(e=>{
@@ -426,7 +479,7 @@ function selectEq(key,o){ // key — тег на PFD или тег модели
   const pref=eqByApp[app].find(x=>x.sheet===(o.sheet||sheet))||ent;
   if(pref.sheet!==sheet)showSheet(pref.sheet,true);
   sel={t:'eq',tag:pref.eq.tag,app};
-  paintSel();openEqCard(pref.eq,pref.sheet);
+  paintSel();openEqCard(pref.eq,pref.sheet);ioShow([pref.eq.tag]);
   if(o.zoom!==false)zoomBox(pref.eq.box,300,1.0);
   return true;
 }
@@ -436,7 +489,7 @@ function selectStream(id,o){
   let s=sheet;
   if(!sheetOf(s).st.some(x=>x.id===id&&!x.ref)){const f=stSheets(id)[0];if(f)s=f;else{const g=SH.find(z=>z.st.some(x=>x.id===id));if(!g)return false;s=g.n}}
   if(s!==sheet)showSheet(s,true);
-  sel={t:'st',id};paintSel();openStCard(id);
+  sel={t:'st',id};paintSel();openStCard(id);ioForStream(id);
   const x=sheetOf(sheet).st.find(z=>z.id===id);
   if(o.zoom!==false&&x){const pts=x.lines.length?x.lines.flatMap(l=>[[l[0],l[1]],[l[2],l[3]]]):[x.c];
     const xs=pts.map(p=>p[0]).concat(x.c[0]),ys=pts.map(p=>p[1]).concat(x.c[1]);
@@ -444,8 +497,63 @@ function selectStream(id,o){
   return true;
 }
 
+// ---------- входы и выходы по аппарату ----------
+const ioEl=$('io');let ioCur=null,ioAct=null,ioMinPref=null;
+const unitOf=k=>(k==='gas'||k==='air')?'nm3':'th';
+function ioVals(id){const z=ST[id];if(!z)return null;
+  if(z.g)return {u:'nm3',q:z.g[6],t:z.g[8],p:z.g[7],pu:'kPa'};
+  return {u:'th',q:z.th,t:z.t,p:z.p,pu:z.p!==undefined?'MPa':''}}
+function ioFlows(tag){ // [{id,dir:'in'|'out',thru}]
+  const fl=sheetOf(sheet).flow||{},r=[];
+  Object.keys(fl).forEach(k=>{const [src,dst,thru]=fl[k],id=+k;
+    if(dst.includes(tag))r.push({id,dir:'in'});
+    if(src.includes(tag))r.push({id,dir:'out'});
+    if(thru.includes(tag)){r.push({id,dir:'in',thru:1});r.push({id,dir:'out',thru:1})}});
+  return r}
+function ioCard(e){
+  const T=L(),c=CARD[e.app],fl=ioFlows(e.tag).sort((a,b)=>a.id-b.id);
+  const row=f=>{const z=ST[f.id],v=ioVals(f.id);if(!z||!v)return '';
+    const col=`var(${KCOL[z.k==='gas'&&z.n==='Воздух'?'air':z.k]||'--accent'})`;
+    const q=v.q===undefined?'—':fmt(v.q)+' '+(v.u==='nm3'?T.nm3:T.tph);
+    const pr=v.p===undefined?'—':fmt(v.p)+' '+(v.pu==='kPa'?'кПа':v.pu==='MPa'?'МПа':'');
+    return `<tr data-id="${f.id}"${ioAct===f.id?' class="act"':''}><td class="n"><span class="dot" style="background:${col}"></span><b>${f.id}</b></td><td class="nm">${esc(z.n)}${z.wt?` <small>${esc(z.wt)} %</small>`:''}${f.thru?` <small>· ${esc(T.ioPump)}</small>`:''}</td><td class="r">${esc(q)}</td><td class="r">${v.t===undefined?'—':fmt(v.t)}</td><td class="r">${esc(pr)}</td></tr>`};
+  const sec=(d,cls)=>{const l=fl.filter(f=>f.dir===d);
+    return `<tr class="sec ${cls}"><td colspan="5">${esc(d==='in'?T.ioIn:T.ioOut)}</td></tr>`+(l.length?l.map(row).join(''):`<tr><td colspan="5"><small>${esc(d==='in'?T.ioNoIn:T.ioNoOut)}</small></td></tr>`)};
+  const sum={nm3:{i:0,o:0,ni:0,no:0},th:{i:0,o:0,ni:0,no:0}};
+  fl.forEach(f=>{const v=ioVals(f.id);if(!v||typeof v.q!=='number')return;const g=sum[v.u];if(f.dir==='in'){g.i+=v.q;g.ni++}else{g.o+=v.q;g.no++}});
+  let foot='';
+  ['nm3','th'].forEach(u=>{const g=sum[u];if(!g.ni&&!g.no)return;const un=u==='nm3'?T.nm3:T.tph;
+    foot+=`<tr class="sum"><td colspan="2">${esc(T.ioSumIn)} / ${esc(T.ioSumOut)}</td><td class="r" colspan="3">${g.ni?fmt(+g.i.toFixed(2)):'—'} / ${g.no?fmt(+g.o.toFixed(2)):'—'} ${esc(un)}</td></tr>`;
+    if(g.ni&&g.no){const d=g.i-g.o,pc=g.i?Math.abs(d)/g.i*100:0,ok=pc<=0.5;
+      foot+=`<tr class="bal ${ok?'good':'warn'}"><td colspan="2">${esc(T.ioBal)}</td><td class="r" colspan="3">${d>0?'+':''}${fmt(+d.toFixed(2))} ${esc(un)} · ${ok?esc(T.ioOk):fmt(+pc.toFixed(1))+' % — '+esc(T.ioDiff)}</td></tr>`}});
+  return `<div class="ioc"><h3><span class="tag">${esc(e.tag)}</span>${esc(c?nm(c,'n'):'')}</h3><table class="iot"><thead><tr><th>${esc(T.ioN)}</th><th>${esc(T.ioMed)}</th><th class="r">${esc(T.ioQ)}</th><th class="r">${esc(T.ioTemp)}</th><th class="r">${esc(T.ioP)}</th></tr></thead><tbody>${sec('in','in')}${sec('out','out')}${foot}</tbody></table></div>`}
+function ioShow(tags,sid){
+  const T=L(),label=sid?`${T.stream} ${sid}`:tags[0];ioAct=sid||null;
+  const eqs=tags.map(t=>sheetOf(sheet).eq.find(e=>e.tag===t)).filter(Boolean);
+  if(!eqs.length){ioHide();return}
+  ioCur={tags,sid};
+  $('ioT').textContent=T.ioT;$('ioS').textContent=label;
+  $('iob').innerHTML=eqs.map(ioCard).join('')+`<p class="ionote" style="flex:0 0 220px">${esc(T.ioNote)}</p>`;
+  ioEl.hidden=false;ioMinSet(ioMinPref===null?matchMedia('(max-width:760px)').matches:ioMinPref);relayout();
+  $('iob').querySelectorAll('tr[data-id]').forEach(r=>r.onclick=()=>ioRow(+r.dataset.id));
+}
+function ioHide(){ioCur=null;ioAct=null;const was=ioEl.hidden;ioEl.hidden=true;document.body.classList.remove('ioopen');if(!was)relayout()}
+function ioMinSet(m){ioEl.classList.toggle('min',m);document.body.classList.toggle('ioopen',!m&&!ioEl.hidden);$('ioMin').textContent=m?L().ioMax:L().ioMin}
+function ioRow(id){ // подсветить поток на схеме, не меняя набор аппаратов в панели
+  ioAct=id;sel={t:'st',id};paintSel();openStCard(id);
+  $('iob').querySelectorAll('tr[data-id]').forEach(r=>r.classList.toggle('act',+r.dataset.id===id))}
+function ioForStream(id){
+  const f=(sheetOf(sheet).flow||{})[id];let tags=f?[...new Set([...f[0],...f[2],...f[1]])]:[];
+  if(!tags.length)tags=sheetOf(sheet).eq.filter(e=>e.streams.includes(id)&&Object.keys(sheetOf(sheet).flow||{}).length&&ioFlows(e.tag).some(x=>x.id===id)).map(e=>e.tag);
+  if(!tags.length){ioHide();return}
+  ioShow(tags,id)}
+const relayout=()=>{const was=k/fitK;computeFit();k=Math.max(fitK,was*fitK);applyView()};
+new ResizeObserver(relayout).observe(vp);
+$('ioMin').onclick=()=>{ioMinPref=!ioEl.classList.contains('min');ioMinSet(ioMinPref)};
+$('ioX').onclick=ioHide;
+
 // ---------- card ----------
-function closeCard(){card.classList.remove('open');sel=null;paintSel()}
+function closeCard(){card.classList.remove('open');sel=null;paintSel();ioHide()}
 function openCard(html){card.innerHTML=`<button class="x" type="button" id="cx" aria-label="${esc(L().close)}">×</button>`+html;card.classList.add('open');card.scrollTop=0;$('cx').onclick=closeCard}
 function openEqCard(e,shn){
   const c=CARD[e.app],T=L();
@@ -515,7 +623,7 @@ window.addEventListener('message',e=>{
 function paint(l){
   lang=l==='uz'?'uz':'ru';const T=L();
   $('q').placeholder=T.search;$('q').setAttribute('aria-label',T.search);
-  $('bZones').textContent=T.zones;$('bScan').textContent=T.scan;$('bCmp').textContent=T.cmp;paintLeg();$('zFit').textContent=T.fit;$('hint').textContent=T.hint;
+  $('bZones').textContent=T.zones;$('bScan').textContent=T.scan;$('bCmp').textContent=T.cmp;paintLeg();$('zFit').textContent=T.fit;$('hint').textContent=T.hint;if(ioCur)ioShow(ioCur.tags,ioCur.sid);
   document.title=T.title;paintTabs();fillSearch();
   if(sel&&sel.t==='eq'){const f=eqByApp[sel.app].find(x=>x.sheet===sheet);if(f)openEqCard(f.eq,sheet)}
   else if(sel&&sel.t==='st')openStCard(sel.id);

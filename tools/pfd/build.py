@@ -348,7 +348,7 @@ for sh in '123':
         return b[1]
     dak=[darr_kind(a) for a in M.DARR.get(sh,[])]
     sheets.append(dict(n=int(sh),w=W,h=H,eq=eq,st=stl,art=art_eq,artk=art_k,fill=fillp,pipes=pipes,
-                       arrows=arrows,dash=[],darr=M.DARR.get(sh,[]),valves=vlv,dashm=dsh,dashk=dshk,darrk=dak,lines=M.LINES.get(sh,[]),terms=terms,texts=txs,instr=ins,sym=[dict(tag=tag,t=t,p=p) for tag,t,p,z in SYM.get(sh,[])]))
+                       arrows=arrows,dash=[],darr=M.DARR.get(sh,[]),valves=vlv,dashm=dsh,dashk=dshk,darrk=dak,lines=M.LINES.get(sh,[]),terms=terms,texts=txs,instr=ins,flow={str(k):[list(x) for x in v] for k,v in M.FLOW.get(sh,{}).items()},sym=[dict(tag=tag,t=t,p=p) for tag,t,p,z in SYM.get(sh,[])]))
     print('лист',sh,'потоков',len(pos),'кусков труб',len(pipes),'стрелок',len(arrows),'линий-аппаратов',len(paths),'заливок',len(fills),'предупреждений',len(warn))
     for w in warn: print('  ',w)
 # 50 (сера) указана в таблице листа 2; 101/102 — по таблице листа 3
