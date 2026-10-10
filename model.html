@@ -4856,6 +4856,9 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
  function buTick(dt){if(!BU.on)return;
    if(BU.play){BU.t=Math.min(BU_T1,BU.t+dt*BU.spd);if(BU.t>=BU_T1){BU.play=false;if(BU.follow)flyTo(HOME.tgt,null,HOME.pos)}buApply()}
    flowObjs.forEach(f=>f.dots.forEach(d=>d.visible=false))}
+ // Кнопка «Строительство» временно скрыта (анимация будет настроена позже): для возврата поставить true
+ const SHOW_BUILD_TAB=false;
+ $('tabBuild').hidden=!SHOW_BUILD_TAB;
  $('tabBuild').onclick=()=>{if(!BU.on)setBuild(true)};
  $('buPlay').onclick=()=>{if(BU.t>=BU_T1)BU.t=BU_T0;BU.play=!BU.play;buApply()};
  $('buReset').onclick=()=>{BU.t=BU_T0;BU.play=false;BU.fk=null;flyTo(HOME.tgt,null,HOME.pos);buApply()};
