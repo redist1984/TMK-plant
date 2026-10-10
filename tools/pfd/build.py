@@ -15,7 +15,6 @@ import vec
 from eqboxes import EQ
 import tables as TB
 import manual as M
-import dashes as DS
 
 pdf=sys.argv[1]; OUT=os.path.join(ROOT,'pfd'); os.makedirs(os.path.join(OUT,'scan'),exist_ok=True)
 tmp=tempfile.mkdtemp(prefix='pfd_'); T.SHEET_DIR=tmp
@@ -52,10 +51,6 @@ streams={}; sheets=[]; RINGS={}
 CUT={'1':1262,'2':1462,'3':1420}   # ниже — подписи под схемой и таблицы (рисуем свои)
 src=open(os.path.join(ROOT,'model.html'),encoding='utf8').read().split('\n')
 DATA=json.loads([l for l in src if l.startswith('const DATA = ')][0][len('const DATA = '):].rstrip(';'))
-fsrc=open(os.path.join(ROOT,'flow.html'),encoding='utf8').read()
-FLOWLBL={}
-for m in re.finditer(r"\['([^']+)','([^']+)',(\d+),(\d+),(\d+),(\d+),\[([^\]]*)\]",fsrc):
-    FLOWLBL.setdefault(m.group(2),[x.strip("'") for x in m.group(7).split("','")])
 
 def kind_of(sh,sid):
     if sh=='1': return 'air' if sid<=4 else 'sulfur' if sid==50 else 'alkali' if sid in (72,74) else 'water' if sid==73 else 'gas'
@@ -195,13 +190,6 @@ for sh in '123':
             if not (20<=w<=36 and 14<=h<=34 and a/(w*h)>0.42): text[lab==i]=255
     drop|=cv2.dilate(text,np.ones((3,3),np.uint8))
     drop[CUT[sh]:,:]=255; drop[:,:178]=255; drop[:,2915:]=255; drop[:112,:]=255
-    dsk=drop.copy()
-    dsk[:]=0
-    for k in drawn:
-        (a,b_),(c,e)=T.pts(segs[k]); cv2.line(dsk,(int(a),int(b_)),(int(c),int(e)),255,13)
-    for sid,(x,y) in pos.items(): cv2.circle(dsk,(int(x),int(y)),36,255,-1)
-    dsk[CUT[sh]:,:]=255; dsk[:,:178]=255; dsk[:,2915:]=255; dsk[:112,:]=255
-    dseg=[[r[2],r[1],r[3],r[1]] if r[0]=='h' else [r[1],r[2],r[1],r[3]] for r in DS.join(DS.runs(DS.find(g,dsk)))]
     paths,fills=vec.vectorize(g,drop)
     art='M'.join('%d %dL'%(p[0][0],p[0][1])+'L'.join('%d %d'%(x,y) for x,y in p[1:]) for p in paths if len(p)>1)
     art='M'+art
@@ -270,8 +258,7 @@ for e in DATA['eq']:
     if e['t'] in apps:
         sec=DATA['sections'][e['s']]
         reg=[{k:r[k] for k in ('n','nu','f','T','P','L','o') if r.get(k)} for r in DATA['reg'] if e['t'] in r['t']]
-        fl=FLOWLBL.get(e['t'])
-        cards[e['t']]=dict(n=e['n'],nu=e.get('nu',''),s=e['s'],sec=sec['code']+' · '+sec['name'],secu=sec.get('nameu',''),q=e['q'],w=e['w'],d=e['d'][:8],m=1 if e.get('m') else 0,reg=reg,lbl=' '.join(fl) if fl else '')
+        cards[e['t']]=dict(n=e['n'],nu=e.get('nu',''),s=e['s'],sec=sec['code']+' · '+sec['name'],secu=sec.get('nameu',''),q=e['q'],w=e['w'],d=e['d'][:8],m=1 if e.get('m') else 0,reg=reg)
 meta=dict(code='WZ-POT-262',title='Технологическая схема материальных потоков (PFD)',rev='A',date='2025.5',
  sheets=[dict(n=1,name='Дымогазовая система (режим 1)',nameu='Tutun-gaz tizimi (1-rejim)'),
          dict(n=2,name='Кислотная система (режим 1)',nameu='Kislota tizimi (1-rejim)'),
