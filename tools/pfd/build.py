@@ -269,8 +269,86 @@ for sh in '123':
             pipes[:]=[pp for pp in pipes if not (pp[3]==pp[5] and abs(pp[3]-ey)<=3 and pp[2]>=opt['ex']-3)]
             ex=opt['ex']
         terms.append([round(ex),round(ey),ux,uy,fl,txt,lx,ly,anc])
-    sheets.append(dict(n=int(sh),w=W,h=H,eq=eq,st=stl,art=art,fill=fillp,pipes=pipes,
-                       arrows=arrows,dash=[],darr=M.DARR.get(sh,[]),valves=M.VALVES.get(sh,[]),dashm=M.DASHM.get(sh,[]),lines=M.LINES.get(sh,[]),terms=terms,texts=M.TEXTS.get(sh,[]),instr=M.INSTR.get(sh,[]),sym=[dict(tag=tag,t=t,p=p) for tag,t,p,z in SYM.get(sh,[])]))
+    # --- привязка элементов к среде: для показа только выбранной среды (pfd.html)
+    def dseg(px,py,a):
+        x1,y1,x2,y2=a[2],a[3],a[4],a[5];dx,dy=x2-x1,y2-y1;L=dx*dx+dy*dy
+        t=0 if not L else max(0,min(1,((px-x1)*dx+(py-y1)*dy)/L))
+        return ((px-x1-t*dx)**2+(py-y1-t*dy)**2)**.5
+    def kind_at(px,py,r):
+        best=(r+1,'')
+        for a in pipes:
+            d=dseg(px,py,a)
+            if d<best[0]: best=(d,a[1])
+        return best[1] if best[0]<=r else ''
+    dpos=[(pos[sid],kind_of(sh,sid)) for sid in pos]
+    def kind_pts(pts,r):
+        best=(r+1,'')
+        for px,py in pts[::max(1,len(pts)//12)]+[pts[-1]]:
+            for a in pipes:
+                d=dseg(px,py,a)
+                if d<best[0]: best=(d,a[1])
+            for (dx_,dy_),k in dpos:
+                d=((px-dx_)**2+(py-dy_)**2)**.5-32
+                if d<best[0]: best=(d,k)
+        return best[1] if best[0]<=r else ''
+    eqbox=list(boxes.values())
+    art_eq=[];art_k={}
+    for p in paths:
+        if len(p)<2: continue
+        xs=[q[0] for q in p];ys=[q[1] for q in p]
+        inbox=any(b[0]-12<=min(xs) and max(xs)<=b[2]+12 and b[1]-12<=min(ys) and max(ys)<=b[3]+12 for b in eqbox)
+        under=(max(ys)-min(ys)<=6 and max(xs)-min(xs)<=140)
+        k='' if inbox or under else kind_pts(p,70)
+        txt='M'+'L'.join('%d %d'%(x,y) for x,y in p)
+        if k: art_k[k]=art_k.get(k,'')+txt
+        else: art_eq.append(txt)
+    art_eq=''.join(art_eq)
+    def kind_txt(txt):
+        l=txt.lower()
+        for w,k in (('сера','sulfur'),('натр','alkali'),('кислот','acid'),('воздух','air'),('вода','water'),('пар','steam'),('atm','gas'),('vent','gas')):
+            if w in l: return k
+        return ''
+    terms=[t+[kind_at(t[0],t[1],60) or kind_txt(t[5])] for t in terms]
+    vlv=[list(v)[:4]+[kind_at(v[0],v[1],16)] for v in M.VALVES.get(sh,[])]
+    txs=[list(t)+[kind_txt(t[2]) or kind_at(t[0],t[1],90)] for t in M.TEXTS.get(sh,[])]
+    ins=[list(c)+[kind_at(c[0],c[1],c[2]+22)] for c in M.INSTR.get(sh,[])]
+    tpos=[((t[0],t[1]),t[9]) for t in terms if t[9]]
+    def dash_kind(pts):
+        best=(71,'')
+        for px,py in pts:
+            for (cx,cy),k in dpos+tpos:
+                d=((px-cx)**2+(py-cy)**2)**.5-(32 if (cx,cy) in [q for q,_ in dpos] else 0)
+                if d<best[0]: best=(d,k)
+            for a in pipes:
+                d=dseg(px,py,a)
+                if d<best[0]: best=(d,a[1])
+        return best[1]
+    dsh=M.DASHM.get(sh,[])
+    dman=M.DASHK.get(sh)
+    near=lambda p,q,r:((p[0]-q[0])**2+(p[1]-q[1])**2)**.5<=r
+    dshk=[next((k for (cx,cy),k in tpos if near(d[0],(cx,cy),45) or near(d[-1],(cx,cy),45)),'') for d in dsh]
+    ch=True
+    while ch:                         # пунктиры, соединённые концами с уже определённым, той же среды
+        ch=False
+        for i,d in enumerate(dsh):
+            if dshk[i]: continue
+            for j,e in enumerate(dsh):
+                if dshk[j] and any(near(p,q,40) for p in d for q in e): dshk[i]=dshk[j];ch=True;break
+    dshk=dman or [k or dash_kind(d) for k,d in zip(dshk,dsh)]
+    def seg_d(px,py,d):
+        r=1e9
+        for (x1,y1),(x2,y2) in zip(d,d[1:]):
+            dx,dy=x2-x1,y2-y1;L=dx*dx+dy*dy;t=0 if not L else max(0,min(1,((px-x1)*dx+(py-y1)*dy)/L));r=min(r,((px-x1-t*dx)**2+(py-y1-t*dy)**2)**.5)
+        return r
+    def darr_kind(a):
+        b=(41,'')
+        for d,k in zip(dsh,dshk):
+            e=seg_d(a[0],a[1],d)
+            if e<b[0]: b=(e,k)
+        return b[1]
+    dak=[darr_kind(a) for a in M.DARR.get(sh,[])]
+    sheets.append(dict(n=int(sh),w=W,h=H,eq=eq,st=stl,art=art_eq,artk=art_k,fill=fillp,pipes=pipes,
+                       arrows=arrows,dash=[],darr=M.DARR.get(sh,[]),valves=vlv,dashm=dsh,dashk=dshk,darrk=dak,lines=M.LINES.get(sh,[]),terms=terms,texts=txs,instr=ins,sym=[dict(tag=tag,t=t,p=p) for tag,t,p,z in SYM.get(sh,[])]))
     print('лист',sh,'потоков',len(pos),'кусков труб',len(pipes),'стрелок',len(arrows),'линий-аппаратов',len(paths),'заливок',len(fills),'предупреждений',len(warn))
     for w in warn: print('  ',w)
 # 50 (сера) указана в таблице листа 2; 101/102 — по таблице листа 3
