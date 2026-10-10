@@ -1,39 +1,35 @@
 #!/usr/bin/env python3
 """Сборка вкладки PFD: python3 tools/pfd/build.py <WZ-POT-262.pdf>
-Требуется: poppler (pdfimages), numpy, pillow, opencv-python-headless.
-Результат: pfd/sheet1..3.jpg и pfd/pfd-data.js (позиции, потоки, линии, карточки)."""
-import sys, os, json, subprocess, tempfile
+Требуется: poppler (pdfimages), numpy, pillow, opencv-python-headless, scikit-image.
+Результат:
+  pfd/pfd-data.js        — векторная схема (линии аппаратов, трубы, стрелки, ромбы, подписи), потоки, карточки
+  pfd/scan/sheet1..3.jpg — очищенный скан (только для сверки: кнопка «Скан» во вкладке)
+Разметка (зоны аппаратов, направления потоков, пунктиры, подписи) — в eqboxes.py и manual.py."""
+import sys, os, json, subprocess, tempfile, re
 import numpy as np, cv2
 from PIL import Image
 HERE=os.path.dirname(os.path.abspath(__file__)); ROOT=os.path.abspath(os.path.join(HERE,'..','..'))
 sys.path.insert(0,HERE)
 import trace as T
+import vec
 from eqboxes import EQ
 import tables as TB
+import manual as M
+import dashes as DS
 
-pdf=sys.argv[1]; OUT=os.path.join(ROOT,'pfd'); os.makedirs(OUT,exist_ok=True)
+pdf=sys.argv[1]; OUT=os.path.join(ROOT,'pfd'); os.makedirs(os.path.join(OUT,'scan'),exist_ok=True)
 tmp=tempfile.mkdtemp(prefix='pfd_'); T.SHEET_DIR=tmp
 subprocess.check_call(['pdfimages','-j',pdf,os.path.join(tmp,'im')])
-# страница PDF → номер листа в основной надписи: стр.3 = лист 1, стр.1 = лист 2, стр.2 = лист 3
-IMG={'1':'im-002.jpg','2':'im-000.jpg','3':'im-001.jpg'}
-CROP=(220,170,3230,2310)   # поле чертежа; в этих координатах работает вся разметка
+IMG={'1':'im-002.jpg','2':'im-000.jpg','3':'im-001.jpg'}   # лист основной надписи → страница PDF
+CROP=(220,170,3230,2310)
 W,H=CROP[2]-CROP[0],CROP[3]-CROP[1]
 for sh,f in IMG.items():
     a=np.asarray(Image.open(os.path.join(tmp,f)).convert('RGB')).astype(np.float32)
-    g=np.clip((a[...,0]-70)/(238-70),0,1)*255      # канал R: красная печать гаснет, цифры под ней читаются
+    g=np.clip((a[...,0]-70)/(238-70),0,1)*255      # канал R: красная печать гаснет
     im=Image.fromarray(g.astype(np.uint8)).crop(CROP)
     im.save(os.path.join(tmp,f'sheet{sh}.png'))
-    im.save(os.path.join(OUT,f'sheet{sh}.jpg'),quality=80,optimize=True)
+    im.resize((W*2//3,H*2//3),Image.LANCZOS).save(os.path.join(OUT,'scan',f'sheet{sh}.jpg'),quality=72,optimize=True)
 
-# номера потоков в ромбах: найденные по растру ромбы → номер (сверено по контактным листам вручную)
-ID={'1':{1:22,2:74,3:16,4:15,5:21,6:10,7:24,8:3,9:12,10:9,11:18,12:11,13:19,14:4,15:20,16:13,17:23,18:17,19:7,20:73,21:14,22:8,23:6,24:5,25:50},
-'2':{0:62,1:55,2:71,3:87,4:88,10:63,11:54,12:51,13:68,14:69,15:64,16:65,17:77,18:76,19:78,20:75,21:70,22:61,23:84,24:83,25:56,27:82,28:81,29:57,31:86,32:85,33:102,34:101,35:58,36:52,37:66,39:59,40:60},
-'3':{0:114,2:103,3:101,4:102,5:117,6:115,7:116,8:113,9:104,10:107,11:105,12:112,13:22,14:10,15:8,16:6,17:16,18:111,19:106,20:108,21:21,22:15,23:11,24:20,25:110}}
-MAN={'1':{1:(374,984),2:(526,988),72:(2748,466)},'2':{53:(484,724),67:(2492,734)},'3':{109:(928,192)}}
-# линии, которые автотрассировка не нашла (рисуем вручную по растру): (лист, поток) → ломаная
-MANUAL_LINES={('1',16):[(2027,1000),(2027,782),(2105,782),(2105,845),(2115,845)],
-              ('1',17):[(2220,595),(2220,550),(2105,550),(2105,757),(1925,757)]}
-REF3={6,8,10,11,15,16,20,21,22}      # газовые потоки: на листе 3 только отсылка к листу 1
 def diamonds(sh):
     g=cv2.imread(os.path.join(tmp,f'sheet{sh}.png'),0)
     cs,_=cv2.findContours((g<140).astype(np.uint8)*255,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
@@ -48,75 +44,238 @@ def diamonds(sh):
         if all(abs(cx-d[0])+abs(cy-d[1])>10 for d in out): out.append((int(cx),int(cy)))
     return out
 def tosheet(b): return [2*b[0]-220,2*b[1]-170,2*b[2]-220,2*b[3]-170]
+def dbox(p,b):   # расстояние от точки до прямоугольника
+    dx=max(b[0]-p[0],0,p[0]-b[2]); dy=max(b[1]-p[1],0,p[1]-b[3]); return (dx*dx+dy*dy)**.5
 
 APP={'FR-11301':'SM-11301','PP-11304':'PP-11304AB','DA-11401':'DA-114.101','PP-11401':'PP-114.101AB'}
-KIND3={'Обессоленная вода':'water','Питательная вода':'water','Охлаждающая вода':'water','Питательная вода котла':'water','Продувка барабана':'water','Продувка':'water'}
-streams={}; sheets=[]
+streams={}; sheets=[]; RINGS={}
+CUT={'1':1262,'2':1462,'3':1420}   # ниже — подписи под схемой и таблицы (рисуем свои)
+src=open(os.path.join(ROOT,'model.html'),encoding='utf8').read().split('\n')
+DATA=json.loads([l for l in src if l.startswith('const DATA = ')][0][len('const DATA = '):].rstrip(';'))
+fsrc=open(os.path.join(ROOT,'flow.html'),encoding='utf8').read()
+FLOWLBL={}
+for m in re.finditer(r"\['([^']+)','([^']+)',(\d+),(\d+),(\d+),(\d+),\[([^\]]*)\]",fsrc):
+    FLOWLBL.setdefault(m.group(2),[x.strip("'") for x in m.group(7).split("','")])
+
+def kind_of(sh,sid):
+    if sh=='1': return 'air' if sid<=4 else 'sulfur' if sid==50 else 'alkali' if sid in (72,74) else 'water' if sid==73 else 'gas'
+    if sh=='2': return 'sulfur' if sid==50 else 'acid' if 51<=sid<=71 else 'water'
+    return 'steam' if sid in (109,110,111,113,115,116) else 'water'
+
 for sh in '123':
-    segs,members=T.build(sh); d=diamonds(sh)
-    pos={ID[sh][i]:d[i] for i in ID[sh]}; pos.update(MAN[sh])
-    lines={}
-    for sid,(x,y) in pos.items():
-        if sh=='3' and sid in REF3: lines[sid]=[]; continue
-        order=T.trace(segs,members,x,y)
-        lines[sid]=[[int(v) for p in T.pts(segs[k]) for v in p] for k in order]
-        if (sh,sid) in MANUAL_LINES:
-            m=MANUAL_LINES[(sh,sid)]; lines[sid]=[[*m[i],*m[i+1]] for i in range(len(m)-1)]
+    segs,members=T.build(sh)
+    d=diamonds(sh)
+    pos={M.ID[sh][i]:d[i] for i in M.ID[sh]}; pos.update(M.MAN[sh])
     boxes={t:tosheet(b) for t,b in EQ[sh].items()}
+    # --- трассировка потоков
+    trace={}
+    for sid,(x,y) in pos.items():
+        if sh=='3' and sid in M.REF3: trace[sid]=[]; continue
+        trace[sid]=T.trace(segs,members,x,y)
+    owner={}
+    for sid,order in trace.items():
+        for k in order:
+            c=owner.get(k)
+            if c is None or (pos[sid][0]-(segs[k]['a']+segs[k]['b'])/2)**2<(pos[c][0]-(segs[k]['a']+segs[k]['b'])/2)**2: owner[k]=sid
+    # --- продолжение: неразмеченные куски, связанные с потоком (участки магистрали между тройниками и т.п.)
+    ext={}
+    def near_outline(i):
+        (x1,y1),(x2,y2)=T.pts(segs[i])
+        for b in boxes.values():
+            if segs[i]['o']=='h' and (abs(y1-b[1])<=9 or abs(y1-b[3])<=9) and b[0]-9<=x1<=b[2]+9 and b[0]-9<=x2<=b[2]+9: return True
+            if segs[i]['o']=='v' and (abs(x1-b[0])<=9 or abs(x1-b[2])<=9) and b[1]-9<=y1<=b[3]+9 and b[1]-9<=y2<=b[3]+9: return True
+        return False
+    stack=list(owner.items())
+    while stack:
+        k,sid=stack.pop()
+        for nd in segs[k]['n']:
+            for j in members[nd]:
+                if j not in owner and j not in ext and not near_outline(j):
+                    ext[j]=sid; stack.append((j,sid))
+    # --- привязка углов: общий узел → точное пересечение
+    for nd,mem in members.items():
+        hs=[segs[i]['c'] for i in mem if segs[i]['o']=='h']; vs=[segs[i]['c'] for i in mem if segs[i]['o']=='v']
+        nx=float(np.mean(vs)) if vs else None; ny=float(np.mean(hs)) if hs else None
+        for i in mem:
+            s=segs[i]; ei=s['n'].index(nd)
+            if s['o']=='h' and nx is not None: s['a' if ei==0 else 'b']=nx
+            if s['o']=='v' and ny is not None: s['a' if ei==0 else 'b']=ny
+    def P(i): return [round(v) for p in T.pts(segs[i]) for v in p]
+    # --- концы потоков и стрелки направления
+    ends={}
+    for sid,order in trace.items():
+        cnt={}
+        for k in order:
+            for nd in segs[k]['n']: cnt[nd]=cnt.get(nd,0)+1
+        ends[sid]=[nd for nd,c in cnt.items() if c==1 or len(members[nd])!=2]
+    nodepos={}
+    for k,s in enumerate(segs):
+        for ei,p in enumerate(T.pts(s)): nodepos[s['n'][ei]]=p
+    def end_dir(nd):
+        for k in members[nd]:
+            s=segs[k]; ei=s['n'].index(nd)
+            if k in trace_all: pass
+            return (1 if ei==1 else -1,0) if s['o']=='h' else (0,1 if ei==1 else -1)
+    trace_all=set(k for o in trace.values() for k in o)
+    def free_end(nd,sid):
+        p=nodepos[nd]; return len(members[nd])==1 and all(dbox(p,b)>40 for b in boxes.values())
+    def dist(nd,sid,spec):
+        p=nodepos[nd]
+        if spec in ('IN','OUT'): return 0 if free_end(nd,sid) else 9999
+        if isinstance(spec,tuple): return ((p[0]-spec[0])**2+(p[1]-spec[1])**2)**.5
+        return dbox(p,boxes[spec]) if spec in boxes else 9999
+    arrows=[]; warn=[]
+    for sid,(srcs,dst) in M.DIR[sh].items():
+        es=ends.get(sid,[])
+        if len(es)<2: warn.append(('нет концов',sh,sid)); continue
+        ed=min(es,key=lambda n:dist(n,sid,dst)); es2=[n for n in es if n!=ed]
+        es_=min(es2,key=lambda n:dist(n,sid,srcs)) if es2 else None
+        if dist(ed,sid,dst)>140: warn.append(('далеко приёмник',sh,sid,dst,round(dist(ed,sid,dst))))
+        if es_ is not None and dist(es_,sid,srcs)>140: warn.append(('далеко источник',sh,sid,srcs,round(dist(es_,sid,srcs))))
+        p=nodepos[ed]; dx,dy=end_dir(ed)
+        # направление — вдоль крайнего куска потока, наружу от трубы
+        for k in trace[sid]:
+            if ed in segs[k]['n']:
+                s=segs[k]; ei=s['n'].index(ed); dx,dy=((1 if ei==1 else -1),0) if s['o']=='h' else (0,(1 if ei==1 else -1)); break
+        arrows.append([round(p[0]),round(p[1]),dx,dy,kind_of(sh,sid),sid])
+    # --- стрелки по скану на свободных концах (где на чертеже есть наконечник)
+    g=cv2.imread(os.path.join(tmp,f'sheet{sh}.png'),0)
+    bw=(g<150).astype(np.uint8)
+    op=cv2.morphologyEx(bw,cv2.MORPH_OPEN,cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(7,7)))
+    n,lab,st,cen=cv2.connectedComponentsWithStats(op,connectivity=8)
+    blobs=[(cen[i][0],cen[i][1]) for i in range(1,n) if 40<=st[i][4]<=500 and st[i][2]<45 and st[i][3]<45]
+    drawn=set(trace_all)|set(ext)
+    for k in drawn:
+        s=segs[k]
+        for ei,p in enumerate(T.pts(s)):
+            nd=s['n'][ei]
+            if len(members[nd])!=1: continue
+            if any(abs(a[0]-p[0])+abs(a[1]-p[1])<24 for a in arrows): continue
+            if any((bx-p[0])**2+(by-p[1])**2<=14**2 for bx,by in blobs):
+                dx,dy=((1 if ei==1 else -1),0) if s['o']=='h' else (0,(1 if ei==1 else -1))
+                sid=owner.get(k,ext.get(k)); arrows.append([round(p[0]),round(p[1]),dx,dy,kind_of(sh,sid),sid,'e'])
+    # --- какие аппараты рядом с потоком
     eq=[]
     for t,b in boxes.items():
         near=[]
         for sid,(x,y) in pos.items():
+            if sh=='3' and sid in M.REF3: continue
             hit=(b[0]-40<=x<=b[2]+40 and b[1]-40<=y<=b[3]+40)
-            for l in lines[sid]:
-                for px,py in ((l[0],l[1]),(l[2],l[3])):
-                    if b[0]-24<=px<=b[2]+24 and b[1]-24<=py<=b[3]+24: hit=True
-            if hit and not (sh=='3' and sid in REF3): near.append(sid)
+            for k in trace[sid]:
+                for p in T.pts(segs[k]):
+                    if b[0]-24<=p[0]<=b[2]+24 and b[1]-24<=p[1]<=b[3]+24: hit=True
+            if hit: near.append(sid)
         eq.append(dict(tag=t,app=APP.get(t,t),box=b,streams=sorted(near)))
-    st=[]
-    for sid,(x,y) in sorted(pos.items()):
-        st.append(dict(id=sid,c=[x,y],lines=lines[sid],ref=int(sh=='3' and sid in REF3)))
-        if sh=='3' and sid in REF3: continue
-        r=streams.setdefault(sid,dict(sh=[]))
-        r['sh'].append(int(sh))
+    # --- линии аппаратов: векторизация без труб, текста и ромбов
+    drop=np.zeros(g.shape,np.uint8)
+    for k in drawn:
+        (a,b_),(c,e)=T.pts(segs[k]); cv2.line(drop,(int(a),int(b_)),(int(c),int(e)),255,13)
+    for sid,(x,y) in pos.items(): cv2.circle(drop,(int(x),int(y)),36,255,-1)
+    for k,s in enumerate(segs):                      # подчёркивания подписей: одиночные короткие горизонтали
+        if k in drawn or s['o']!='h' or s['b']-s['a']>300: continue
+        if all(len(members[nd])==1 for nd in s['n']):
+            (a,b_),(c,e)=T.pts(s)
+            if any(bx[0]-12<=a and c<=bx[2]+12 and bx[1]-12<=b_<=bx[3]+12 for bx in boxes.values()): continue
+            cv2.line(drop,(int(a),int(b_)),(int(c),int(e)),255,11)
+    b0=(g<165).astype(np.uint8); b0[drop>0]=0
+    n,lab,st,cen=cv2.connectedComponentsWithStats(b0,connectivity=8)
+    dil=cv2.dilate(b0,np.ones((3,3),np.uint8),iterations=2)
+    n2,lab2,st2,_=cv2.connectedComponentsWithStats(dil,connectivity=8)
+    rings=[]
+    for i in range(1,n2):
+        x,y,w,h,a=st2[i]
+        if 34<=w<=72 and 34<=h<=72 and abs(w-h)<=10 and int(b0[y:y+h,x:x+w].sum())<0.62*w*h*0.5+0.1*w*h: rings.append((x,y,w,h))
+    RINGS[sh]=[(x+w//2,y+h//2,max(w,h)//2) for x,y,w,h in rings]
+    inring=lambda cx,cy:False
+    text=np.zeros_like(drop)
+    for i in range(1,n):
+        x,y,w,h,a=st[i]
+        if min(w,h)<=6 and max(w,h)>=30 and any(bx[0]<=x+w/2<=bx[2] and bx[1]<=y+h/2<=bx[3] for bx in boxes.values()): continue   # тонкие штрихи внутри аппарата — линии рисунка, не текст
+        if w<=62 and h<=40 and not inring(x+w/2,y+h/2):
+            if not (20<=w<=36 and 14<=h<=34 and a/(w*h)>0.42): text[lab==i]=255
+    drop|=cv2.dilate(text,np.ones((3,3),np.uint8))
+    drop[CUT[sh]:,:]=255; drop[:,:178]=255; drop[:,2915:]=255; drop[:112,:]=255
+    dsk=drop.copy()
+    dsk[:]=0
+    for k in drawn:
+        (a,b_),(c,e)=T.pts(segs[k]); cv2.line(dsk,(int(a),int(b_)),(int(c),int(e)),255,13)
+    for sid,(x,y) in pos.items(): cv2.circle(dsk,(int(x),int(y)),36,255,-1)
+    dsk[CUT[sh]:,:]=255; dsk[:,:178]=255; dsk[:,2915:]=255; dsk[:112,:]=255
+    dseg=[[r[2],r[1],r[3],r[1]] if r[0]=='h' else [r[1],r[2],r[1],r[3]] for r in DS.join(DS.runs(DS.find(g,dsk)))]
+    paths,fills=vec.vectorize(g,drop)
+    art='M'.join('%d %dL'%(p[0][0],p[0][1])+'L'.join('%d %d'%(x,y) for x,y in p[1:]) for p in paths if len(p)>1)
+    art='M'+art
+    fillp=''.join('M'+'L'.join('%d %d'%(x,y) for x,y in f)+'Z' for f in fills)
+    pipes=[]
+    for k in sorted(drawn):
+        sid=owner.get(k); mainline=k in owner
+        sid2=sid if mainline else ext[k]
+        pipes.append([sid2 if mainline else 0,kind_of(sh,sid2),*P(k)])
+    # выпрямляем «ступеньки» на выводах: короткий кусок той же линии, сдвинутый по y на 12 px или меньше (скан), ставим на линию
+    for a in pipes:
+        if a[3]!=a[5]: continue
+        for q in pipes:
+            if q is a or q[0]!=a[0] or q[1]!=a[1] or q[3]!=q[5] or q[3]==a[3] or abs(q[3]-a[3])>12: continue
+            if abs(a[4]-a[2])>abs(q[4]-q[2]): continue
+            gap=min(abs(a[2]-q[4]),abs(a[2]-q[2]),abs(a[4]-q[2]),abs(a[4]-q[4]))
+            if gap<=16:
+                a[3]=a[5]=q[3]
+                if a[2]>q[4]: a[2]=q[4]
+                elif a[4]<q[2]: a[4]=q[2]
+                break
+    stl=[dict(id=sid,c=list(pos[sid]),ref=int(sh=='3' and sid in M.REF3),lines=[P(k) for k in trace[sid]]) for sid in sorted(pos)]
+    for sid in sorted(pos):
+        if sh=='3' and sid in M.REF3: continue
+        r=streams.setdefault(sid,dict(sh=[])); r['sh'].append(int(sh))
         if sh=='1':
-            if sid in TB.GAS:
-                r.update(k='gas',n='Воздух' if sid<=4 else ('Хвостовой газ' if sid>=23 else 'Технологический газ'),g=TB.GAS[sid])
-            elif sid==50: pass
-            else:
-                n,wt,th,rho,m3,t=TB.REAG[sid]; r.update(k='reagent',n=n,th=th,rho=rho,m3=m3,t=t)
+            if sid in TB.GAS: r.update(k=kind_of(sh,sid),n='Воздух' if sid<=4 else ('Хвостовой газ' if sid>=23 else 'Технологический газ'),g=TB.GAS[sid])
+            elif sid in TB.REAG:
+                n_,wt,th,rho,m3,t=TB.REAG[sid]; r.update(k=kind_of(sh,sid),n=n_,th=th,rho=rho,m3=m3,t=t)
         elif sh=='2':
             if sid in (101,102): continue
-            n,wt,th,rho,m3,t=TB.ACID[sid]
-            k='sulfur' if sid==50 else 'acid' if n=='Серная кислота' else 'water'
-            r.update(k=k,n=n,th=th,rho=rho,m3=m3,t=t); 
+            n_,wt,th,rho,m3,t=TB.ACID[sid]
+            r.update(k=kind_of(sh,sid),n=n_,th=th,rho=rho,m3=m3,t=t)
             if wt: r['wt']=wt
         else:
-            n,p,t,th=TB.STEAM[sid]
-            r.update(k='steam' if 'пар' in n.lower() else 'water',n=n,p=p,t=t,th=th)
-    sheets.append(dict(n=int(sh),img=f'pfd/sheet{sh}.jpg',w=W,h=H,eq=eq,st=st))
-# жидкая сера (50) описана в таблице листа 2; на листе 1 — тот же поток
-n,wt,th,rho,m3,t=TB.ACID[50]; streams[50].update(k='sulfur',n=n,th=th,rho=rho,m3=m3,t=t)
-# 101/102 нарисованы на листах 2 и 3; параметры — по таблице листа 3
+            n_,p_,t,th=TB.STEAM[sid]; r.update(k=kind_of(sh,sid),n=n_,p=p_,t=t,th=th)
+    fe=[(nodepos[nd],nd) for k in drawn for nd in segs[k]['n'] if len(members[nd])==1]
+    terms=[]
+    for x,y,fl,txt,lx,ly,*anc in M.TERMS.get(sh,[]):
+        opt=anc[1] if len(anc)>1 else {}
+        anc=anc[0] if anc else 'start'
+        (ex,ey),nd=min(fe,key=lambda t:(t[0][0]-x)**2+(t[0][1]-y)**2)
+        if ((ex-x)**2+(ey-y)**2)**.5>130:       # трубы нет (пунктирный вывод): ставим по чертежу
+            ex,ey,ux,uy=(300,y,-1,0) if x<1500 else (x-29,y,1,0)
+        else:
+            k0=members[nd][0]; s0=segs[k0]; ei=s0['n'].index(nd)
+            ux,uy=((1 if ei==1 else -1),0) if s0['o']=='h' else (0,(1 if ei==1 else -1))
+        for pp in pipes:
+            if pp[3]==pp[5] and abs(pp[3]-ey)<=12 and (abs(pp[2]-ex)<=3 or abs(pp[4]-ex)<=3): ey=pp[3]
+        if 'ex' in opt:                                  # торец вывода по чертежу: лишний кусок трубы за ним убираем
+            pipes[:]=[pp for pp in pipes if not (pp[3]==pp[5] and abs(pp[3]-ey)<=3 and pp[2]>=opt['ex']-3)]
+            ex=opt['ex']
+        terms.append([round(ex),round(ey),ux,uy,fl,txt,lx,ly,anc])
+    sheets.append(dict(n=int(sh),w=W,h=H,eq=eq,st=stl,art=art,fill=fillp,pipes=pipes,
+                       arrows=arrows,dash=[],darr=M.DARR.get(sh,[]),valves=M.VALVES.get(sh,[]),dashm=M.DASHM.get(sh,[]),lines=M.LINES.get(sh,[]),terms=terms,texts=M.TEXTS.get(sh,[]),instr=M.INSTR.get(sh,[])))
+    print('лист',sh,'потоков',len(pos),'кусков труб',len(pipes),'стрелок',len(arrows),'линий-аппаратов',len(paths),'заливок',len(fills),'предупреждений',len(warn))
+    for w in warn: print('  ',w)
+# 50 (сера) указана в таблице листа 2; 101/102 — по таблице листа 3
+n_,wt,th,rho,m3,t=TB.ACID[50]; streams[50].update(k='sulfur',n=n_,th=th,rho=rho,m3=m3,t=t)
 for sid in (101,102):
-    n,p,t,th=TB.STEAM[sid]; streams[sid].update(k='water',n=n,p=p,t=t,th=th)
-
+    n_,p_,t,th=TB.STEAM[sid]; streams[sid].update(k='water',n=n_,p=p_,t=t,th=th)
 # карточки аппаратов из данных модели
-src=open(os.path.join(ROOT,'model.html'),encoding='utf8').read().split('\n')
-line=[l for l in src if l.startswith('const DATA = ')][0]
-DATA=json.loads(line[len('const DATA = '):].rstrip(';'))
 cards={}
 apps={e['app'] for s in sheets for e in s['eq']}
 for e in DATA['eq']:
     if e['t'] in apps:
         sec=DATA['sections'][e['s']]
         reg=[{k:r[k] for k in ('n','nu','f','T','P','L','o') if r.get(k)} for r in DATA['reg'] if e['t'] in r['t']]
-        cards[e['t']]=dict(n=e['n'],nu=e.get('nu',''),s=e['s'],sec=sec['code']+' · '+sec['name'],secu=sec.get('nameu',''),q=e['q'],w=e['w'],d=e['d'][:8],m=1 if e.get('m') else 0,reg=reg)
+        fl=FLOWLBL.get(e['t'])
+        cards[e['t']]=dict(n=e['n'],nu=e.get('nu',''),s=e['s'],sec=sec['code']+' · '+sec['name'],secu=sec.get('nameu',''),q=e['q'],w=e['w'],d=e['d'][:8],m=1 if e.get('m') else 0,reg=reg,lbl=' '.join(fl) if fl else '')
 meta=dict(code='WZ-POT-262',title='Технологическая схема материальных потоков (PFD)',rev='A',date='2025.5',
  sheets=[dict(n=1,name='Дымогазовая система (режим 1)',nameu='Tutun-gaz tizimi (1-rejim)'),
          dict(n=2,name='Кислотная система (режим 1)',nameu='Kislota tizimi (1-rejim)'),
          dict(n=3,name='Паровая система (режим 1)',nameu='Bug‘ tizimi (1-rejim)')])
 js='window.TMK_PFD='+json.dumps(dict(meta=meta,sheets=sheets,streams={str(k):v for k,v in sorted(streams.items())},cards=cards),ensure_ascii=False,separators=(',',':'))+';\n'
 open(os.path.join(OUT,'pfd-data.js'),'w',encoding='utf8').write(js)
-print('ok',len(js),'bytes; streams',len(streams),'eq',sum(len(s['eq']) for s in sheets),'no-lines',[(s['n'],x['id']) for s in sheets for x in s['st'] if not x['lines'] and not x['ref']])
-print('cards',sorted(cards),'missing',sorted(apps-set(cards)))
+print('ok',len(js),'байт; потоков',len(streams),'аппаратов',sum(len(s['eq']) for s in sheets))

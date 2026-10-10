@@ -50,7 +50,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .btn:active{background:var(--panel2)}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
-.zoom{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
+.zoom{display:inline-flex;flex:0 0 auto;align-items:center;gap:4px;margin-left:auto}
 .zoom button{width:32px;height:32px;padding:0;font-size:17px;line-height:1}
 .zoom .zl{font:600 12px var(--mono);min-width:46px;text-align:center;color:var(--ink2)}
 #q{flex:1 1 150px;min-width:120px;max-width:260px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:6px 10px;font-size:13px}
@@ -59,7 +59,29 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #vp.drag{cursor:grabbing}
 #stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
 #stage.anim{transition:transform .45s cubic-bezier(.2,.7,.2,1)}
-#stage img{display:block;width:100%;height:100%;filter:var(--imgfilter);pointer-events:none;-webkit-user-drag:none}
+#stage img{position:absolute;inset:0;display:none;width:100%;height:100%;filter:var(--imgfilter);pointer-events:none;-webkit-user-drag:none;opacity:.5;z-index:2}
+body.scan #stage img{display:block}
+#art{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#art .ln{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+#art .fl{fill:var(--ink);stroke:none}
+#art .pp{stroke-width:7;stroke-linecap:butt;fill:none}
+#art .dsh{fill:none;stroke:var(--ink2);stroke-width:2.4;stroke-dasharray:30 12 3 12}
+#art .dsm{fill:none;stroke:var(--ink2);stroke-width:2.2;stroke-dasharray:22 7 3 7}
+#art .vl{fill:var(--paper);stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round}
+#art .dm{fill:var(--paper);stroke:var(--ink);stroke-width:2.4}
+#art .dn{font:700 25px var(--mono);fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+#art .ref .dm{stroke-dasharray:5 4}
+#art .tg{font:700 22px var(--mono);fill:var(--accent);text-anchor:middle}
+#stage:not(.zoomed) #art .tg,#art .tn,#art .tm{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+#art .tn{display:none}
+#art .tn{font:500 18px var(--sans);fill:var(--ink2);text-anchor:middle}
+#art .tmn{fill:var(--paper);stroke:var(--ink);stroke-width:2.4;stroke-linejoin:round}
+#art .tm{font:500 19px var(--sans);fill:var(--ink)}
+#art .dim{opacity:.13}
+.leg{display:inline-flex;flex-wrap:wrap;gap:4px}
+.leg button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:3px 9px 3px 7px;font-size:12px;cursor:pointer}
+.leg button[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+.leg i{width:10px;height:10px;border-radius:50%;background:var(--c)}
 #ov{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .eqz{fill:transparent;stroke:var(--accent);stroke-width:2;stroke-dasharray:10 7;stroke-opacity:.0;vector-effect:non-scaling-stroke;cursor:pointer}
 body.zones .eqz{stroke-opacity:.5}
@@ -109,7 +131,9 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
   <div class="seg" id="tabs" role="tablist"></div>
   <input id="q" type="search" list="qlist" autocomplete="off" aria-label="Поиск">
   <datalist id="qlist"></datalist>
+  <div class="leg" id="leg"></div>
   <button class="btn" id="bZones" type="button" aria-pressed="true"></button>
+  <button class="btn" id="bScan" type="button" aria-pressed="false"></button>
   <div class="zoom">
     <button class="btn" id="zOut" type="button" aria-label="−">−</button>
     <span class="zl" id="zl">100%</span>
@@ -119,7 +143,7 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
 </div>
 <div class="main">
   <div id="vp">
-    <div id="stage"><img id="img" alt="" draggable="false"><svg id="ov" preserveAspectRatio="none"></svg></div>
+    <div id="stage"><svg id="art" preserveAspectRatio="none"></svg><img id="img" alt="" draggable="false"><svg id="ov" preserveAspectRatio="none"></svg></div>
     <div id="tip"></div>
     <div class="hint" id="hint"></div>
   </div>
@@ -139,7 +163,7 @@ const KCOL={gas:'--s-gas',air:'--s-air',acid:'--s-acid',water:'--s-water',steam:
 
 const UI={
   ru:{
-    sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист',
+    scan:'Скан', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист',
     hint:'Колесо / щипок — масштаб, перетаскивание — сдвиг. Нажмите на аппарат или на ромб с номером потока.',
     close:'Закрыть', qty:'Количество', mass:'Масса, кг', also:'Также на листах', streams:'Потоки у аппарата',
     to3d:'Показать в 3D', toFlow:'Показать в схеме потоков', stream:'Поток', onSheets:'На листах', joins:'Связывает аппараты',
@@ -152,7 +176,7 @@ const UI={
     unit:{th:'т/ч'}, gas:'газ', acid:'кислота', water:'вода', steam:'пар', sulfur:'сера', reagent:'реагент', air:'воздух'
   },
   uz:{
-    sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq',
+    scan:'Skan', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq',
     hint:'G‘ildirak / chimchilash — masshtab, sudrash — siljitish. Apparatni yoki oqim raqamli romb ustiga bosing.',
     close:'Yopish', qty:'Soni', mass:'Massa, kg', also:'Boshqa varaqlarda', streams:'Apparatdagi oqimlar',
     to3d:'3D da ko‘rsatish', toFlow:'Oqim sxemasida ko‘rsatish', stream:'Oqim', onSheets:'Varaqlarda', joins:'Bog‘laydigan apparatlar',
@@ -178,13 +202,13 @@ SH.forEach(s=>s.eq.forEach(e=>{(eqByApp[e.app]=eqByApp[e.app]||[]).push({sheet:s
 const stSheets=id=>{const r=[];SH.forEach(s=>{if(s.st.some(x=>x.id===id&&!x.ref))r.push(s.n)});return r};
 
 // ---------- view (pan/zoom) ----------
-const vp=$('vp'), stage=$('stage'), ov=$('ov'), img=$('img');
-stage.style.width=W+'px'; stage.style.height=H+'px'; ov.setAttribute('viewBox',`0 0 ${W} ${H}`);
+const vp=$('vp'), stage=$('stage'), ov=$('ov'), img=$('img'), art=$('art');
+stage.style.width=W+'px'; stage.style.height=H+'px'; ov.setAttribute('viewBox',`0 0 ${W} ${H}`); art.setAttribute('viewBox',`0 0 ${W} ${H}`);
 let k=1,tx=0,ty=0,fitK=1;
 function clampView(){const vw=vp.clientWidth,vh=vp.clientHeight,sw=W*k,sh=H*k;
   tx=sw<=vw?(vw-sw)/2:Math.min(0,Math.max(vw-sw,tx)); ty=sh<=vh?(vh-sh)/2:Math.min(0,Math.max(vh-sh,ty))}
 let hitRaf=0;
-function applyView(){clampView();stage.style.transform=`translate(${tx}px,${ty}px) scale(${k})`;
+function applyView(){clampView();stage.style.transform=`translate(${tx}px,${ty}px) scale(${k})`;stage.classList.toggle('zoomed',k>=fitK*2.4);
   $('zl').textContent=Math.round(k/fitK*100)+'%';
   if(!hitRaf)hitRaf=requestAnimationFrame(()=>{hitRaf=0;const r=Math.max(34,22/k);ov.querySelectorAll('.stz').forEach(c=>c.setAttribute('r',r))})}
 function computeFit(){const vw=vp.clientWidth||W,vh=vp.clientHeight||H;fitK=Math.min(vw/W,vh/H)}
@@ -230,14 +254,63 @@ vp.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')hideTip()});
 $('zIn').onclick=()=>zoomAt(k*1.4,vp.clientWidth/2,vp.clientHeight/2);
 $('zOut').onclick=()=>zoomAt(k/1.4,vp.clientWidth/2,vp.clientHeight/2);
 $('zFit').onclick=()=>fit(true);
+$('bScan').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('scan',on);if(on)img.src=sheetOf(sheet).scan||('pfd/scan/sheet'+sheet+'.jpg')};
 $('bZones').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('zones',on)};
 window.addEventListener('resize',()=>{const was=k/fitK;computeFit();k=Math.max(fitK,was*fitK);applyView()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard();else if(e.key==='+'||e.key==='=')$('zIn').click();else if(e.key==='-')$('zOut').click()});
 
+// ---------- vector layer ----------
+const MEDIA=[['gas','Газ','Gaz'],['air','Воздух','Havo'],['acid','Кислота','Kislota'],['water','Вода','Suv'],['steam','Пар','Bug‘'],['sulfur','Сера','Oltingugurt'],['alkali','Щёлочь','Ishqor']];
+const MCOL=Object.assign({},KCOL,{alkali:'--s-alkali'});
+let medium=null;
+function paintLeg(){const g=$('leg');g.textContent='';MEDIA.forEach(m=>{const b=document.createElement('button');b.type='button';b.style.setProperty('--c',`var(${MCOL[m[0]]})`);
+  b.setAttribute('aria-pressed',String(medium===m[0]));b.innerHTML='<i></i>'+esc(lang==='uz'?m[2]:m[1]);
+  b.onclick=()=>{medium=medium===m[0]?null:m[0];paintLeg();applyMedium()};g.appendChild(b)})}
+function applyMedium(){art.querySelectorAll('[data-m]').forEach(n=>n.classList.toggle('dim',!!medium&&n.dataset.m!==medium))}
+function drawArt(s){
+  art.textContent='';
+  mk('path',{d:s.fill,class:'fl'},art);mk('path',{d:s.art,class:'ln'},art);
+  const gp=mk('g',{},art);
+  s.pipes.forEach(p=>mk('line',{x1:p[2],y1:p[3],x2:p[4],y2:p[5],class:'pp',stroke:`var(${MCOL[p[1]]||'--ink'})`,'data-m':p[1]},gp));
+  
+  s.arrows.forEach(a=>{const[x,y,dx,dy,kd]=a;const L=22,Wd=12;
+    mk('polygon',{points:`${x},${y} ${x-dx*L-dy*Wd},${y-dy*L+dx*Wd} ${x-dx*L+dy*Wd},${y-dy*L-dx*Wd}`,fill:`var(${MCOL[kd]||'--ink'})`,'data-m':kd},art)});
+  s.dashm.forEach(d=>mk('polyline',{points:d.map(q=>q.join(',')).join(' '),class:'dsm'},art));
+  s.darr.forEach(a=>{const[x,y,dx,dy]=a,L=16,Wd=7;mk('polygon',{points:`${x},${y} ${x-dx*L-dy*Wd},${y-dy*L+dx*Wd} ${x-dx*L+dy*Wd},${y-dy*L-dx*Wd}`,class:'fl'},art)});
+  s.lines.forEach(d=>mk('polyline',{points:d.map(q=>q.join(',')).join(' '),class:'ln'},art));
+  s.valves.forEach(v=>{const[x,y,o,a]=v,R=11;
+    mk('polygon',{points:o==='h'?`${x-R},${y-8} ${x+R},${y+8} ${x+R},${y-8} ${x-R},${y+8}`:`${x-8},${y-R} ${x+8},${y+R} ${x-8},${y+R} ${x+8},${y-R}`,class:'vl'},art);
+    if(a){const dx=a==='r'?1:a==='l'?-1:0,dy=a==='d'?1:a==='u'?-1:0;
+      mk('line',{x1:x,y1:y,x2:x+dx*14,y2:y+dy*14,class:'ln'},art);
+      const cx=x+dx*14,cy=y+dy*14,r=11,px=-dy,py=dx;
+      mk('path',{d:`M${cx+px*r},${cy+py*r}A${r},${r} 0 0 ${0} ${cx-px*r},${cy-py*r}Z`,class:'vl'},art)}});
+  s.eq.forEach(e=>{const c=CARD[e.app];const cx=(e.box[0]+e.box[2])/2,y=e.box[3]+24;
+    const t=mk('text',{x:cx,y,class:'tg'},art);t.textContent=e.tag;
+    if(c){const nmx=nm(c,'n').replace(/\s*\(.*\)\s*$/,'');const w=Math.max(150,e.box[2]-e.box[0]+40),per=Math.max(14,Math.floor(w/11));
+      const words=nmx.split(' ');const ls=[];let cur='';words.forEach(wd=>{if((cur+' '+wd).trim().length>per&&cur){ls.push(cur);cur=wd}else cur=(cur+' '+wd).trim()});if(cur)ls.push(cur);
+      ls.slice(0,3).forEach((l,i)=>{const n=mk('text',{x:cx,y:y+22+i*20,class:'tn'},art);n.textContent=l})}});
+  s.terms.forEach(t=>{const[ex,ey,ux,uy,fl,txt,lx,ly,anc]=t,Lw=58,Hh=17;
+    const tip=fl==='in'?[ex,ey]:[ex+ux*Lw,ey+uy*Lw];
+    const a=fl==='in'?[ex+ux*(Lw-18),ey+uy*(Lw-18)]:[ex+ux*(Lw-18),ey+uy*(Lw-18)];
+    const px=-uy,py=ux;const o=fl==='in'?[ex+ux*Lw,ey+uy*Lw]:[ex,ey];
+    // корпус: от далёкого конца (in) или от трубы (out) с остриём в сторону потока
+    const base=fl==='in'?[ex+ux*Lw,ey+uy*Lw]:[ex,ey], far=fl==='in'?[ex,ey]:[ex+ux*Lw,ey+uy*Lw];
+    const sh=18,dir=fl==='in'?-1:1;                         // острие смотрит по потоку
+    const bb=[base[0]+ux*(fl==='in'?0:0),base[1]];
+    const pts=[[base[0]+px*Hh,base[1]+py*Hh],[far[0]-ux*dir*sh+px*Hh,far[1]-uy*dir*sh+py*Hh],[far[0],far[1]],[far[0]-ux*dir*sh-px*Hh,far[1]-uy*dir*sh-py*Hh],[base[0]-px*Hh,base[1]-py*Hh]];
+    mk('polygon',{points:pts.map(q=>q.join(',')).join(' '),class:'tmn'},art);
+    const n=mk('text',{x:lx,y:ly,class:'tm','text-anchor':anc||'start'},art);n.textContent=txt});
+  s.texts.forEach(t=>{if(!t[2])return;const n=mk('text',{x:t[0],y:t[1],class:'tm','text-anchor':t[3]||'start'},art);n.textContent=t[2]});
+  s.instr.forEach(c=>{mk('circle',{cx:c[0],cy:c[1],r:c[2],class:'dm'},art);const n=mk('text',{x:c[0],y:c[1],class:'dn',style:'font-size:'+(c[3].length>2?15:19)+'px'},art);n.textContent=c[3]});
+  s.st.forEach(x=>{const g=mk('g',{class:x.ref?'ref':''},art);
+    mk('polygon',{points:`${x.c[0]},${x.c[1]-32} ${x.c[0]+32},${x.c[1]} ${x.c[0]},${x.c[1]+32} ${x.c[0]-32},${x.c[1]}`,class:'dm'},g);
+    const t=mk('text',{x:x.c[0],y:x.c[1],class:'dn'},g);t.textContent=x.id});
+  applyMedium();
+}
 // ---------- sheets ----------
 function mk(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const a in attrs)n.setAttribute(a,attrs[a]);if(parent)parent.appendChild(n);return n}
 function showSheet(n,keepView){
-  sheet=n;const s=sheetOf(n);img.src=s.img;
+  sheet=n;const s=sheetOf(n);if(document.body.classList.contains('scan'))img.src='pfd/scan/sheet'+n+'.jpg';drawArt(s);
   ov.textContent='';
   const gz=mk('g',{},ov);
   [...s.eq].sort((a,b)=>area(b.box)-area(a.box)).forEach(e=>{
@@ -393,14 +466,13 @@ window.addEventListener('message',e=>{
 function paint(l){
   lang=l==='uz'?'uz':'ru';const T=L();
   $('q').placeholder=T.search;$('q').setAttribute('aria-label',T.search);
-  $('bZones').textContent=T.zones;$('zFit').textContent=T.fit;$('hint').textContent=T.hint;
+  $('bZones').textContent=T.zones;$('bScan').textContent=T.scan;paintLeg();$('zFit').textContent=T.fit;$('hint').textContent=T.hint;
   document.title=T.title;paintTabs();fillSearch();
   if(sel&&sel.t==='eq'){const f=eqByApp[sel.app].find(x=>x.sheet===sheet);if(f)openEqCard(f.eq,sheet)}
   else if(sel&&sel.t==='st')openStCard(sel.id);
 }
 TmkLang.initChild(paint);TmkTheme.initChild(function(){});
 showSheet(1);paint(TmkLang.getLang());
-img.addEventListener('load',()=>{if(!sel)fit(false)});
 setTimeout(()=>{if(!sel)fit(false)},0);
 try{window.parent.postMessage({__tmkReady:'pfd'},'*')}catch(e){}
 // открыто при загрузке по якорю #tag=EX-11201 или #stream=53
