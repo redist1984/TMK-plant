@@ -55,7 +55,7 @@ DATA=json.loads([l for l in src if l.startswith('const DATA = ')][0][len('const 
 def kind_of(sh,sid):
     if sh=='1': return 'air' if sid<=4 else 'sulfur' if sid==50 else 'alkali' if sid in (72,74) else 'water' if sid==73 else 'gas'
     if sh=='2': return 'sulfur' if sid==50 else 'acid' if 51<=sid<=71 else 'water'
-    return 'steam' if sid in (109,110,111,113,115,116) else 'water'
+    return 'steam' if sid in (109,110,111) else 'steamlp' if sid in (113,115,116) else 'water'
 
 for sh in '123':
     segs,members=T.build(sh)

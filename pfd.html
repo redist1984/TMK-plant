@@ -9,7 +9,7 @@
 :root{
   --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
   --line:#CBD5D2; --accent:#0B6E66; --accent-ink:#FFFFFF; --paper:#FFFFFF;
-  --s-water:#23873A; --s-steam:#C9302A; --s-air:#2362C0; --s-gas:#C79A00; --s-acid:#DD6A12;
+  --s-water:#23873A; --s-steam:#C9302A; --s-steamlp:#D6489A; --s-air:#2362C0; --s-gas:#C79A00; --s-acid:#DD6A12;
   --s-alkali:#7A4DB8; --s-sulfur:#8A5A2B;
   --shadow:0 10px 30px rgba(20,32,29,.16);
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
@@ -21,7 +21,7 @@
     color-scheme:dark;
     --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
     --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C; --paper:#121A18;
-    --s-water:#4CC265; --s-steam:#FF6B5E; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
+    --s-water:#4CC265; --s-steam:#FF6B5E; --s-steamlp:#FF8FCB; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
     --s-alkali:#B18CF0; --s-sulfur:#C99158;
     --shadow:0 10px 30px rgba(0,0,0,.5);
     --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05);
@@ -31,7 +31,7 @@
   color-scheme:dark;
   --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
   --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C; --paper:#121A18;
-  --s-water:#4CC265; --s-steam:#FF6B5E; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
+  --s-water:#4CC265; --s-steam:#FF6B5E; --s-steamlp:#FF8FCB; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
   --s-alkali:#B18CF0; --s-sulfur:#C99158;
   --shadow:0 10px 30px rgba(0,0,0,.5);
   --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05);
@@ -161,7 +161,7 @@ const D=window.TMK_PFD, SH=D.sheets, CARD=D.cards, ST=D.streams;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const NS='http://www.w3.org/2000/svg';
-const KCOL={gas:'--s-gas',air:'--s-air',acid:'--s-acid',water:'--s-water',steam:'--s-steam',sulfur:'--s-sulfur',reagent:'--s-alkali'};
+const KCOL={gas:'--s-gas',air:'--s-air',acid:'--s-acid',water:'--s-water',steam:'--s-steam',steamlp:'--s-steamlp',sulfur:'--s-sulfur',reagent:'--s-alkali'};
 
 const UI={
   ru:{
@@ -262,7 +262,7 @@ window.addEventListener('resize',()=>{const was=k/fitK;computeFit();k=Math.max(f
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard();else if(e.key==='+'||e.key==='=')$('zIn').click();else if(e.key==='-')$('zOut').click()});
 
 // ---------- vector layer ----------
-const MEDIA=[['gas','Газ','Gaz'],['air','Воздух','Havo'],['acid','Кислота','Kislota'],['water','Вода','Suv'],['steam','Пар','Bug‘'],['sulfur','Сера','Oltingugurt'],['alkali','Щёлочь','Ishqor']];
+const MEDIA=[['gas','Газ','Gaz'],['air','Воздух','Havo'],['acid','Кислота','Kislota'],['water','Вода','Suv'],['steam','Пар ВД','YuB bug‘'],['steamlp','Пар НД','PB bug‘'],['sulfur','Сера','Oltingugurt'],['alkali','Щёлочь','Ishqor']];
 const MCOL=Object.assign({},KCOL,{alkali:'--s-alkali'});
 let medium=null;
 function paintLeg(){const g=$('leg');g.textContent='';MEDIA.forEach(m=>{const b=document.createElement('button');b.type='button';b.style.setProperty('--c',`var(${MCOL[m[0]]})`);
@@ -335,7 +335,7 @@ const tip=$('tip');
 function hideTip(){tip.style.display='none'}
 function stLine(id){const s=ST[id];if(!s)return '';
   if(s.k==='gas')return `${s.n} · ${fmt(s.g[8])} °C · ${fmt(s.g[7])} кПа · ${fmt(s.g[6])} Нм³/ч`;
-  if(s.k==='steam'||(s.p!==undefined))return `${s.n} · ${fmt(s.t)} °C · ${fmt(s.p)} МПа · ${fmt(s.th)} т/ч`;
+  if(s.k==='steam'||s.k==='steamlp'||(s.p!==undefined))return `${s.n} · ${fmt(s.t)} °C · ${fmt(s.p)} МПа · ${fmt(s.th)} т/ч`;
   return `${s.n}${s.wt?' '+s.wt+' %':''} · ${fmt(s.t)} °C · ${fmt(s.th)} т/ч`}
 function eqLine(app){const c=CARD[app];if(!c)return '';const r=c.reg[0];
   const first=r?[r.f,r.T&&(r.T+' °C'),r.P&&(r.P+' МПа')].filter(Boolean).join(' · '):(c.d[0]||'');return first}
