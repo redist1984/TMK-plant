@@ -94,7 +94,10 @@ body.scan #art{visibility:hidden}
 #art .tn{font:500 18px var(--sans);fill:var(--ink2);text-anchor:middle}
 #art .tmn{fill:var(--paper);stroke:var(--ink);stroke-width:2.4;stroke-linejoin:round}
 #art .tm{font:500 19px var(--sans);fill:var(--ink)}
-#art .dim{opacity:.13}
+#art .off{display:none}
+#art .de{opacity:.3}
+#ov .stz.off{pointer-events:none}
+#ov .eqz.dz{opacity:.3}
 .leg{display:inline-flex;flex-wrap:wrap;gap:4px}
 .leg button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:3px 9px 3px 7px;font-size:12px;cursor:pointer}
 .leg button[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
@@ -184,7 +187,7 @@ const KCOL={gas:'--s-gas',air:'--s-air',acid:'--s-acid',water:'--s-water',steam:
 
 const UI={
   ru:{
-    scan:'Скан', cmp:'Наложение', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист',
+    allm:'Все среды', scan:'Скан', cmp:'Наложение', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист',
     hint:'Колесо / щипок — масштаб, перетаскивание — сдвиг. Нажмите на аппарат или на ромб с номером потока.',
     close:'Закрыть', qty:'Количество', mass:'Масса, кг', also:'Также на листах', streams:'Потоки у аппарата',
     to3d:'Показать в 3D', toFlow:'Показать в схеме потоков', stream:'Поток', onSheets:'На листах', joins:'Связывает аппараты',
@@ -197,7 +200,7 @@ const UI={
     unit:{th:'т/ч'}, gas:'газ', acid:'кислота', water:'вода', steam:'пар', sulfur:'сера', reagent:'реагент', air:'воздух'
   },
   uz:{
-    scan:'Skan', cmp:'Ustma-ust', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq',
+    allm:'Barcha muhitlar', scan:'Skan', cmp:'Ustma-ust', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq',
     hint:'G‘ildirak / chimchilash — masshtab, sudrash — siljitish. Apparatni yoki oqim raqamli romb ustiga bosing.',
     close:'Yopish', qty:'Soni', mass:'Massa, kg', also:'Boshqa varaqlarda', streams:'Apparatdagi oqimlar',
     to3d:'3D da ko‘rsatish', toFlow:'Oqim sxemasida ko‘rsatish', stream:'Oqim', onSheets:'Varaqlarda', joins:'Bog‘laydigan apparatlar',
@@ -290,35 +293,50 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard();else if(
 const MEDIA=[['gas','Газ','Gaz'],['air','Воздух','Havo'],['acid','Кислота','Kislota'],['water','Вода','Suv'],['steam','Пар ВД','YuB bug‘'],['steamlp','Пар НД','PB bug‘'],['sulfur','Сера','Oltingugurt'],['alkali','Щёлочь','Ishqor']];
 const MCOL=Object.assign({},KCOL,{alkali:'--s-alkali'});
 let medium=null;
-function paintLeg(){const g=$('leg');g.textContent='';MEDIA.forEach(m=>{const b=document.createElement('button');b.type='button';b.style.setProperty('--c',`var(${MCOL[m[0]]})`);
+const kindOf=id=>{const s=ST[id];return s?(s.k==='gas'&&s.n==='Воздух'?'air':s.k==='reagent'?'alkali':s.k):''};
+function setMedium(m){medium=m;paintLeg();applyMedium()}
+function paintLeg(){const g=$('leg');g.textContent='';
+  const all=document.createElement('button');all.type='button';all.className='all';all.setAttribute('aria-pressed',String(!medium));all.textContent=L().allm;all.onclick=()=>setMedium(null);g.appendChild(all);
+  MEDIA.forEach(m=>{const b=document.createElement('button');b.type='button';b.style.setProperty('--c',`var(${MCOL[m[0]]})`);
   b.setAttribute('aria-pressed',String(medium===m[0]));b.innerHTML='<i></i>'+esc(lang==='uz'?m[2]:m[1]);
-  b.onclick=()=>{medium=medium===m[0]?null:m[0];paintLeg();applyMedium()};g.appendChild(b)})}
-function applyMedium(){art.querySelectorAll('[data-m]').forEach(n=>n.classList.toggle('dim',!!medium&&n.dataset.m!==medium))}
+  b.onclick=()=>setMedium(medium===m[0]?null:m[0]);g.appendChild(b)})}
+// при выбранной среде остаются только её линии, стрелки, ромбы, выводы, арматура и КИП; аппараты, где среда не участвует, приглушены
+function applyMedium(){
+  const eqOn=new Set();
+  if(medium)sheetOf(sheet).eq.forEach(e=>{if((e.streams||[]).some(id=>kindOf(id)===medium))eqOn.add(e.tag)});
+  document.body.classList.toggle('medium',!!medium);
+  art.querySelectorAll('[data-m]').forEach(n=>n.classList.toggle('off',!!medium&&n.dataset.m!==medium&&n.dataset.m!=='eq'));
+  art.querySelectorAll('[data-m=""]').forEach(n=>{n.classList.remove('off');n.classList.toggle('de',!!medium)});
+  art.querySelectorAll('[data-t],[data-m="eq"]').forEach(n=>n.classList.toggle('de',!!medium&&!eqOn.has(n.dataset.t)));
+  ov.querySelectorAll('.eqz').forEach(n=>n.classList.toggle('dz',!!medium&&!eqOn.has(n.dataset.tag)));
+  art.querySelectorAll('.dsm,.dsa').forEach(n=>{n.classList.remove('de');n.classList.toggle('off',!!medium&&n.dataset.m!==medium)});
+  ov.querySelectorAll('.stz').forEach(n=>n.classList.toggle('off',!!medium&&kindOf(+n.dataset.id)!==medium))}
 function drawArt(s){
   art.textContent='';
   PFDSYM.defs(art);
-  mk('path',{d:s.fill,class:'fl'},art);mk('path',{d:s.art,class:'ln'},art);
+  mk('path',{d:s.fill,class:'fl','data-m':'eq'},art);mk('path',{d:s.art,class:'ln','data-m':'eq'},art);
+  for(const k in s.artk)mk('path',{d:s.artk[k],class:'ln','data-m':k},art);
   (s.sym||[]).forEach(q=>PFDSYM.draw(art,q));
   const gp=mk('g',{},art);
   s.pipes.forEach(p=>mk('line',{x1:p[2],y1:p[3],x2:p[4],y2:p[5],class:'pp',stroke:`var(${MCOL[p[1]]||'--ink'})`,'data-m':p[1]},gp));
   
   s.arrows.forEach(a=>{const[x,y,dx,dy,kd]=a;const L=22,Wd=12;
     mk('polygon',{points:`${x},${y} ${x-dx*L-dy*Wd},${y-dy*L+dx*Wd} ${x-dx*L+dy*Wd},${y-dy*L-dx*Wd}`,fill:`var(${MCOL[kd]||'--ink'})`,'data-m':kd},art)});
-  s.dashm.forEach(d=>mk('polyline',{points:d.map(q=>q.join(',')).join(' '),class:'dsm'},art));
-  s.darr.forEach(a=>{const[x,y,dx,dy]=a,L=16,Wd=7;mk('polygon',{points:`${x},${y} ${x-dx*L-dy*Wd},${y-dy*L+dx*Wd} ${x-dx*L+dy*Wd},${y-dy*L-dx*Wd}`,class:'fl'},art)});
+  s.dashm.forEach((d,i)=>mk('polyline',{points:d.map(q=>q.join(',')).join(' '),class:'dsm','data-m':(s.dashk||[])[i]||''},art));
+  s.darr.forEach((a,i)=>{const[x,y,dx,dy]=a,L=16,Wd=7;mk('polygon',{'data-m':(s.darrk||[])[i]||'',points:`${x},${y} ${x-dx*L-dy*Wd},${y-dy*L+dx*Wd} ${x-dx*L+dy*Wd},${y-dy*L-dx*Wd}`,class:'fl dsa'},art)});
   s.lines.forEach(d=>mk('polyline',{points:d.map(q=>q.join(',')).join(' '),class:'ln'},art));
-  s.valves.forEach(v=>{const[x,y,o,a]=v,R=11;
-    mk('polygon',{points:o==='h'?`${x-R},${y-8} ${x+R},${y+8} ${x+R},${y-8} ${x-R},${y+8}`:`${x-8},${y-R} ${x+8},${y+R} ${x-8},${y+R} ${x+8},${y-R}`,class:'vl'},art);
+  s.valves.forEach(v=>{const[x,y,o,a,vk]=v,R=11,dm={'data-m':vk||''};
+    mk('polygon',{points:o==='h'?`${x-R},${y-8} ${x+R},${y+8} ${x+R},${y-8} ${x-R},${y+8}`:`${x-8},${y-R} ${x+8},${y+R} ${x-8},${y+R} ${x+8},${y-R}`,class:'vl',...dm},art);
     if(a){const dx=a==='r'?1:a==='l'?-1:0,dy=a==='d'?1:a==='u'?-1:0;
-      mk('line',{x1:x,y1:y,x2:x+dx*14,y2:y+dy*14,class:'ln'},art);
+      mk('line',{x1:x,y1:y,x2:x+dx*14,y2:y+dy*14,class:'ln',...dm},art);
       const cx=x+dx*14,cy=y+dy*14,r=11,px=-dy,py=dx;
-      mk('path',{d:`M${cx+px*r},${cy+py*r}A${r},${r} 0 0 ${0} ${cx-px*r},${cy-py*r}Z`,class:'vl'},art)}});
+      mk('path',{d:`M${cx+px*r},${cy+py*r}A${r},${r} 0 0 ${0} ${cx-px*r},${cy-py*r}Z`,class:'vl',...dm},art)}});
   s.eq.forEach(e=>{const c=CARD[e.app];const cx=(e.box[0]+e.box[2])/2,y=e.box[3]+24;
-    const t=mk('text',{x:cx,y,class:'tg'},art);t.textContent=e.tag;
+    const t=mk('text',{x:cx,y,class:'tg','data-t':e.tag},art);t.textContent=e.tag;
     if(c){const nmx=nm(c,'n').replace(/\s*\(.*\)\s*$/,'');const w=Math.max(150,e.box[2]-e.box[0]+40),per=Math.max(14,Math.floor(w/11));
       const words=nmx.split(' ');const ls=[];let cur='';words.forEach(wd=>{if((cur+' '+wd).trim().length>per&&cur){ls.push(cur);cur=wd}else cur=(cur+' '+wd).trim()});if(cur)ls.push(cur);
-      ls.slice(0,3).forEach((l,i)=>{const n=mk('text',{x:cx,y:y+22+i*20,class:'tn'},art);n.textContent=l})}});
-  s.terms.forEach(t=>{const[ex,ey,ux,uy,fl,txt,lx,ly,anc]=t,Lw=58,Hh=17;
+      ls.slice(0,3).forEach((l,i)=>{const n=mk('text',{x:cx,y:y+22+i*20,class:'tn','data-t':e.tag},art);n.textContent=l})}});
+  s.terms.forEach(t=>{const[ex,ey,ux,uy,fl,txt,lx,ly,anc,tk]=t,Lw=58,Hh=17;
     const tip=fl==='in'?[ex,ey]:[ex+ux*Lw,ey+uy*Lw];
     const a=fl==='in'?[ex+ux*(Lw-18),ey+uy*(Lw-18)]:[ex+ux*(Lw-18),ey+uy*(Lw-18)];
     const px=-uy,py=ux;const o=fl==='in'?[ex+ux*Lw,ey+uy*Lw]:[ex,ey];
@@ -327,11 +345,11 @@ function drawArt(s){
     const sh=18,dir=fl==='in'?-1:1;                         // острие смотрит по потоку
     const bb=[base[0]+ux*(fl==='in'?0:0),base[1]];
     const pts=[[base[0]+px*Hh,base[1]+py*Hh],[far[0]-ux*dir*sh+px*Hh,far[1]-uy*dir*sh+py*Hh],[far[0],far[1]],[far[0]-ux*dir*sh-px*Hh,far[1]-uy*dir*sh-py*Hh],[base[0]-px*Hh,base[1]-py*Hh]];
-    mk('polygon',{points:pts.map(q=>q.join(',')).join(' '),class:'tmn'},art);
-    const n=mk('text',{x:lx,y:ly,class:'tm','text-anchor':anc||'start'},art);n.textContent=txt});
-  s.texts.forEach(t=>{if(!t[2])return;const n=mk('text',{x:t[0],y:t[1],class:'tm','text-anchor':t[3]||'start'},art);n.textContent=t[2]});
-  s.instr.forEach(c=>{mk('circle',{cx:c[0],cy:c[1],r:c[2],class:'dm'},art);const n=mk('text',{x:c[0],y:c[1],class:'dn',style:'font-size:'+(c[3].length>2?15:19)+'px'},art);n.textContent=c[3]});
-  s.st.forEach(x=>{const g=mk('g',{class:x.ref?'ref':''},art);
+    mk('polygon',{points:pts.map(q=>q.join(',')).join(' '),class:'tmn','data-m':tk||''},art);
+    const n=mk('text',{x:lx,y:ly,class:'tm','text-anchor':anc||'start','data-m':tk||''},art);n.textContent=txt});
+  s.texts.forEach(t=>{if(!t[2])return;const n=mk('text',{x:t[0],y:t[1],class:'tm','text-anchor':t[3]||'start','data-m':t[4]||''},art);n.textContent=t[2]});
+  s.instr.forEach(c=>{mk('circle',{cx:c[0],cy:c[1],r:c[2],class:'dm','data-m':c[4]||''},art);const n=mk('text',{x:c[0],y:c[1],class:'dn','data-m':c[4]||'',style:'font-size:'+(c[3].length>2?15:19)+'px'},art);n.textContent=c[3]});
+  s.st.forEach(x=>{const g=mk('g',{class:x.ref?'ref':'','data-m':kindOf(x.id)},art);
     mk('polygon',{points:`${x.c[0]},${x.c[1]-32} ${x.c[0]+32},${x.c[1]} ${x.c[0]},${x.c[1]+32} ${x.c[0]-32},${x.c[1]}`,class:'dm'},g);
     const t=mk('text',{x:x.c[0],y:x.c[1],class:'dn'},g);t.textContent=x.id});
   applyMedium();
@@ -413,6 +431,7 @@ function selectEq(key,o){ // key — тег на PFD или тег модели
 }
 function selectStream(id,o){
   o=o||{};
+  if(medium&&kindOf(id)!==medium)setMedium(null);
   let s=sheet;
   if(!sheetOf(s).st.some(x=>x.id===id&&!x.ref)){const f=stSheets(id)[0];if(f)s=f;else{const g=SH.find(z=>z.st.some(x=>x.id===id));if(!g)return false;s=g.n}}
   if(s!==sheet)showSheet(s,true);
