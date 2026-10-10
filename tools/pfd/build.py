@@ -31,9 +31,11 @@ for sh,f in IMG.items():
     im=Image.fromarray(g.astype(np.uint8)).crop(CROP)
     im.save(os.path.join(tmp,f'sheet{sh}.png'))
     sm=im.resize((W*2//3,H*2//3),Image.LANCZOS)
-    # на скане для сверки убрано всё ниже таблицы потоков (примечания, штамп, нижняя рамка): координаты в пикселях скана
+    # на скане для сверки убрано всё ниже таблицы потоков (примечания, штамп, рамка чертежа): координаты в пикселях скана
     yb,tb=SCAN_CUT[sh]; d=ImageDraw.Draw(sm); d.rectangle((0,yb,sm.width,sm.height),fill=255)
     if tb: d.rectangle(tb,fill=255)
+    for r in ((0,0,106,sm.height),(1944,0,sm.width,sm.height)): d.rectangle(r,fill=255)
+    d.polygon([(0,0),(sm.width,0),(sm.width,69),(0,58)],fill=255)   # верх рамки скошен в скане; рамка чертежа и графа подписей слева
     sm.save(os.path.join(OUT,'scan',f'sheet{sh}.jpg'),quality=72,optimize=True)
 
 def diamonds(sh):
