@@ -45,6 +45,9 @@ body{position:relative}
 <h2 id="tH2b">Перечень отделений завода</h2>
 <table id="sectbl"><thead><tr><th id="thCode">Код</th><th id="thSec">Отделение</th><th id="thDoc">Документы-основания</th></tr></thead><tbody></tbody></table>
 
+<h2 id="tH2c"></h2>
+<p class="sub" id="pKip"></p>
+
 <footer id="tFooter">Массу и характеристики оборудования, нормы технологического режима и полный перечень позиций см. во вкладке «Схема потоков». Источник данных — технологические схемы 3147-5G111…5R115, перечни оборудования и временный технологический регламент проекта. Часть исходных PDF (например, чертежи в архивах .rar) в это приложение не вошла — см. пояснение в чате.</footer>
 
 <script src="lang.js"></script>
@@ -213,6 +216,8 @@ const UI = {
     sub:'Исходные листы (PDF) технологических планов и P&ID, по которым построены схема потоков, 3D-модель и галереи чертежей оборудования. Открываются системным просмотрщиком PDF на устройстве.',
     h2a:'Планы размещения оборудования и P&ID по отделениям',
     h2b:'Перечень отделений завода',
+    h2c:'Слой «КИП» в 3D-модели (пробная версия, отделение 111)',
+    pKip:'Кнопка «КИП» в 3D-модели показывает датчики, регулирующие и отсечные клапаны на трубах и аппаратах отделения 111 (пар НД на плавильники TK-11101A/B и скруббер TW-11101). Теги и рабочие параметры взяты из регламента (PIR-11104, TIR-11107, LICA-11106, FIA-11103, PI-11106, TI-11109). Подключение уровнемера LICA-11106 — по штуцерам L1/L2 аппарата (черт. 3147-5G111-36). Места врезки, типы и размеры приборов оценены по типовым каталогам: приборы со знаком «*» (XV, PV, LV) и их тип — приблизительно. P&ID 3147-5G111-03…05 и чертежи КИПиА в проект не загружены, после их появления места и размеры будут уточнены. Нажатие на прибор открывает карточку.',
     thCode:'Код', thSec:'Отделение', thDoc:'Документы-основания',
     footer:'Массу и характеристики оборудования, нормы технологического режима и полный перечень позиций см. во вкладке «Схема потоков». Источник данных — технологические схемы 3147-5G111…5R115, перечни оборудования и временный технологический регламент проекта. Часть исходных PDF (например, чертежи в архивах .rar) в это приложение не вошла — см. пояснение в чате.',
     emptyPdf:'Пока нет ни одного PDF — они появятся после первой синхронизации с Google Диском.',
@@ -227,6 +232,8 @@ const UI = {
     sub:'Oqim sxemasi, 3D-model va jihozlar chizmalari galereyalari asos qilib olingan texnologik rejalar va P&ID varaqlari (PDF). Qurilmadagi tizim PDF ko‘ruvchisida ochiladi.',
     h2a:'Bo‘limlar bo‘yicha jihozlarni joylashtirish rejalari va P&ID',
     h2b:'Zavod bo‘limlari ro‘yxati',
+    h2c:'3D-modeldagi «KIPiA» qatlami (sinov versiyasi, 111-bo‘lim)',
+    pKip:'3D-modeldagi «KIPiA» tugmasi 111-bo‘limning (TK-11101A/B eritgichlariga PB bug‘i va TW-11101 skrubberi) quvurlari va apparatlaridagi datchiklar, rostlovchi va kesuvchi klapanlarni ko‘rsatadi. Teglar va ish parametrlari reglamentdan olingan (PIR-11104, TIR-11107, LICA-11106, FIA-11103, PI-11106, TI-11109). Joylashuv, turi va o‘lchamlari tipik kataloglar bo‘yicha taxminiy («*» belgili asboblar — XV, PV, LV). 3147-5G111-03…05 P&ID va KIPiA chizmalari loyihada yo‘q; ular paydo bo‘lgach joylar aniqlashtiriladi. Asbobni bosish kartochkani ochadi.',
     thCode:'Kod', thSec:'Bo‘lim', thDoc:'Asos hujjatlar',
     footer:'Jihozlarning massasi va tavsiflari, texnologik rejim normalari va to‘liq ro‘yxat — «Oqim sxemasi» bo‘limida. Ma’lumotlar manbai — 3147-5G111…5R115 texnologik sxemalari, jihozlar ro‘yxatlari va loyihaning vaqtinchalik texnologik reglamenti. Ba’zi asl PDF fayllar (masalan, .rar arxividagi chizmalar) ilovaga kiritilmagan.',
     emptyPdf:'Hozircha bitta ham PDF yo‘q — ular Google Disk bilan birinchi sinxronlashdan so‘ng paydo bo‘ladi.',
@@ -295,6 +302,8 @@ function paintUI(lang){
   document.getElementById('tSub').innerHTML = L.sub.replace('P&ID','P&amp;ID');
   document.getElementById('tH2a').innerHTML = L.h2a.replace('P&ID','P&amp;ID');
   document.getElementById('tH2b').textContent = L.h2b;
+  document.getElementById('tH2c').textContent = L.h2c;
+  document.getElementById('pKip').innerHTML = L.pKip.replace('P&ID','P&amp;ID');
   document.getElementById('thCode').textContent = L.thCode;
   document.getElementById('thSec').textContent = L.thSec;
   document.getElementById('thDoc').textContent = L.thDoc;

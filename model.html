@@ -242,6 +242,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
     <button class="btn" id="bHome" type="button">Общий вид</button>
     <button class="btn" id="bBld" type="button" aria-pressed="false">Здания прозрачные</button>
     <button class="btn" id="bAnim" type="button" aria-pressed="true">Движение потоков</button>
+    <button class="btn" id="bKip" type="button" aria-pressed="false" title="Слой КИП: датчики, регулирующие и отсечные клапаны (пробный участок — отделение 111)">КИП</button>
     <button class="btn" id="bLbl" type="button" aria-pressed="true">Подписи</button>
     <button class="btn" id="bWalk" type="button" aria-pressed="false" title="Прогулка от первого лица: W/A/S/D или стрелки — движение, мышь (перетаскивание) — обзор, Q/E — вверх/вниз, Shift — быстрее, Esc — выход">🚶 От первого лица</button>
     <button class="btn" id="bHelp" type="button" title="Вращение — левая кнопка мыши, сдвиг — правая, масштаб — колесо. Нажмите на аппарат или здание, чтобы открыть карточку. Внизу — разрезы: плоскость двигается ползунком, внутреннее устройство аппаратов видно на срезе. «От первого лица» — прогулка по заводу: W/A/S/D или стрелки, мышь — обзор, Q/E — высота, Shift — быстрее, Esc — выход." aria-label="Подсказка по управлению">?</button>
@@ -269,6 +270,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
   </div>
   <div class="tip" id="tip" hidden></div>
   <div class="suinfo" id="buInfo" hidden aria-live="polite"><div class="si-st" id="biSt"></div><div class="si-nm" id="biNm"></div><div class="si-why" id="biWhy"></div></div>
+  <div class="suinfo" id="kipInfo" hidden aria-live="polite"><button class="btn" type="button" id="kiX" aria-label="Закрыть" style="float:right;padding:0 8px">✕</button><div class="si-st" id="kiSt"></div><div class="si-nm" id="kiNm"></div><div class="si-why" id="kiWhy"></div></div>
   <div class="suinfo" id="suInfo" hidden aria-live="polite"><div class="si-st" id="siSt"></div><div class="si-nm" id="siNm"></div><div class="si-why" id="siWhy"></div><div class="si-why si-fill" id="siFill" hidden></div></div>
   <button class="rotate-fab" type="button" id="bRotateMode" aria-pressed="false"
     title="Включить вращение пальцем (иначе палец перемещает камеру)" aria-label="Режим вращения пальцем">
@@ -3750,6 +3752,162 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    if(!f.dashed){for(let i=0;i<n;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(r*1.35,10,8),SM[f.s].dot);scene.add(d);dots.push(d)}}
    flowObjs.push({s:f.s,f,tube,dots,path,len,segs:Math.max(8,Math.round(len/2)),rev:1,off:Math.random()});
  });
+ // ── Слой «КИП» (пробная версия, отделение 111) ─────────────────────────────────────────────────
+ // Датчики и арматура стоят на рассчитанных трассах труб (flowObjs) и на штуцерах TW-11101. Теги и рабочие
+ // параметры взяты из регламента (таблица режимов G111). P&ID 3147-5G111-03…05 в проекте нет, поэтому тип, размеры
+ // и место врезки оценены по типовым каталогам; такие приборы помечены «*». Кнопка «КИП» по умолчанию выключена.
+ const KIP={on:false,g:new THREE.Group(),items:[],pick:[],sprites:[]};
+ KIP.g.visible=false;KIP.g.name='kip';scene.add(KIP.g);
+ {
+  const km=(c,m=.55,r=.42)=>new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:r});
+  const KM={body:km(0x4a5762),flange:km(0x6f7b85),act:km(0x2f6fb3,.3,.5),hous:km(0xdfe3e6,.45,.35),cap:km(0x1c2328,.3,.5),
+    dial:new THREE.MeshStandardMaterial({color:0xf6f6f0,roughness:.6}),brass:km(0xb08a3c,.8,.35),red:km(0xc0392b,.3,.5),sig:km(0xe8e8e8,.2,.6)};
+  // цилиндр вдоль Y; ax:'x'|'z' — вдоль оси трубы / поперёк
+  const cy=(rt,rb,h,m,x=0,y=0,z=0,ax='y',seg=18)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),m);o.position.set(x,y,z);if(ax==='x')o.rotation.z=Math.PI/2;else if(ax==='z')o.rotation.x=Math.PI/2;return o};
+  const bx=(w,h,d,m,x=0,y=0,z=0)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);return o};
+  const sp=(r,m,x=0,y=0,z=0)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),m);o.position.set(x,y,z);return o};
+  // фланец на трубе радиуса r: диск + 8 болтов на окружности
+  const flange=(g,r,x)=>{const R=r<.1?r*1.78:r*1.4,t=Math.max(.022,r*.2);g.add(cy(R,R,t,KM.flange,x,0,0,'x',28));
+    for(let i=0;i<8;i++){const a=i*Math.PI/4,bc=R*.84;g.add(cy(.011,.011,t*1.9,KM.cap,x,bc*Math.cos(a),bc*Math.sin(a),'x',6))}};
+  // регулирующий клапан: шаровой корпус на фланцах, ярмо, мембранный привод, позиционер (L корпуса = 6 r, как DN150 фл. 480 мм)
+  const controlValve=r=>{const g=new THREE.Group(),L=6*r;
+    g.add(cy(r*1.12,r*1.12,L,KM.body,0,0,0,'x',20));flange(g,r,-L/2);flange(g,r,L/2);
+    g.add(cy(r*1.35,r*1.35,r*2.2,KM.body,0,r*.1,0));g.add(sp(r*1.35,KM.body,0,-r*1,0));
+    g.add(cy(r*.75,r*.9,r*1.3,KM.body,0,r*1.85,0));g.add(cy(r*1.1,r*1.1,r*.14,KM.flange,0,r*1.2,0,'y',24));
+    [-1,1].forEach(s=>g.add(bx(r*.14,r*2.2,r*.5,KM.flange,s*r*.72,r*3.3,0)));
+    g.add(cy(r*1.0,r*1.0,r*.5,KM.hous,0,r*2.7,0));
+    const y0=r*4.4;g.add(cy(r*2.1,r*2.1,r*.55,KM.act,0,y0+r*.28,0,'y',32));g.add(cy(r*2.18,r*2.18,r*.12,KM.flange,0,y0+r*.6,0,'y',32));
+    g.add(cy(r*2.1,r*1.6,r*.5,KM.act,0,y0+r*.91,0,'y',32));g.add(cy(r*.5,r*1.2,r*.4,KM.act,0,y0+r*1.36,0,'y',24));
+    g.add(bx(r*1.5,r*1.6,r*1.1,KM.hous,0,r*4.0,-r*2.5));
+    g.add(cy(.008,.008,r*2.4,KM.brass,0,r*4.4,-r*1.6,'z',6));
+    return g};
+  // шаровой кран с пневмоприводом двойного действия (отсечной), L = 5 r
+  const ballValve=r=>{const g=new THREE.Group(),L=5*r;
+    g.add(cy(r*1.1,r*1.1,L,KM.body,0,0,0,'x',20));flange(g,r,-L/2);flange(g,r,L/2);g.add(sp(r*1.35,KM.body));
+    g.add(cy(r*.3,r*.3,r*1.8,KM.flange,0,r*1.7,0));g.add(bx(r*1.3,r*.5,r*1.3,KM.flange,0,r*2.5,0));
+    g.add(cy(r*.95,r*.95,r*5.6,KM.act,0,r*3.2,0,'z',24));[-1,1].forEach(s=>g.add(cy(r*1.0,r*1.0,r*.3,KM.flange,0,r*3.2,s*r*2.9,'z',24)));
+    g.add(bx(r*1.3,r*.9,r*1.2,KM.hous,0,r*4.5,0));
+    return g};
+  // отбор давления сверху трубы: бобышка, вентиль, импульсная трубка DN15
+  const tapUp=(g,r,h1)=>{g.add(cy(.022,.022,.06,KM.body,0,r+.02,0,'y',10));g.add(cy(.024,.024,.09,KM.brass,0,r+.1,0,'y',10));
+    g.add(bx(.07,.012,.014,KM.red,0,r+.15,0));g.add(cy(.011,.011,h1-r-.15,KM.body,0,(h1+r+.15)/2,0,'y',8))};
+  // преобразователь давления на 2-вентильном блоке (тип Rosemount 3051 / аналог)
+  const pressureTx=r=>{const g=new THREE.Group();tapUp(g,r,r+.34);
+    g.add(bx(.05,.1,.075,KM.body,0,r+.37,0));g.add(cy(.045,.045,.016,KM.flange,0,r+.44,0,'y',16));
+    g.add(cy(.036,.036,.07,KM.hous,0,r+.485,0));g.add(cy(.04,.04,.11,KM.hous,0,r+.57,.0,'z',18));g.add(cy(.032,.032,.01,KM.cap,0,r+.57,.058,'z',18));g.add(cy(.012,.012,.04,KM.cap,.045,r+.57,0,'x',6));
+    return g};
+  // показывающий манометр Ø100, вентиль-кран, циферблат смотрит поперёк трубы
+  const gauge=r=>{const g=new THREE.Group();tapUp(g,r,r+.26);
+    g.add(cy(.05,.05,.045,KM.cap,0,r+.34,0,'z',28));g.add(cy(.044,.044,.006,KM.dial,0,r+.34,.026,'z',28));g.add(bx(.003,.034,.002,KM.red,.004,r+.352,.03));
+    g.add(cy(.008,.008,.06,KM.brass,0,r+.285,0,'y',8));
+    return g};
+  // термопреобразователь в гильзе, головка KNE
+  const tempTx=r=>{const g=new THREE.Group();
+    g.add(cy(.026,.026,.05,KM.body,0,r+.02,0,'y',12));g.add(cy(.016,.016,.12,KM.body,0,r+.1,0,'y',10));
+    g.add(cy(.042,.042,.075,KM.hous,0,r+.2,0,'y',18));g.add(cy(.045,.045,.015,KM.hous,0,r+.2,0,'y',18));g.add(sp(.044,KM.hous,0,r+.245,0));g.add(cy(.011,.011,.04,KM.cap,.05,r+.2,0,'x',6));
+    return g};
+  // электромагнитный расходомер (фланцевый), корпус перекрывает трубу, преобразователь на шее
+  const magFlow=r=>{const g=new THREE.Group(),L=Math.max(.35,r*2.2),Rt=r*1.1;
+    g.add(cy(Rt,Rt,L,KM.hous,0,0,0,'x',28));flange(g,Rt,-L/2);flange(g,Rt,L/2);g.add(cy(Rt*1.04,Rt*1.04,L*.34,KM.body,0,0,0,'x',28));
+    g.add(cy(.045,.045,.12,KM.body,0,Rt+.05,0));g.add(bx(.2,.16,.12,KM.hous,0,Rt+.19,0));g.add(bx(.12,.07,.004,KM.cap,0,Rt+.2,.062));
+    return g};
+  // внешняя камера магнитного указателя уровня (L1/L2 TW-11101), датчик на верхнем фланце
+  const bridle=(g,rIn,rOut,y1,y2,rc)=>{ // g — в системе аппарата: горизонтальные штуцеры по радиусу
+    const xo=1,zo=0;
+    [y1,y2].forEach(y=>{const s=cy(.024,.024,rc-rIn,KM.body,(rIn+rc)/2,y,0,'x',10);g.add(s);g.add(cy(.05,.05,.02,KM.flange,rIn+.08,y,0,'x',16));g.add(bx(.07,.05,.014,KM.red,(rIn+rc)/2,y+.04,0))});
+    g.add(cy(.055,.055,y2-y1+.24,KM.body,rc,(y1+y2)/2,0,'y',20));g.add(cy(.07,.07,.02,KM.flange,rc,y2+.13,0,'y',20));g.add(cy(.07,.07,.02,KM.flange,rc,y1-.13,0,'y',20));
+    for(let i=0;i<18;i++)g.add(bx(.006,(y2-y1)/18-.01,.02,i<8?KM.red:KM.sig,rc+.062,y1+(i+.5)*(y2-y1)/18,0));   // флажки индикатора
+    g.add(cy(.03,.03,.1,KM.body,rc,y2+.2,0));g.add(cy(.04,.04,.12,KM.hous,rc,y2+.31,0));g.add(sp(.04,KM.hous,rc,y2+.37,0));g.add(cy(.011,.011,.04,KM.cap,rc+.05,y2+.31,0,'x',6))};
+  // подпись-метка (спрайт постоянного размера на экране)
+  const tagTex=(txt,col)=>{const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');
+    x.fillStyle='rgba(16,24,32,.88)';x.strokeStyle=col;x.lineWidth=4;const r=14;x.beginPath();x.moveTo(r,3);x.lineTo(253-r,3);x.quadraticCurveTo(253,3,253,3+r);x.lineTo(253,61-r);x.quadraticCurveTo(253,61,253-r,61);x.lineTo(r,61);x.quadraticCurveTo(3,61,3,61-r);x.lineTo(3,3+r);x.quadraticCurveTo(3,3,r,3);x.fill();x.stroke();
+    x.fillStyle='#fff';x.font='700 30px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(txt,128,34);const t=new THREE.CanvasTexture(c);return t};
+  const flowBy=pred=>flowObjs.find(o=>pred(o.f));
+  const ptsOf=o=>{const c=o.path.curves,p=[c[0].v1.clone()];c.forEach(k=>p.push(k.v2.clone()));return p};
+  // точка на горизонтальном участке трассы вдоль оси ax ('x'|'z'), ближайшем к заданной точке плана (X,Y)
+  function spot(fo,ax,X,Y){const q=P(X,Y,0),p=ptsOf(fo);let best=null;
+    for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i];if(Math.abs(a.y-b.y)>.01)continue;
+      const dx=Math.abs(b.x-a.x),dz=Math.abs(b.z-a.z);if(ax==='x'?(dz>.01||dx<.3):(dx>.01||dz<.3))continue;
+      const lo=ax==='x'?Math.min(a.x,b.x):Math.min(a.z,b.z),hi=ax==='x'?Math.max(a.x,b.x):Math.max(a.z,b.z),v=ax==='x'?q.x:q.z,c=Math.max(lo+.35,Math.min(hi-.35,v));
+      const d=ax==='x'?Math.abs(c-v)+Math.abs(a.z-q.z):Math.abs(c-v)+Math.abs(a.x-q.x);
+      if(!best||d<best.d)best={d,pos:ax==='x'?new THREE.Vector3(c,a.y,a.z):new THREE.Vector3(a.x,a.y,c)}}
+    return best&&best.pos}
+  const rOf=o=>o.f.r||STREAMS[o.f.s].r;
+  const COL={m:'#35a7ff',v:'#ffa534'};
+  // позиции: ключ → описание (теги и режимы — регламент G111; est — тип/место оценены)
+  const SPECS=[
+   {tag:'XV*',k:'v',name:'Отсечной клапан пара НД на плавильники',nameu:'PB bug‘ining eritgichlarga kesuvchi klapani',b:ballValve,est:1,
+    flow:f=>f.s==='steamlp'&&f.ea==='XX-11502',ax:'z',at:[5329.2,2338.34],
+    d:['Шаровой кран DN150 с пневмоприводом двойного действия, ~Lстр 0,40 м (оценка: на PFD/P&ID врезка не показана)','Сигнал положения «закрыт/открыт» на ПАЗ плавильников','Положение и тип оценены; тег — по P&ID 3147-5G111-03…05 (в проекте нет)']},
+   {tag:'PIR-11104',k:'m',name:'Давление пара НД на входе (показание, регистрация)',nameu:'Kirishdagi PB bug‘i bosimi (ko‘rsatish, qayd)',b:pressureTx,
+    flow:f=>f.s==='steamlp'&&f.ea==='XX-11502',ax:'z',at:[5330.9,2338.34],
+    d:['Рабочее давление 0,75–0,8 МПа, температура 175–180 °C, расход 2300 м³/ч (регламент, режим G111)','Преобразователь давления на 2-вентильном блоке, отбор сверху трубы (тип и размеры по каталогу, оценка)','Тег и параметры — регламент 3147-5G111; место врезки — оценка']},
+   {tag:'PV*',k:'v',name:'Регулирующий клапан давления пара НД (редуцирование 0,8 → 0,5 МПа)',nameu:'PB bug‘i bosimini rostlovchi klapan (0,8 → 0,5 MPa)',b:controlValve,est:1,
+    flow:f=>f.s==='steamlp'&&f.ea==='XX-11502',ax:'z',at:[5332.8,2338.34],
+    d:['Седельный клапан DN150 с мембранным пневмоприводом и позиционером: строительная длина 480 мм, высота ~1,0 м (типовой каталог)','Между PIR-11104 (0,75–0,8 МПа) и TIR-11107 (0,5 МПа): по регламенту давление пара снижается, клапан оценён','Тег по P&ID 3147-5G111-03…05 (в проекте нет)']},
+   {tag:'TIR-11107',k:'m',name:'Температура пара в впускной трубе пара НД (показание, регистрация)',nameu:'PB bug‘i kirish trubasida harorat (ko‘rsatish, qayd)',b:tempTx,
+    flow:f=>f.s==='steamlp'&&f.ea==='XX-11502',ax:'z',at:[5334.7,2338.34],
+    d:['Рабочая температура 158–165 °C, давление 0,5 МПа (регламент, режим G111)','Термопреобразователь в защитной гильзе, головка KNE Ø85 мм (тип по каталогу, оценка)','Тег и параметры — регламент 3147-5G111; место врезки — оценка']},
+   {tag:'LICA-11106',k:'m',name:'Уровень щёлочи в кубе скруббера TW-11101 (индикация, регулирование, сигнализация)',nameu:'TW-11101 skrubber kubidagi ishqor sathi (ko‘rsatish, rostlash, signal)',
+    custom:'tw',est:0,
+    d:['Диапазон 25–75 % (регламент); подключение к штуцерам L1/L2 аппарата (черт. 3147-5G111-36): отм. 1,0 и 3,0 м, DN40','Выносная камера Ø114 с магнитным указателем и датчиком (радарный) наверху — тип по каталогу, оценка','Управляет подпиткой технической водой (клапан LV*)']},
+   {tag:'LV*',k:'v',name:'Регулирующий клапан подпитки куба TW-11101',nameu:'TW-11101 kubini to‘ldirish rostlovchi klapani',b:controlValve,est:1,
+    flow:f=>f.code==='PW-11102-50-CB2',ax:'z',at:[5338.8,2329.4],
+    d:['Седельный клапан на линии PW-11102-50-CB2: габариты соразмерны трубе в модели (Ø160 мм), строительная длина 480 мм','Работает по LICA-11106; тег и тип — оценка по логике регулирования','Тег по P&ID 3147-5G111-03…05 (в проекте нет)']},
+   {tag:'FIA-11103',k:'m',name:'Расход раствора на орошение TW-11101 от насосов PP-11106A/B',nameu:'PP-11106A/B nasoslaridan TW-11101 ga sepish sarfi',b:magFlow,
+    flow:f=>f.s==='alkali'&&f.a&&f.a[0]==='PP-11106A/B'&&f.b&&f.b[0]==='TW-11101',ax:'z',at:[5350.0,2327.87],
+    d:['Расход 120 м³/ч, температура 50 °C, давление 0,22 МПа (регламент, режим G111)','Электромагнитный расходомер фланцевый, преобразователь на шее; длина 0,55 м (каталог, оценка)','Тег и параметры — регламент 3147-5G111; тип прибора — оценка']},
+   {tag:'PI-11106',k:'m',name:'Давление выхлопных газов после скруббера',nameu:'Skrubberdan keyingi chiqindi gazlar bosimi',b:gauge,
+    flow:f=>f.s==='air'&&f.a&&f.a[0]==='TW-11101'&&f.b&&f.b[0]==='BO-11101',ax:'x',at:[5347.49,2326.3],
+    d:['−5,5…−2,0 кПа (регламент, режим G111): разрежение, диапазон шкалы −10…0 кПа','Манометр (мановакуумметр) Ø100 на вентиле, на газоходе после TW-11101 (оценка по типу)','Тег и параметры — регламент 3147-5G111; место врезки — оценка']},
+   {tag:'TI-11109',k:'m',name:'Температура выхлопных газов после скруббера',nameu:'Skrubberdan keyingi chiqindi gazlar harorati',b:tempTx,
+    flow:f=>f.s==='air'&&f.a&&f.a[0]==='TW-11101'&&f.b&&f.b[0]==='BO-11101',ax:'x',at:[5347.49,2325.3],
+    d:['35–50 °C (регламент, режим G111)','Термопреобразователь в гильзе, головка KNE (каталог, оценка)','Тег и параметры — регламент 3147-5G111; место врезки — оценка']}
+  ];
+  SPECS.forEach(sp0=>{
+    let g,anchor,r=0;
+    if(sp0.custom==='tw'){const tw=(byTag['TW-11101']||[])[0];if(!tw)return;
+      // штуцеры L1/L2 TW-11101: угол 245° от севера, отм. 1,0 и 3,0 (C: nzR(D/2,a+5,…)); внешний радиус штуцера 1,2+0,2
+      const gg=new THREE.Group(),a=245*Math.PI/180;bridle(gg,1.4,1.4,1.0,3.0,1.78);gg.rotation.y=Math.PI/2-a;   // +X группы → направление pol(r,a)
+      g=new THREE.Group();g.add(gg);g.position.copy(P(5347.8,2329.2,0));anchor=new THREE.Vector3(0,3.9,0).add(g.position);
+      const pa=new THREE.Vector3(1.78*Math.sin(a),0,-1.78*Math.cos(a));anchor.add(pa);
+      g.userData.tw=true;
+    }else{
+      const fo=flowBy(sp0.flow);if(!fo){console.warn('KIP: нет трассы для',sp0.tag);return}
+      const pos=spot(fo,sp0.ax,sp0.at[0],sp0.at[1]);if(!pos){console.warn('KIP: нет участка для',sp0.tag);return}
+      r=rOf(fo);const inner=sp0.b(r);g=new THREE.Group();g.add(inner);g.position.copy(pos);
+      if(sp0.ax==='z')g.rotation.y=Math.PI/2;      // локальная ось X вдоль трубы
+      // клапаны и расходомер стоят «по ходу», приборы-врезки — сверху; для z-участков приводы/позиционеры смотрят на запад
+      const top=new THREE.Box3().setFromObject(g);anchor=pos.clone();anchor.y=Math.max(top.max.y,pos.y)+.1;
+    }
+    g.userData.kip=sp0;KIP.g.add(g);g.traverse(c=>{if(c.isMesh){c.userData.kipOwner=sp0;KIP.pick.push(c)}});
+    const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex(sp0.tag,COL[sp0.k]),depthTest:false,transparent:true,sizeAttenuation:false}));
+    spr.scale.set(.15,.0375,1);spr.position.copy(anchor);spr.renderOrder=999;spr.userData.kipOwner=sp0;KIP.g.add(spr);KIP.pick.push(spr);KIP.sprites.push(spr);
+    KIP.items.push({sp:sp0,g,spr,r});
+  });
+  // подписи видны только вблизи (на общем плане скрываются, чтобы не закрывать завод)
+  const kipLod=()=>{if(!KIP.on)return;KIP.sprites.forEach(s=>{s.visible=camera.position.distanceTo(s.position)<(+KIP.lod||45)})};
+  controls.addEventListener('change',kipLod);
+  const info=$('kipInfo'),kipClose=()=>{info.hidden=true};
+  function kipShow(sp0){const uz=currentLang==='uz';
+    $('kiSt').textContent=(uz?'KIPiA · ':'КИП · ')+(sp0.k==='v'?(uz?'armatura':'арматура'):(uz?'o‘lchash':'измерение'))+(sp0.est?(uz?' · taxminiy':' · оценка'):'');
+    $('kiNm').textContent=sp0.tag.replace('*','')+(sp0.est?' (поз. уточняется)':'')+' · '+((uz&&sp0.nameu)?sp0.nameu:sp0.name);
+    $('kiWhy').innerHTML=sp0.d.map(t=>'<div>'+esc(t)+'</div>').join('')+'<div class="mono">'+(uz?'Chizma: 3147-5G111-03…05 (P&ID) loyihada yo‘q; teglar — reglament':'Чертёж: P&ID 3147-5G111-03…05 (в проекте нет); теги — регламент 3147-5G111')+'</div>';
+    info.hidden=false}
+  $('kiX').onclick=kipClose;
+  const kr=new THREE.Raycaster(),km2=new THREE.Vector2();let kd=null;
+  const cvs=renderer.domElement;
+  cvs.addEventListener('pointerdown',e=>{kd=[e.clientX,e.clientY]},true);
+  cvs.addEventListener('pointerup',e=>{if(!KIP.on||!kd)return;const mv=Math.hypot(e.clientX-kd[0],e.clientY-kd[1]);kd=null;if(mv>5)return;
+    const r0=cvs.getBoundingClientRect();km2.x=((e.clientX-r0.left)/r0.width)*2-1;km2.y=-((e.clientY-r0.top)/r0.height)*2+1;kr.setFromCamera(km2,camera);
+    const h=kr.intersectObjects(KIP.pick.filter(o=>o.visible),false)[0];
+    if(h){e.stopImmediatePropagation();kipShow(h.object.userData.kipOwner)}else kipClose()},true);
+  // при первом включении камера летит к пробному участку (паропровод НД и скруббер TW-11101)
+  function setKip(on){KIP.on=on;KIP.g.visible=on;$('bKip').setAttribute('aria-pressed',on);if(!on)kipClose();else{kipLod();
+    if(!KIP.seen){KIP.seen=true;flyTo(new THREE.Vector3(-66.5,5.5,-38),null,new THREE.Vector3(-52,12,-24))}}}
+  $('bKip').onclick=()=>setKip(!KIP.on);
+  KIP.set=setKip;
+ }
 
  // labels
  const lblBox=$('labels'); const LB=[];
@@ -5358,7 +5516,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
  function paintModelUI(lang){
    currentLang=lang; const T=L();
    $('tEyebrow').textContent=T.eyebrow; $('tH1').textContent=T.h1;
-   $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim; $('bLbl').textContent=T.bLbl;$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
+   $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim;$('bKip').textContent=currentLang==='uz'?'KIPiA':'КИП'; $('bLbl').textContent=T.bLbl;$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
    $('bHelp').title=T.bHelpTitle;
    tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода';$('tabBuild').textContent=lang==='uz'?'Qurilish':'Строительство';if(BU.inited){buBuildPanel();buPaint();buFollowUI();$('buToday').textContent=lang==='uz'?'Bugun':'Сегодня';$('buMore').textContent=(lang==='uz'?'Obyektlar':'Объекты')+(bubar.classList.contains('open')?' ▾':' ▴')} $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
    bCutFab.title=T.tabCut; bCutFab.setAttribute('aria-label',T.tabCut);
