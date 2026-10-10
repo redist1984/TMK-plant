@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PFD — технологическая схема материальных потоков</title>
+<script>try{var __t=localStorage.getItem('tmk_theme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
+  --line:#CBD5D2; --accent:#0B6E66; --accent-ink:#FFFFFF; --paper:#FFFFFF;
+  --s-water:#23873A; --s-steam:#C9302A; --s-air:#2362C0; --s-gas:#C79A00; --s-acid:#DD6A12;
+  --s-alkali:#7A4DB8; --s-sulfur:#8A5A2B;
+  --shadow:0 10px 30px rgba(20,32,29,.16);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --imgfilter:none;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
+    --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C; --paper:#121A18;
+    --s-water:#4CC265; --s-steam:#FF6B5E; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
+    --s-alkali:#B18CF0; --s-sulfur:#C99158;
+    --shadow:0 10px 30px rgba(0,0,0,.5);
+    --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
+  --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C; --paper:#121A18;
+  --s-water:#4CC265; --s-steam:#FF6B5E; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
+  --s-alkali:#B18CF0; --s-sulfur:#C99158;
+  --shadow:0 10px 30px rgba(0,0,0,.5);
+  --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans);display:flex;flex-direction:column;overflow:hidden}
+button,input{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--panel);flex:0 0 auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 11px;cursor:pointer;font-weight:500;font-size:12.5px;color:var(--ink2);white-space:nowrap}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.btn{white-space:nowrap;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 11px;font-weight:500;font-size:12.5px;cursor:pointer}
+.btn:active{background:var(--panel2)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.zoom{display:inline-flex;flex:0 0 auto;align-items:center;gap:4px;margin-left:auto}
+.zoom button{width:32px;height:32px;padding:0;font-size:17px;line-height:1}
+.zoom .zl{font:600 12px var(--mono);min-width:46px;text-align:center;color:var(--ink2)}
+#q{flex:1 1 150px;min-width:120px;max-width:260px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:6px 10px;font-size:13px}
+.main{position:relative;flex:1 1 auto;min-height:0;display:flex}
+#vp{position:relative;flex:1 1 auto;overflow:hidden;background:var(--paper);touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+#vp.drag{cursor:grabbing}
+#stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
+#stage.anim{transition:transform .45s cubic-bezier(.2,.7,.2,1)}
+#stage img{position:absolute;inset:0;display:none;width:100%;height:100%;filter:var(--imgfilter);pointer-events:none;-webkit-user-drag:none;opacity:.5;z-index:2}
+body.scan #stage img{display:block}
+#art{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#art .ln{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+#art .fl{fill:var(--ink);stroke:none}
+#art .pp{stroke-width:7;stroke-linecap:butt;fill:none}
+#art .dsh{fill:none;stroke:var(--ink2);stroke-width:2.4;stroke-dasharray:30 12 3 12}
+#art .dsm{fill:none;stroke:var(--ink2);stroke-width:2.2;stroke-dasharray:22 7 3 7}
+#art .vl{fill:var(--paper);stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round}
+#art .dm{fill:var(--paper);stroke:var(--ink);stroke-width:2.4}
+#art .dn{font:700 25px var(--mono);fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+#art .ref .dm{stroke-dasharray:5 4}
+#art .tg{font:700 22px var(--mono);fill:var(--accent);text-anchor:middle}
+#stage:not(.zoomed) #art .tg,#art .tn,#art .tm{paint-order:stroke;stroke:var(--paper);stroke-width:5px;stroke-linejoin:round}
+#art .tn{display:none}
+#art .tn{font:500 18px var(--sans);fill:var(--ink2);text-anchor:middle}
+#art .tmn{fill:var(--paper);stroke:var(--ink);stroke-width:2.4;stroke-linejoin:round}
+#art .tm{font:500 19px var(--sans);fill:var(--ink)}
+#art .dim{opacity:.13}
+.leg{display:inline-flex;flex-wrap:wrap;gap:4px}
+.leg button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:3px 9px 3px 7px;font-size:12px;cursor:pointer}
+.leg button[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+.leg i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+#ov{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.eqz{fill:transparent;stroke:var(--accent);stroke-width:2;stroke-dasharray:10 7;stroke-opacity:.0;vector-effect:non-scaling-stroke;cursor:pointer}
+body.zones .eqz{stroke-opacity:.5}
+.eqz:hover{fill:var(--accent);fill-opacity:.12;stroke-opacity:1}
+.eqz.sel{fill:var(--accent);fill-opacity:.18;stroke-opacity:1;stroke-dasharray:none;stroke-width:3}
+.stz{fill:transparent;cursor:pointer}
+.stz:hover{fill:var(--accent);fill-opacity:.22}
+.stz.sel{fill:none;stroke:var(--accent);stroke-width:3;vector-effect:non-scaling-stroke}
+body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
+.hl line{stroke-linecap:round;opacity:.78}
+.hl .glow{opacity:.28}
+#tip{position:absolute;z-index:5;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:6px 9px;font-size:12.5px;max-width:300px;display:none}
+#tip b{font-family:var(--mono);font-size:12px}
+#tip small{display:block;color:var(--ink2);font-size:11.5px}
+#card{flex:0 0 340px;border-left:1px solid var(--line);background:var(--panel);overflow:auto;padding:14px 14px 22px;display:none}
+#card.open{display:block}
+#card.open~.hint,.main:has(#card.open) .hint{display:none}
+#card .x{float:right;border:0;background:transparent;font-size:22px;line-height:1;cursor:pointer;color:var(--ink2);padding:2px 6px}
+.eyebrow{font:11px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+#card h2{font-size:17px;line-height:1.25;margin:4px 0 8px}
+.tag{font:600 12.5px var(--mono);background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 8px;font-size:11.5px;color:var(--ink2);margin:2px 4px 2px 0}
+.pill.ok{border-color:var(--accent);color:var(--accent)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:10px 0}
+.kv dt{color:var(--ink3);font-size:12.5px}
+.kv dd{margin:0;font-variant-numeric:tabular-nums}
+.specs{margin:8px 0;padding-left:18px;color:var(--ink2);font-size:12.5px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 10px}
+.chips button{border:1px solid var(--line);background:var(--panel2);border-radius:999px;padding:2px 10px;font:600 12px var(--mono);cursor:pointer}
+.chips button:hover{border-color:var(--accent)}
+.acts{display:flex;flex-direction:column;gap:7px;margin:12px 0}
+.acts .btn{text-align:left;padding:9px 12px}
+.note{font-size:12px;color:var(--ink3);margin:10px 0 0}
+.regmini{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
+.regmini td{border-top:1px solid var(--line);padding:4px 0;vertical-align:top}
+.regmini td:first-child{color:var(--ink2);padding-right:8px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.hint{position:absolute;left:10px;bottom:10px;z-index:4;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--ink2);max-width:calc(100% - 20px);pointer-events:none;opacity:.92}
+@media (max-width:760px){
+  .leg{flex:1 1 100%;flex-wrap:nowrap;overflow-x:auto;order:3;padding-bottom:2px}
+  .leg button{flex:0 0 auto;white-space:nowrap}
+  #card{position:absolute;left:0;right:0;bottom:0;flex:none;max-height:52%;border-left:0;border-top:1px solid var(--line);box-shadow:var(--shadow);border-radius:14px 14px 0 0}
+  .zoom{margin-left:0}
+}
+</style>
+</head>
+<body class="zones">
+<div class="bar">
+  <div class="seg" id="tabs" role="tablist"></div>
+  <input id="q" type="search" list="qlist" autocomplete="off" aria-label="Поиск">
+  <datalist id="qlist"></datalist>
+  <div class="leg" id="leg"></div>
+  <button class="btn" id="bZones" type="button" aria-pressed="true"></button>
+  <button class="btn" id="bScan" type="button" aria-pressed="false"></button>
+  <div class="zoom">
+    <button class="btn" id="zOut" type="button" aria-label="−">−</button>
+    <span class="zl" id="zl">100%</span>
+    <button class="btn" id="zIn" type="button" aria-label="+">+</button>
+    <button class="btn" id="zFit" type="button"></button>
+  </div>
+</div>
+<div class="main">
+  <div id="vp">
+    <div id="stage"><svg id="art" preserveAspectRatio="none"></svg><img id="img" alt="" draggable="false"><svg id="ov" preserveAspectRatio="none"></svg></div>
+    <div id="tip"></div>
+    <div class="hint" id="hint"></div>
+  </div>
+  <aside id="card" aria-live="polite"></aside>
+</div>
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script src="pfd/pfd-data.js"></script>
+<script>
+(function(){
+'use strict';
+const D=window.TMK_PFD, SH=D.sheets, CARD=D.cards, ST=D.streams;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const NS='http://www.w3.org/2000/svg';
+const KCOL={gas:'--s-gas',air:'--s-air',acid:'--s-acid',water:'--s-water',steam:'--s-steam',sulfur:'--s-sulfur',reagent:'--s-alkali'};
+
+const UI={
+  ru:{
+    scan:'Скан', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист',
+    hint:'Колесо / щипок — масштаб, перетаскивание — сдвиг. Нажмите на аппарат или на ромб с номером потока.',
+    close:'Закрыть', qty:'Количество', mass:'Масса, кг', also:'Также на листах', streams:'Потоки у аппарата',
+    to3d:'Показать в 3D', toFlow:'Показать в схеме потоков', stream:'Поток', onSheets:'На листах', joins:'Связывает аппараты',
+    gasRef:'Газовый поток: параметры — в таблице листа 1.', openSheet1:'Открыть лист 1',
+    pfdTag:'Позиция на PFD', noCard:'Карточка аппарата в модели не найдена.', noLine:'Линия потока на этом листе не выделена.',
+    reg:'По регламенту', pfdNote:'Позиция по PFD', tailNote:'На PFD блок без обозначения («система очистки хвостовых газов»): сопоставлен с TW-11304 по составу потоков 72–74.',
+    wt:'Концентрация, % масс.', th:'Расход, т/ч', rho:'Плотность, кг/м³', m3:'Расход, м³/ч', t:'Температура, °C', p:'Давление',
+    pMPa:'МПа (изб.)', pkPa:'кПа (изб.)', comps:{SO2:'SO₂, Нм³/ч',SO3:'SO₃, Нм³/ч',O2:'O₂, Нм³/ч',N2:'N₂, Нм³/ч',dry:'Итого сухой, Нм³/ч',H2O:'H₂O, Нм³/ч',wet:'Итого влажный, Нм³/ч'},
+    src:'Источник: ', title:'Технологическая схема материальных потоков (PFD), WZ-POT-262, Rev. A',
+    unit:{th:'т/ч'}, gas:'газ', acid:'кислота', water:'вода', steam:'пар', sulfur:'сера', reagent:'реагент', air:'воздух'
+  },
+  uz:{
+    scan:'Skan', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq',
+    hint:'G‘ildirak / chimchilash — masshtab, sudrash — siljitish. Apparatni yoki oqim raqamli romb ustiga bosing.',
+    close:'Yopish', qty:'Soni', mass:'Massa, kg', also:'Boshqa varaqlarda', streams:'Apparatdagi oqimlar',
+    to3d:'3D da ko‘rsatish', toFlow:'Oqim sxemasida ko‘rsatish', stream:'Oqim', onSheets:'Varaqlarda', joins:'Bog‘laydigan apparatlar',
+    gasRef:'Gaz oqimi: parametrlar 1-varaq jadvalida.', openSheet1:'1-varaqni ochish',
+    pfdTag:'PFD dagi pozitsiya', noCard:'Modelda apparat kartochkasi topilmadi.', noLine:'Bu varaqda oqim chizig‘i ajratilmagan.',
+    reg:'Reglament bo‘yicha', pfdNote:'PFD bo‘yicha pozitsiya', tailNote:'PFD da bu blokning belgisi yo‘q («chiqindi gazlarni tozalash tizimi»): 72–74 oqimlar tarkibiga ko‘ra TW-11304 ga mos qo‘yilgan.',
+    wt:'Konsentratsiya, % massa', th:'Sarf, t/soat', rho:'Zichlik, kg/m³', m3:'Sarf, m³/soat', t:'Harorat, °C', p:'Bosim',
+    pMPa:'MPa (ortiqcha)', pkPa:'kPa (ortiqcha)', comps:{SO2:'SO₂, Nm³/soat',SO3:'SO₃, Nm³/soat',O2:'O₂, Nm³/soat',N2:'N₂, Nm³/soat',dry:'Jami quruq, Nm³/soat',H2O:'H₂O, Nm³/soat',wet:'Jami nam, Nm³/soat'},
+    src:'Manba: ', title:'Moddiy oqimlarning texnologik sxemasi (PFD), WZ-POT-262, Rev. A',
+    unit:{th:'t/soat'}, gas:'gaz', acid:'kislota', water:'suv', steam:'bug‘', sulfur:'oltingugurt', reagent:'reagent', air:'havo'
+  }
+};
+let lang='ru'; const L=()=>UI[lang]||UI.ru;
+const nm=(o,k)=>(lang==='uz'&&o[k+'u'])?o[k+'u']:o[k];
+const fmt=v=>typeof v==='number'?v.toLocaleString('ru-RU',{maximumFractionDigits:3}):String(v);
+
+// ---------- state ----------
+let sheet=1, sel=null;           // sel: {t:'eq',tag,app} | {t:'st',id}
+const W=SH[0].w, H=SH[0].h;
+const sheetOf=n=>SH[n-1];
+const eqByApp={};  // app tag → [{sheet, eq}]
+SH.forEach(s=>s.eq.forEach(e=>{(eqByApp[e.app]=eqByApp[e.app]||[]).push({sheet:s.n,eq:e})}));
+const stSheets=id=>{const r=[];SH.forEach(s=>{if(s.st.some(x=>x.id===id&&!x.ref))r.push(s.n)});return r};
+
+// ---------- view (pan/zoom) ----------
+const vp=$('vp'), stage=$('stage'), ov=$('ov'), img=$('img'), art=$('art');
+stage.style.width=W+'px'; stage.style.height=H+'px'; ov.setAttribute('viewBox',`0 0 ${W} ${H}`); art.setAttribute('viewBox',`0 0 ${W} ${H}`);
+let k=1,tx=0,ty=0,fitK=1;
+function clampView(){const vw=vp.clientWidth,vh=vp.clientHeight,sw=W*k,sh=H*k;
+  tx=sw<=vw?(vw-sw)/2:Math.min(0,Math.max(vw-sw,tx)); ty=sh<=vh?(vh-sh)/2:Math.min(0,Math.max(vh-sh,ty))}
+let hitRaf=0;
+function applyView(){clampView();stage.style.transform=`translate(${tx}px,${ty}px) scale(${k})`;stage.classList.toggle('zoomed',k>=fitK*2.4);
+  $('zl').textContent=Math.round(k/fitK*100)+'%';
+  if(!hitRaf)hitRaf=requestAnimationFrame(()=>{hitRaf=0;const r=Math.max(34,22/k);ov.querySelectorAll('.stz').forEach(c=>c.setAttribute('r',r))})}
+function computeFit(){const vw=vp.clientWidth||W,vh=vp.clientHeight||H;fitK=Math.min(vw/W,vh/H)}
+function fit(anim){computeFit();k=fitK;tx=ty=0;go(anim)}
+function go(anim){if(anim){stage.classList.add('anim');setTimeout(()=>stage.classList.remove('anim'),500)}applyView()}
+function zoomAt(nk,cx,cy){nk=Math.min(Math.max(nk,fitK),Math.max(2.2,fitK*8));tx=cx-(cx-tx)*nk/k;ty=cy-(cy-ty)*nk/k;k=nk;applyView()}
+function zoomBox(b,pad,maxK){ // b = [x0,y0,x1,y1] in sheet px
+  const vw=vp.clientWidth;let vh=vp.clientHeight;if(card.classList.contains('open')&&matchMedia('(max-width:760px)').matches)vh=Math.round(vh*0.46);
+  const bw=(b[2]-b[0])+2*pad,bh=(b[3]-b[1])+2*pad;
+  let nk=Math.min(vw/bw,vh/bh);nk=Math.min(Math.max(nk,fitK),maxK||Math.max(1.4,fitK*6));
+  k=nk;tx=vw/2-((b[0]+b[2])/2)*k;ty=vh/2-((b[1]+b[3])/2)*k;go(true)}
+const card=$('card');
+vp.addEventListener('wheel',e=>{e.preventDefault();const r=vp.getBoundingClientRect();
+  const f=Math.exp(-e.deltaY*(e.ctrlKey?0.012:0.0016));zoomAt(k*f,e.clientX-r.left,e.clientY-r.top)},{passive:false});
+const ptrs=new Map(); let pan=null,pinch=null,moved=0,downEl=null;
+vp.addEventListener('pointerdown',e=>{
+  if(e.button>0)return;
+  try{vp.setPointerCapture(e.pointerId)}catch(_){}
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===1){pan={x:e.clientX,y:e.clientY,tx,ty};moved=0;downEl=e.target.closest&&e.target.closest('[data-k]');}
+  else if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),k};pan=null;moved=99;downEl=null}
+});
+vp.addEventListener('pointermove',e=>{
+  const p=ptrs.get(e.pointerId);
+  if(!p){if(e.pointerType==='mouse')hover(e);return}
+  p.x=e.clientX;p.y=e.clientY;
+  if(pinch&&ptrs.size>=2){const [a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y),r=vp.getBoundingClientRect();
+    zoomAt(pinch.k*d/pinch.d,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top);return}
+  if(pan){const dx=e.clientX-pan.x,dy=e.clientY-pan.y;moved=Math.max(moved,Math.hypot(dx,dy));
+    if(moved>5){vp.classList.add('drag');hideTip();tx=pan.tx+dx;ty=pan.ty+dy;applyView()}}
+});
+function endPtr(e,click){
+  const had=ptrs.delete(e.pointerId);
+  if(ptrs.size<2)pinch=null;
+  if(ptrs.size===0){vp.classList.remove('drag');
+    if(had&&click&&pan&&moved<=5&&downEl)pick(downEl);
+    pan=null;downEl=null}
+  else if(ptrs.size===1){const [p]=[...ptrs.values()];pan={x:p.x,y:p.y,tx,ty};moved=99;downEl=null}
+}
+vp.addEventListener('pointerup',e=>endPtr(e,true));
+vp.addEventListener('pointercancel',e=>endPtr(e,false));
+vp.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')hideTip()});
+$('zIn').onclick=()=>zoomAt(k*1.4,vp.clientWidth/2,vp.clientHeight/2);
+$('zOut').onclick=()=>zoomAt(k/1.4,vp.clientWidth/2,vp.clientHeight/2);
+$('zFit').onclick=()=>fit(true);
+$('bScan').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('scan',on);if(on)img.src=sheetOf(sheet).scan||('pfd/scan/sheet'+sheet+'.jpg')};
+$('bZones').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('zones',on)};
+window.addEventListener('resize',()=>{const was=k/fitK;computeFit();k=Math.max(fitK,was*fitK);applyView()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard();else if(e.key==='+'||e.key==='=')$('zIn').click();else if(e.key==='-')$('zOut').click()});
+
+// ---------- vector layer ----------
+const MEDIA=[['gas','Газ','Gaz'],['air','Воздух','Havo'],['acid','Кислота','Kislota'],['water','Вода','Suv'],['steam','Пар','Bug‘'],['sulfur','Сера','Oltingugurt'],['alkali','Щёлочь','Ishqor']];
+const MCOL=Object.assign({},KCOL,{alkali:'--s-alkali'});
+let medium=null;
+function paintLeg(){const g=$('leg');g.textContent='';MEDIA.forEach(m=>{const b=document.createElement('button');b.type='button';b.style.setProperty('--c',`var(${MCOL[m[0]]})`);
+  b.setAttribute('aria-pressed',String(medium===m[0]));b.innerHTML='<i></i>'+esc(lang==='uz'?m[2]:m[1]);
+  b.onclick=()=>{medium=medium===m[0]?null:m[0];paintLeg();applyMedium()};g.appendChild(b)})}
+function applyMedium(){art.querySelectorAll('[data-m]').forEach(n=>n.classList.toggle('dim',!!medium&&n.dataset.m!==medium))}
+function drawArt(s){
+  art.textContent='';
+  mk('path',{d:s.fill,class:'fl'},art);mk('path',{d:s.art,class:'ln'},art);
+  const gp=mk('g',{},art);
+  s.pipes.forEach(p=>mk('line',{x1:p[2],y1:p[3],x2:p[4],y2:p[5],class:'pp',stroke:`var(${MCOL[p[1]]||'--ink'})`,'data-m':p[1]},gp));
+  
+  s.arrows.forEach(a=>{const[x,y,dx,dy,kd]=a;const L=22,Wd=12;
+    mk('polygon',{points:`${x},${y} ${x-dx*L-dy*Wd},${y-dy*L+dx*Wd} ${x-dx*L+dy*Wd},${y-dy*L-dx*Wd}`,fill:`var(${MCOL[kd]||'--ink'})`,'data-m':kd},art)});
+  s.dashm.forEach(d=>mk('polyline',{points:d.map(q=>q.join(',')).join(' '),class:'dsm'},art));
+  s.darr.forEach(a=>{const[x,y,dx,dy]=a,L=16,Wd=7;mk('polygon',{points:`${x},${y} ${x-dx*L-dy*Wd},${y-dy*L+dx*Wd} ${x-dx*L+dy*Wd},${y-dy*L-dx*Wd}`,class:'fl'},art)});
+  s.lines.forEach(d=>mk('polyline',{points:d.map(q=>q.join(',')).join(' '),class:'ln'},art));
+  s.valves.forEach(v=>{const[x,y,o,a]=v,R=11;
+    mk('polygon',{points:o==='h'?`${x-R},${y-8} ${x+R},${y+8} ${x+R},${y-8} ${x-R},${y+8}`:`${x-8},${y-R} ${x+8},${y+R} ${x-8},${y+R} ${x+8},${y-R}`,class:'vl'},art);
+    if(a){const dx=a==='r'?1:a==='l'?-1:0,dy=a==='d'?1:a==='u'?-1:0;
+      mk('line',{x1:x,y1:y,x2:x+dx*14,y2:y+dy*14,class:'ln'},art);
+      const cx=x+dx*14,cy=y+dy*14,r=11,px=-dy,py=dx;
+      mk('path',{d:`M${cx+px*r},${cy+py*r}A${r},${r} 0 0 ${0} ${cx-px*r},${cy-py*r}Z`,class:'vl'},art)}});
+  s.eq.forEach(e=>{const c=CARD[e.app];const cx=(e.box[0]+e.box[2])/2,y=e.box[3]+24;
+    const t=mk('text',{x:cx,y,class:'tg'},art);t.textContent=e.tag;
+    if(c){const nmx=nm(c,'n').replace(/\s*\(.*\)\s*$/,'');const w=Math.max(150,e.box[2]-e.box[0]+40),per=Math.max(14,Math.floor(w/11));
+      const words=nmx.split(' ');const ls=[];let cur='';words.forEach(wd=>{if((cur+' '+wd).trim().length>per&&cur){ls.push(cur);cur=wd}else cur=(cur+' '+wd).trim()});if(cur)ls.push(cur);
+      ls.slice(0,3).forEach((l,i)=>{const n=mk('text',{x:cx,y:y+22+i*20,class:'tn'},art);n.textContent=l})}});
+  s.terms.forEach(t=>{const[ex,ey,ux,uy,fl,txt,lx,ly,anc]=t,Lw=58,Hh=17;
+    const tip=fl==='in'?[ex,ey]:[ex+ux*Lw,ey+uy*Lw];
+    const a=fl==='in'?[ex+ux*(Lw-18),ey+uy*(Lw-18)]:[ex+ux*(Lw-18),ey+uy*(Lw-18)];
+    const px=-uy,py=ux;const o=fl==='in'?[ex+ux*Lw,ey+uy*Lw]:[ex,ey];
+    // корпус: от далёкого конца (in) или от трубы (out) с остриём в сторону потока
+    const base=fl==='in'?[ex+ux*Lw,ey+uy*Lw]:[ex,ey], far=fl==='in'?[ex,ey]:[ex+ux*Lw,ey+uy*Lw];
+    const sh=18,dir=fl==='in'?-1:1;                         // острие смотрит по потоку
+    const bb=[base[0]+ux*(fl==='in'?0:0),base[1]];
+    const pts=[[base[0]+px*Hh,base[1]+py*Hh],[far[0]-ux*dir*sh+px*Hh,far[1]-uy*dir*sh+py*Hh],[far[0],far[1]],[far[0]-ux*dir*sh-px*Hh,far[1]-uy*dir*sh-py*Hh],[base[0]-px*Hh,base[1]-py*Hh]];
+    mk('polygon',{points:pts.map(q=>q.join(',')).join(' '),class:'tmn'},art);
+    const n=mk('text',{x:lx,y:ly,class:'tm','text-anchor':anc||'start'},art);n.textContent=txt});
+  s.texts.forEach(t=>{if(!t[2])return;const n=mk('text',{x:t[0],y:t[1],class:'tm','text-anchor':t[3]||'start'},art);n.textContent=t[2]});
+  s.instr.forEach(c=>{mk('circle',{cx:c[0],cy:c[1],r:c[2],class:'dm'},art);const n=mk('text',{x:c[0],y:c[1],class:'dn',style:'font-size:'+(c[3].length>2?15:19)+'px'},art);n.textContent=c[3]});
+  s.st.forEach(x=>{const g=mk('g',{class:x.ref?'ref':''},art);
+    mk('polygon',{points:`${x.c[0]},${x.c[1]-32} ${x.c[0]+32},${x.c[1]} ${x.c[0]},${x.c[1]+32} ${x.c[0]-32},${x.c[1]}`,class:'dm'},g);
+    const t=mk('text',{x:x.c[0],y:x.c[1],class:'dn'},g);t.textContent=x.id});
+  applyMedium();
+}
+// ---------- sheets ----------
+function mk(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const a in attrs)n.setAttribute(a,attrs[a]);if(parent)parent.appendChild(n);return n}
+function showSheet(n,keepView){
+  sheet=n;const s=sheetOf(n);if(document.body.classList.contains('scan'))img.src='pfd/scan/sheet'+n+'.jpg';drawArt(s);
+  ov.textContent='';
+  const gz=mk('g',{},ov);
+  [...s.eq].sort((a,b)=>area(b.box)-area(a.box)).forEach(e=>{
+    const r=mk('rect',{x:e.box[0],y:e.box[1],width:e.box[2]-e.box[0],height:e.box[3]-e.box[1],rx:8,class:'eqz','data-k':'eq','data-tag':e.tag,'data-app':e.app},gz);
+    const t=mk('title',{},r);t.textContent=e.tag;
+  });
+  s.st.forEach(x=>{mk('circle',{cx:x.c[0],cy:x.c[1],r:34,class:'stz','data-k':'st','data-id':x.id},gz)});
+  mk('g',{class:'hl',id:'hl'},ov);
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',String(+b.dataset.n===n)));
+  if(!keepView)fit(false);
+  paintSel();
+}
+const area=b=>(b[2]-b[0])*(b[3]-b[1]);
+function paintTabs(){const t=$('tabs');t.textContent='';SH.forEach(s=>{const m=D.meta.sheets[s.n-1];const b=document.createElement('button');b.type='button';b.dataset.n=s.n;b.setAttribute('role','tab');
+  b.textContent=`${L().sheet} ${s.n} · ${nm(m,'name').replace(/\s*\(.*\)/,'')}`;b.onclick=()=>{showSheet(s.n);};t.appendChild(b)});
+  document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',String(+b.dataset.n===sheet)))}
+
+// ---------- hover tooltip ----------
+const tip=$('tip');
+function hideTip(){tip.style.display='none'}
+function stLine(id){const s=ST[id];if(!s)return '';
+  if(s.k==='gas')return `${s.n} · ${fmt(s.g[8])} °C · ${fmt(s.g[7])} кПа · ${fmt(s.g[6])} Нм³/ч`;
+  if(s.k==='steam'||(s.p!==undefined))return `${s.n} · ${fmt(s.t)} °C · ${fmt(s.p)} МПа · ${fmt(s.th)} т/ч`;
+  return `${s.n}${s.wt?' '+s.wt+' %':''} · ${fmt(s.t)} °C · ${fmt(s.th)} т/ч`}
+function eqLine(app){const c=CARD[app];if(!c)return '';const r=c.reg[0];
+  const first=r?[r.f,r.T&&(r.T+' °C'),r.P&&(r.P+' МПа')].filter(Boolean).join(' · '):(c.d[0]||'');return first}
+function hover(e){
+  const el=e.target.closest&&e.target.closest('[data-k]');if(!el){hideTip();return}
+  let html;
+  if(el.dataset.k==='eq'){const c=CARD[el.dataset.app];html=`<b>${esc(el.dataset.tag)}</b> ${esc(c?nm(c,'n'):'')}<small>${esc(eqLine(el.dataset.app))}</small>`}
+  else{const id=el.dataset.id,x=sheetOf(sheet).st.find(s=>String(s.id)===id);html=`<b>${esc(L().stream)} ${esc(id)}</b>${x&&x.ref?'':`<small>${esc(stLine(id))}</small>`}`}
+  tip.innerHTML=html;tip.style.display='block';
+  const r=vp.getBoundingClientRect();let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
+  if(x+tip.offsetWidth>r.width-6)x=e.clientX-r.left-tip.offsetWidth-10;
+  if(y+tip.offsetHeight>r.height-6)y=e.clientY-r.top-tip.offsetHeight-10;
+  tip.style.left=Math.max(4,x)+'px';tip.style.top=Math.max(4,y)+'px';
+}
+
+// ---------- selection ----------
+function pick(el){
+  if(el.dataset.k==='eq')selectEq(el.dataset.tag,{zoom:false});
+  else selectStream(+el.dataset.id,{zoom:false});
+}
+function paintSel(){
+  ov.querySelectorAll('.sel').forEach(n=>n.classList.remove('sel'));
+  const hl=$('hl');if(!hl)return;hl.textContent='';
+  if(!sel)return;
+  if(sel.t==='eq'){ov.querySelectorAll(`.eqz[data-tag="${CSS.escape(sel.tag)}"]`).forEach(n=>n.classList.add('sel'))}
+  else{
+    const x=sheetOf(sheet).st.find(s=>s.id===sel.id);if(!x)return;
+    const c=ov.querySelector(`.stz[data-id="${sel.id}"]`);if(c)c.classList.add('sel');
+    const s=ST[sel.id]||{};const col=`var(${KCOL[s.k==='gas'&&s.n==='Воздух'?'air':s.k]||'--accent'})`;
+    x.lines.forEach(l=>{
+      mk('line',{x1:l[0],y1:l[1],x2:l[2],y2:l[3],stroke:col,'stroke-width':22,class:'glow'},hl);
+      mk('line',{x1:l[0],y1:l[1],x2:l[2],y2:l[3],stroke:col,'stroke-width':10},hl)});
+  }
+}
+function firstSheetFor(app,prefer){const l=eqByApp[app]||[];if(!l.length)return null;return (l.find(x=>x.sheet===prefer)||l[0])}
+function selectEq(key,o){ // key — тег на PFD или тег модели
+  o=o||{};
+  let ent=null;
+  for(const a in eqByApp){const f=eqByApp[a].find(x=>x.eq.tag===key||x.eq.app===key);if(f){ent=f;break}}
+  if(!ent)return false;
+  const app=ent.eq.app;
+  const pref=eqByApp[app].find(x=>x.sheet===(o.sheet||sheet))||ent;
+  if(pref.sheet!==sheet)showSheet(pref.sheet,true);
+  sel={t:'eq',tag:pref.eq.tag,app};
+  paintSel();openEqCard(pref.eq,pref.sheet);
+  if(o.zoom!==false)zoomBox(pref.eq.box,300,1.0);
+  return true;
+}
+function selectStream(id,o){
+  o=o||{};
+  let s=sheet;
+  if(!sheetOf(s).st.some(x=>x.id===id&&!x.ref)){const f=stSheets(id)[0];if(f)s=f;else{const g=SH.find(z=>z.st.some(x=>x.id===id));if(!g)return false;s=g.n}}
+  if(s!==sheet)showSheet(s,true);
+  sel={t:'st',id};paintSel();openStCard(id);
+  const x=sheetOf(sheet).st.find(z=>z.id===id);
+  if(o.zoom!==false&&x){const pts=x.lines.length?x.lines.flatMap(l=>[[l[0],l[1]],[l[2],l[3]]]):[x.c];
+    const xs=pts.map(p=>p[0]).concat(x.c[0]),ys=pts.map(p=>p[1]).concat(x.c[1]);
+    zoomBox([Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)],200,1.2)}
+  return true;
+}
+
+// ---------- card ----------
+function closeCard(){card.classList.remove('open');sel=null;paintSel()}
+function openCard(html){card.innerHTML=`<button class="x" type="button" id="cx" aria-label="${esc(L().close)}">×</button>`+html;card.classList.add('open');card.scrollTop=0;$('cx').onclick=closeCard}
+function openEqCard(e,shn){
+  const c=CARD[e.app],T=L();
+  const others=(eqByApp[e.app]||[]).filter(x=>x.sheet!==shn);
+  const regRows=c?c.reg.slice(0,6).map(r=>`<tr><td>${esc(nm(r,'n'))}</td><td>${esc([r.f,r.T&&(r.T+' °C'),r.P&&(r.P+(/кПа/.test(r.P)?'':' МПа')),r.L&&('L '+r.L),r.o].filter(Boolean).join(' · '))}</td></tr>`).join(''):'';
+  openCard(`
+   <div class="eyebrow">${esc(T.sheet)} ${shn} · ${esc(nm(D.meta.sheets[shn-1],'name'))}</div>
+   <h2>${esc(c?nm(c,'n'):e.tag)}</h2>
+   <div><span class="tag">${esc(e.app)}</span>${e.tag!==e.app?`<span class="pill" title="${esc(T.pfdTag)}">PFD: ${esc(e.tag)}</span>`:''}${c&&c.m?'<span class="pill ok">3D</span>':''}</div>
+   ${c?`<dl class="kv"><dt>${esc(T.qty)}</dt><dd>${esc(c.q||'—')}</dd><dt>${esc(T.mass)}</dt><dd>${c.w?fmt(+c.w):'—'}</dd></dl>
+     ${c.d.length?`<ul class="specs">${c.d.slice(0,6).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+     ${regRows?`<div class="eyebrow">${esc(T.reg)}</div><table class="regmini">${regRows}</table>`:''}`:`<p class="note">${esc(T.noCard)}</p>`}
+   ${e.streams.length?`<div class="eyebrow">${esc(T.streams)}</div><div class="chips">${e.streams.map(id=>`<button type="button" data-st="${id}">${id}</button>`).join('')}</div>`:''}
+   ${others.length?`<div class="eyebrow">${esc(T.also)}</div><div class="chips">${others.map(x=>`<button type="button" data-sh="${x.sheet}" data-tag="${esc(x.eq.tag)}">${esc(T.sheet)} ${x.sheet}</button>`).join('')}</div>`:''}
+   <div class="acts"><button class="btn pri" type="button" id="b3d">${esc(T.to3d)}</button><button class="btn" type="button" id="bFlow">${esc(T.toFlow)}</button></div>
+   ${e.tag==='TW-11304'?`<p class="note">${esc(T.tailNote)}</p>`:''}
+   <p class="note">${esc(T.src)}${esc(D.meta.code)}, ${esc(nm(D.meta.sheets[shn-1],'name'))}</p>`);
+  card.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>selectStream(+b.dataset.st,{zoom:true}));
+  card.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>selectEq(b.dataset.tag,{sheet:+b.dataset.sh}));
+  $('b3d').onclick=()=>goto('model',e.app); $('bFlow').onclick=()=>goto('flow',e.app);
+}
+function openStCard(id){
+  const s=ST[id],T=L();const on=SH.filter(z=>z.st.some(x=>x.id===id)).map(z=>z.n);
+  const x=sheetOf(sheet).st.find(z=>z.id===id);
+  const eqs=[];SH.forEach(z=>z.eq.forEach(e=>{if(z.n===sheet&&e.streams.includes(id))eqs.push(e)}));
+  let rows='';
+  if(s){
+    if(s.k==='gas'){const keys=['SO2','SO3','O2','N2','dry','H2O','wet'];
+      rows=keys.map((key,i)=>`<dt>${esc(T.comps[key])}</dt><dd>${fmt(s.g[i])}</dd>`).join('')+`<dt>${esc(T.p)}, ${esc(T.pkPa)}</dt><dd>${fmt(s.g[7])}</dd><dt>${esc(T.t)}</dt><dd>${fmt(s.g[8])}</dd>`}
+    else if(s.p!==undefined){rows=`<dt>${esc(T.p)}, ${esc(T.pMPa)}</dt><dd>${fmt(s.p)}</dd><dt>${esc(T.t)}</dt><dd>${fmt(s.t)}</dd><dt>${esc(T.th)}</dt><dd>${fmt(s.th)}</dd>`}
+    else{rows=(s.wt?`<dt>${esc(T.wt)}</dt><dd>${esc(s.wt)}</dd>`:'')+`<dt>${esc(T.th)}</dt><dd>${fmt(s.th)}</dd><dt>${esc(T.rho)}</dt><dd>${fmt(s.rho)}</dd><dt>${esc(T.m3)}</dt><dd>${fmt(s.m3)}</dd><dt>${esc(T.t)}</dt><dd>${fmt(s.t)}</dd>`}
+  }
+  const ref=x&&x.ref;
+  openCard(`
+   <div class="eyebrow">${esc(T.sheet)} ${sheet} · ${esc(nm(D.meta.sheets[sheet-1],'name'))}</div>
+   <h2><span class="dot" style="background:var(${KCOL[s&&s.k==='gas'&&s.n==='Воздух'?'air':(s&&s.k)]||'--accent'})"></span>${esc(T.stream)} ${id}${s?' · '+esc(s.n):''}</h2>
+   ${ref?`<p class="note">${esc(T.gasRef)}</p><div class="acts"><button class="btn pri" type="button" id="bS1">${esc(T.openSheet1)}</button></div>`:`<dl class="kv">${rows}</dl>`}
+   ${x&&!x.lines.length&&!ref?`<p class="note">${esc(T.noLine)}</p>`:''}
+   ${eqs.length?`<div class="eyebrow">${esc(T.joins)}</div><div class="chips">${eqs.map(e=>`<button type="button" data-tag="${esc(e.tag)}">${esc(e.tag)}</button>`).join('')}</div>`:''}
+   ${on.length>1?`<div class="eyebrow">${esc(T.onSheets)}</div><div class="chips">${on.map(n=>`<button type="button" data-sh="${n}">${esc(T.sheet)} ${n}</button>`).join('')}</div>`:''}
+   <p class="note">${esc(T.src)}${esc(D.meta.code)}, ${esc(nm(D.meta.sheets[sheet-1],'name'))}</p>`);
+  card.querySelectorAll('[data-tag]').forEach(b=>b.onclick=()=>selectEq(b.dataset.tag,{sheet}));
+  card.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>{showSheet(+b.dataset.sh,true);selectStream(id,{zoom:true})});
+  if($('bS1'))$('bS1').onclick=()=>{showSheet(1,true);selectStream(id,{zoom:true})};
+}
+
+// ---------- search ----------
+function fillSearch(){
+  const dl=$('qlist');dl.textContent='';const seen=new Set();
+  SH.forEach(s=>s.eq.forEach(e=>{if(seen.has(e.tag))return;seen.add(e.tag);const c=CARD[e.app];const o=document.createElement('option');o.value=e.tag;o.label=c?nm(c,'n'):'';dl.appendChild(o)}));
+  Object.keys(ST).sort((a,b)=>a-b).forEach(id=>{const o=document.createElement('option');o.value=id;o.label=`${L().stream} · ${ST[id].n}`;dl.appendChild(o)});
+}
+$('q').addEventListener('change',e=>{const v=e.target.value.trim().toUpperCase();if(!v)return;
+  if(/^\d+$/.test(v)){if(selectStream(+v))return}
+  if(!selectEq(v)){const low=e.target.value.trim().toLowerCase();
+    const hit=Object.keys(CARD).find(a=>(CARD[a].n+' '+(CARD[a].nu||'')).toLowerCase().includes(low));if(hit)selectEq(hit)}
+});
+
+// ---------- links with other tabs ----------
+function goto(to,tag){try{window.parent.postMessage({__tmkGoto:{to,tag,from:'pfd'}},'*')}catch(e){}}
+window.addEventListener('message',e=>{
+  const d=e.data;if(!d||!d.__tmkFocus)return;
+  if(d.stream!==undefined)selectStream(+d.stream);else if(d.tag)selectEq(d.tag);
+});
+
+// ---------- language / theme ----------
+function paint(l){
+  lang=l==='uz'?'uz':'ru';const T=L();
+  $('q').placeholder=T.search;$('q').setAttribute('aria-label',T.search);
+  $('bZones').textContent=T.zones;$('bScan').textContent=T.scan;paintLeg();$('zFit').textContent=T.fit;$('hint').textContent=T.hint;
+  document.title=T.title;paintTabs();fillSearch();
+  if(sel&&sel.t==='eq'){const f=eqByApp[sel.app].find(x=>x.sheet===sheet);if(f)openEqCard(f.eq,sheet)}
+  else if(sel&&sel.t==='st')openStCard(sel.id);
+}
+TmkLang.initChild(paint);TmkTheme.initChild(function(){});
+showSheet(1);paint(TmkLang.getLang());
+setTimeout(()=>{if(!sel)fit(false)},0);
+try{window.parent.postMessage({__tmkReady:'pfd'},'*')}catch(e){}
+// открыто при загрузке по якорю #tag=EX-11201 или #stream=53
+(function(){const m=/^#(tag|stream)=(.+)$/.exec(location.hash||'');if(!m)return;
+  const v=decodeURIComponent(m[2]);setTimeout(()=>m[1]==='tag'?selectEq(v):selectStream(+v),50)})();
+// для отладки/проверки
+window.__pfd={selectEq,selectStream,showSheet,get state(){return {sheet,sel,k,fitK}}};
+})();
+</script>
+</body>
+</html>
