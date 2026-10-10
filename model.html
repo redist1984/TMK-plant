@@ -3919,6 +3919,10 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
     g.userData.kip=sp0;KIP.g.add(g);g.traverse(c=>{if(c.isMesh){c.userData.kipOwner=sp0;KIP.pick.push(c)}});
     const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex(sp0.tag,COL[sp0.k]),depthTest:false,transparent:true,sizeAttenuation:false}));
     spr.scale.set(.15,.0375,1);spr.position.copy(anchor);spr.renderOrder=999;spr.userData.kipOwner=sp0;KIP.g.add(spr);KIP.pick.push(spr);KIP.sprites.push(spr);
+    // невидимая зона попадания: не меньше 0,4 м по каждой оси, чтобы мелкий прибор ловил клик раньше аппарата за ним
+    {const bb=new THREE.Box3().setFromObject(g),sz=bb.getSize(new THREE.Vector3()),ct=bb.getCenter(new THREE.Vector3());
+     const px=new THREE.Mesh(new THREE.BoxGeometry(Math.max(sz.x,.4),Math.max(sz.y,.4),Math.max(sz.z,.4)),new THREE.MeshBasicMaterial({visible:false}));
+     px.position.copy(ct);px.userData.kipOwner=sp0;px.userData.kipHit=1;KIP.g.add(px);KIP.pick.push(px);KIP.hits=KIP.hits||{};KIP.hits[sp0.tag]=px}
     KIP.items.push({sp:sp0,g,spr,r});
   });
   // подписи видны только вблизи (на общем плане скрываются, чтобы не закрывать завод)
@@ -3932,11 +3936,20 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
     info.hidden=false}
   $('kiX').onclick=kipClose;
   const kr=new THREE.Raycaster(),km2=new THREE.Vector2();let kd=null;
+  // наведение: прибор перехватывает курсор раньше аппарата и трубы за ним (capture + stopImmediatePropagation), обводка бокса прибора
+  const hl=new THREE.Box3Helper(new THREE.Box3(),0xffd23f);hl.visible=false;hl.material.depthTest=false;hl.renderOrder=998;KIP.g.add(hl);
+  const kipHit=e=>{const r0=renderer.domElement.getBoundingClientRect();km2.x=((e.clientX-r0.left)/r0.width)*2-1;km2.y=-((e.clientY-r0.top)/r0.height)*2+1;kr.setFromCamera(km2,camera);
+    const hs=kr.intersectObjects(KIP.pick.filter(o=>o.visible),false);return hs.find(x=>!x.object.userData.kipHit)||hs[0]};
   const cvs=renderer.domElement;
   cvs.addEventListener('pointerdown',e=>{kd=[e.clientX,e.clientY]},true);
+  cvs.addEventListener('pointermove',e=>{if(!KIP.on||e.buttons){hl.visible=false;return}const h=kipHit(e);
+    if(!h){hl.visible=false;return}
+    e.stopImmediatePropagation();const o=h.object.userData.kipOwner,it=KIP.items.find(i=>i.sp===o);if(it){hl.box.setFromObject(it.g).expandByScalar(.03);hl.visible=true}
+    const t=document.getElementById('tip')||tip;if(t){const r0=cvs.getBoundingClientRect();t.textContent=o.tag+' · '+((currentLang==='uz'&&o.nameu)?o.nameu:o.name);t.style.left=(e.clientX-r0.left)+'px';t.style.top=(e.clientY-r0.top)+'px';t.hidden=false}
+    cvs.style.cursor='pointer'},true);
   cvs.addEventListener('pointerup',e=>{if(!KIP.on||!kd)return;const mv=Math.hypot(e.clientX-kd[0],e.clientY-kd[1]);kd=null;if(mv>5)return;
     const r0=cvs.getBoundingClientRect();km2.x=((e.clientX-r0.left)/r0.width)*2-1;km2.y=-((e.clientY-r0.top)/r0.height)*2+1;kr.setFromCamera(km2,camera);
-    const h=kr.intersectObjects(KIP.pick.filter(o=>o.visible),false)[0];
+    const h=kipHit(e);
     if(h){e.stopImmediatePropagation();kipShow(h.object.userData.kipOwner)}else kipClose()},true);
   // при первом включении камера летит к пробному участку (паропровод НД и скруббер TW-11101)
   function setKip(on){KIP.on=on;KIP.g.visible=on;$('bKip').setAttribute('aria-pressed',on);if(!on)kipClose();else{kipLod();
