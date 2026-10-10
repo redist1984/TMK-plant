@@ -100,7 +100,8 @@ aside.detail.closed{transform:translateX(calc(100% + 24px));opacity:0;pointer-ev
 .frame .code{font:700 12px var(--mono);fill:var(--accent)}
 .frame{cursor:pointer}
 .frame:hover rect{stroke:var(--accent)}
-.node{cursor:pointer}
+.node{cursor:pointer;transition:opacity .15s}
+.eg{transition:opacity .15s}
 .node rect.box{fill:var(--node);stroke:var(--node-line);stroke-width:1.2}
 .node .t{font:700 11.5px var(--mono);fill:var(--ink)}
 .node .n{font:500 11px var(--sans);fill:var(--ink2)}
@@ -110,7 +111,9 @@ aside.detail.closed{transform:translateX(calc(100% + 24px));opacity:0;pointer-ev
 .node.faded{opacity:.3}
 .node .bedh{fill:url(#hatch)}
 .edge{fill:none;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
-.edge.flow{stroke-width:3;stroke-dasharray:2 14;stroke:var(--panel);opacity:.85;animation:flow 1.1s linear infinite}
+.edge.flow{stroke-width:3;stroke-dasharray:2 14;stroke:var(--panel);opacity:.85;animation:none}
+/* бегущие точки только у выделенных потоков: 150+ одновременно анимированных линий заставляли схему мигать */
+.eg.hot .edge.flow{animation:flow 1.1s linear infinite}
 .edge.dashed{stroke-dasharray:7 5}
 .eg.faded{opacity:.1}
 /* When a stream filter fades most edges out, their "flow" dash animation
@@ -699,9 +702,9 @@ const CONNS = [
 ];
 
 const svgNS='http://www.w3.org/2000/svg';
-const W=2570,H=1790;
+const W=2570,H=1790,PAD=50; // PAD: поле вокруг схемы, чтобы линии по краю не обрезались
 function el(tag,attrs,parent){const e=document.createElementNS(svgNS,tag);for(const k in attrs){const v=attrs[k];if((k==='fill'||k==='stroke')&&String(v).includes('var('))e.style[k]=v;else e.setAttribute(k,v)}if(parent)parent.appendChild(e);return e}
-const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Технологическая схема потоков завода'});
+const svg=el('svg',{viewBox:`${-PAD} ${-PAD} ${W+2*PAD} ${H+2*PAD}`,role:'img','aria-label':'Технологическая схема потоков завода'});
 document.getElementById('diagram').appendChild(svg);
 
 // --- Zoom: buttons, two-finger pinch, and Ctrl/Cmd+wheel on desktop ------
@@ -714,7 +717,7 @@ document.getElementById('diagram').appendChild(svg);
   const diagram=document.getElementById('diagram');
   const zIn=document.getElementById('zIn'), zOut=document.getElementById('zOut'),
         zReset=document.getElementById('zReset'), zLevel=document.getElementById('zLevel');
-  const BASE_WIDTH=Math.round(W*0.62), MIN_Z=0.4, MAX_Z=3, STEP=0.25;
+  const BASE_WIDTH=Math.round((W+2*PAD)*0.62), MIN_Z=0.4, MAX_Z=3, STEP=0.25;
   let zoom=1;
 
   // Fixed once, never resized per zoom level: the SVG keeps its natural
@@ -878,8 +881,9 @@ NODES.forEach(([id,tag,x,y,w,h,lab,kind])=>{
   const act=()=>selectNode(id);
   g.addEventListener('click',act);
   g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act()}});
-  g.addEventListener('mouseenter',()=>{if(!hlNode&&!active.size)hlEdges(id)});
-  g.addEventListener('mouseleave',()=>{if(!hlNode)applyFilter()});
+  let hT=0;
+  g.addEventListener('mouseenter',()=>{clearTimeout(hT);hT=setTimeout(()=>{if(!hlNode&&!active.size)hlEdges(id)},140)});
+  g.addEventListener('mouseleave',()=>{clearTimeout(hT);hT=setTimeout(()=>{if(!hlNode)applyFilter()},140)});
   nodeEls[id]={g,tag,x,y,w,h,kind,lab};
 });
 const REGB={
