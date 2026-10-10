@@ -378,17 +378,19 @@ function paintTabs(){const t=$('tabs');t.textContent='';SH.forEach(s=>{const m=D
 // ---------- hover tooltip ----------
 const tip=$('tip');
 function hideTip(){tip.style.display='none'}
-function stLine(id){const s=ST[id];if(!s)return '';
-  if(s.k==='gas')return `${s.n} · ${fmt(s.g[8])} °C · ${fmt(s.g[7])} кПа · ${fmt(s.g[6])} Нм³/ч`;
-  if(s.k==='steam'||s.k==='steamlp'||(s.p!==undefined))return `${s.n} · ${fmt(s.t)} °C · ${fmt(s.p)} МПа · ${fmt(s.th)} т/ч`;
-  return `${s.n}${s.wt?' '+s.wt+' %':''} · ${fmt(s.t)} °C · ${fmt(s.th)} т/ч`}
-function eqLine(app){const c=CARD[app];if(!c)return '';const r=c.reg[0];
-  const first=r?[r.f,r.T&&(r.T+' °C'),r.P&&(r.P+' МПа')].filter(Boolean).join(' · '):(c.d[0]||'');return first}
+const smalls=a=>(a||[]).filter(Boolean).map(l=>`<small>${esc(l)}</small>`).join('');
+// значения в подсказке — по одному параметру в строке
+function stLine(id){const s=ST[id],T=L();if(!s)return [];
+  if(s.k==='gas')return [s.n,`${T.t}: ${fmt(s.g[8])}`,`${T.p}, ${T.pkPa}: ${fmt(s.g[7])}`,`${T.comps.wet}: ${fmt(s.g[6])}`];
+  if(s.k==='steam'||s.k==='steamlp'||(s.p!==undefined))return [s.n,`${T.t}: ${fmt(s.t)}`,`${T.p}, ${T.pMPa}: ${fmt(s.p)}`,`${T.th}: ${fmt(s.th)}`];
+  return [s.n,s.wt?`${T.wt}: ${s.wt}`:'',`${T.t}: ${fmt(s.t)}`,`${T.th}: ${fmt(s.th)}`]}
+function eqLine(app){const c=CARD[app];if(!c)return [];const r=c.reg[0];
+  return r?[r.f,r.T&&(r.T+' °C'),r.P&&(r.P+' МПа')].filter(Boolean):[c.d[0]||'']}
 function hover(e){
   const el=e.target.closest&&e.target.closest('[data-k]');if(!el){hideTip();return}
   let html;
-  if(el.dataset.k==='eq'){const c=CARD[el.dataset.app];html=`<b>${esc(el.dataset.tag)}</b> ${esc(c?nm(c,'n'):'')}<small>${esc(eqLine(el.dataset.app))}</small>`}
-  else{const id=el.dataset.id,x=sheetOf(sheet).st.find(s=>String(s.id)===id);html=`<b>${esc(L().stream)} ${esc(id)}</b>${x&&x.ref?'':`<small>${esc(stLine(id))}</small>`}`}
+  if(el.dataset.k==='eq'){const c=CARD[el.dataset.app];html=`<b>${esc(el.dataset.tag)}</b> ${esc(c?nm(c,'n'):'')}${smalls(eqLine(el.dataset.app))}`}
+  else{const id=el.dataset.id,x=sheetOf(sheet).st.find(s=>String(s.id)===id);html=`<b>${esc(L().stream)} ${esc(id)}</b>${x&&x.ref?'':smalls(stLine(id))}`}
   tip.innerHTML=html;tip.style.display='block';
   const r=vp.getBoundingClientRect();let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
   if(x+tip.offsetWidth>r.width-6)x=e.clientX-r.left-tip.offsetWidth-10;
