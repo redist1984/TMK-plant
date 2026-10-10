@@ -2621,7 +2621,7 @@ function start(){
        nzR(D/2,90,6.4,.18); nzR(D/2,90,1.0,.62,.25); nzR(D/2,190,1.0,.62,.25);                  // N3 nozzle, M1/M2 manholes
        nzR(D/2,345,7.0,.27); nzR(D/2,5,7.2,.05); nzR(D/2,270,.4,.22); nzR(D/2,270,4.0,.08); nzR(D/2,270,7.0,.08);  // N4, N9, N5, N10, N7
        nzR(D/2,180,.8,.12); nzR(D/2,180,1.4,.12); nzR(D/2,240,1.5,.12); nzR(D/2,135,3.0,.04);     // N11/N12, N13, N8
-       [[240,1.0],[240,3.0]].forEach(([a,y])=>nzR(D/2,a+5,y,.04,.2));                           // L1/L2, P1/P2
+       [[15,1.0],[15,4.2]].forEach(([a,y])=>nzR(D/2,a+5,y,.04,.2));                           // L1/L2, P1/P2
        const [lx,lz]=pol(D/2+.3,300);[-.22,.22].forEach(s=>B(.05,H,.05,lx+s*.87,H/2,lz+s*.5,M.yel));for(let y=.3;y<H;y+=.3){const r=B(.44,.03,.03,lx,y,lz,M.yel);r.rotation.y=-Math.PI/6}
        g.position.copy(P(o.X,o.Y,0))}
      else if(o.k==='sk111'){
@@ -3752,133 +3752,169 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    if(!f.dashed){for(let i=0;i<n;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(r*1.35,10,8),SM[f.s].dot);scene.add(d);dots.push(d)}}
    flowObjs.push({s:f.s,f,tube,dots,path,len,segs:Math.max(8,Math.round(len/2)),rev:1,off:Math.random()});
  });
- // ── Слой «КИП» (пробная версия, отделение 111) ─────────────────────────────────────────────────
- // Датчики и арматура стоят на рассчитанных трассах труб (flowObjs) и на штуцерах TW-11101. Теги и рабочие
- // параметры взяты из регламента (таблица режимов G111). P&ID 3147-5G111-03…05 в проекте нет, поэтому тип, размеры
- // и место врезки оценены по типовым каталогам; такие приборы помечены «*». Кнопка «КИП» по умолчанию выключена.
+ // ── Слой «КИП» (отделение 111, пробный участок) ────────────────────────────────────────────────
+ // Источник: проект КИПиА 3147-5N111 (индекс приборов -02, паспорта -03, монтажные схемы -05, план расположения -09, Rev.A 2026.07).
+ // Теги, типы, DN/PN, диапазоны и отметки EL берутся из чертежей; приборы ставятся на рассчитанные трассы труб (flowObjs) и
+ // штуцеры L1/L2 аппарата TW-11101. Положение вдоль трубы определено по плану -09 (масштаб 1:100) с точностью нескольких метров:
+ // трассы труб в модели не совпадают с чертежом линия в линию. Кнопка «КИП» по умолчанию выключена.
  const KIP={on:false,g:new THREE.Group(),items:[],pick:[],sprites:[]};
  KIP.g.visible=false;KIP.g.name='kip';scene.add(KIP.g);
  {
   const km=(c,m=.55,r=.42)=>new THREE.MeshStandardMaterial({color:c,metalness:m,roughness:r});
   const KM={body:km(0x4a5762),flange:km(0x6f7b85),act:km(0x2f6fb3,.3,.5),hous:km(0xdfe3e6,.45,.35),cap:km(0x1c2328,.3,.5),
-    dial:new THREE.MeshStandardMaterial({color:0xf6f6f0,roughness:.6}),brass:km(0xb08a3c,.8,.35),red:km(0xc0392b,.3,.5),sig:km(0xe8e8e8,.2,.6)};
+    dial:new THREE.MeshStandardMaterial({color:0xf6f6f0,roughness:.6}),brass:km(0xb08a3c,.8,.35),red:km(0xc0392b,.3,.5),sig:km(0xe8e8e8,.2,.6),
+    ex:km(0x8f9ca6,.6,.4),blue:km(0x1f4e8c,.3,.5)};
   // цилиндр вдоль Y; ax:'x'|'z' — вдоль оси трубы / поперёк
   const cy=(rt,rb,h,m,x=0,y=0,z=0,ax='y',seg=18)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),m);o.position.set(x,y,z);if(ax==='x')o.rotation.z=Math.PI/2;else if(ax==='z')o.rotation.x=Math.PI/2;return o};
   const bx=(w,h,d,m,x=0,y=0,z=0)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);return o};
   const sp=(r,m,x=0,y=0,z=0)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(r,16,12),m);o.position.set(x,y,z);return o};
-  // фланец на трубе радиуса r: диск + 8 болтов на окружности
-  const flange=(g,r,x)=>{const R=r<.1?r*1.78:r*1.4,t=Math.max(.022,r*.2);g.add(cy(R,R,t,KM.flange,x,0,0,'x',28));
-    for(let i=0;i<8;i++){const a=i*Math.PI/4,bc=R*.84;g.add(cy(.011,.011,t*1.9,KM.cap,x,bc*Math.cos(a),bc*Math.sin(a),'x',6))}};
-  // регулирующий клапан: шаровой корпус на фланцах, ярмо, мембранный привод, позиционер (L корпуса = 6 r, как DN150 фл. 480 мм)
-  const controlValve=r=>{const g=new THREE.Group(),L=6*r;
-    g.add(cy(r*1.12,r*1.12,L,KM.body,0,0,0,'x',20));flange(g,r,-L/2);flange(g,r,L/2);
-    g.add(cy(r*1.35,r*1.35,r*2.2,KM.body,0,r*.1,0));g.add(sp(r*1.35,KM.body,0,-r*1,0));
-    g.add(cy(r*.75,r*.9,r*1.3,KM.body,0,r*1.85,0));g.add(cy(r*1.1,r*1.1,r*.14,KM.flange,0,r*1.2,0,'y',24));
-    [-1,1].forEach(s=>g.add(bx(r*.14,r*2.2,r*.5,KM.flange,s*r*.72,r*3.3,0)));
-    g.add(cy(r*1.0,r*1.0,r*.5,KM.hous,0,r*2.7,0));
-    const y0=r*4.4;g.add(cy(r*2.1,r*2.1,r*.55,KM.act,0,y0+r*.28,0,'y',32));g.add(cy(r*2.18,r*2.18,r*.12,KM.flange,0,y0+r*.6,0,'y',32));
-    g.add(cy(r*2.1,r*1.6,r*.5,KM.act,0,y0+r*.91,0,'y',32));g.add(cy(r*.5,r*1.2,r*.4,KM.act,0,y0+r*1.36,0,'y',24));
-    g.add(bx(r*1.5,r*1.6,r*1.1,KM.hous,0,r*4.0,-r*2.5));
-    g.add(cy(.008,.008,r*2.4,KM.brass,0,r*4.4,-r*1.6,'z',6));
-    return g};
-  // шаровой кран с пневмоприводом двойного действия (отсечной), L = 5 r
-  const ballValve=r=>{const g=new THREE.Group(),L=5*r;
-    g.add(cy(r*1.1,r*1.1,L,KM.body,0,0,0,'x',20));flange(g,r,-L/2);flange(g,r,L/2);g.add(sp(r*1.35,KM.body));
-    g.add(cy(r*.3,r*.3,r*1.8,KM.flange,0,r*1.7,0));g.add(bx(r*1.3,r*.5,r*1.3,KM.flange,0,r*2.5,0));
-    g.add(cy(r*.95,r*.95,r*5.6,KM.act,0,r*3.2,0,'z',24));[-1,1].forEach(s=>g.add(cy(r*1.0,r*1.0,r*.3,KM.flange,0,r*3.2,s*r*2.9,'z',24)));
-    g.add(bx(r*1.3,r*.9,r*1.2,KM.hous,0,r*4.5,0));
-    return g};
+  // наружный радиус трубы по DN (ГОСТ/GB) и радиус фланца PN16 (HG/T20592): DN → [r трубы, R фланца, толщина, болтов]
+  const DN={25:[.0168,.0575,.016,4],40:[.024,.075,.018,4],50:[.0305,.0825,.020,4],80:[.0445,.100,.020,8],100:[.057,.110,.020,8],150:[.081,.1425,.022,8],200:[.1095,.170,.024,12]};
+  const flangeDN=(g,dn,x)=>{const [rp,R,t,nb]=DN[dn];g.add(cy(R,R,t,KM.flange,x,0,0,'x',28));
+    for(let i=0;i<nb;i++){const a=i*2*Math.PI/nb,bc=R*.82;g.add(cy(.009,.009,t*1.8,KM.cap,x,bc*Math.cos(a),bc*Math.sin(a),'x',6))}};
   // отбор давления сверху трубы: бобышка, вентиль, импульсная трубка DN15
   const tapUp=(g,r,h1)=>{g.add(cy(.022,.022,.06,KM.body,0,r+.02,0,'y',10));g.add(cy(.024,.024,.09,KM.brass,0,r+.1,0,'y',10));
     g.add(bx(.07,.012,.014,KM.red,0,r+.15,0));g.add(cy(.011,.011,h1-r-.15,KM.body,0,(h1+r+.15)/2,0,'y',8))};
-  // преобразователь давления на 2-вентильном блоке (тип Rosemount 3051 / аналог)
+  // преобразователь давления, короткое исполнение на 2-вентильном блоке (PT-11104/-07, PT-11106; паспорт стр. 13, 14)
   const pressureTx=r=>{const g=new THREE.Group();tapUp(g,r,r+.34);
     g.add(bx(.05,.1,.075,KM.body,0,r+.37,0));g.add(cy(.045,.045,.016,KM.flange,0,r+.44,0,'y',16));
-    g.add(cy(.036,.036,.07,KM.hous,0,r+.485,0));g.add(cy(.04,.04,.11,KM.hous,0,r+.57,.0,'z',18));g.add(cy(.032,.032,.01,KM.cap,0,r+.57,.058,'z',18));g.add(cy(.012,.012,.04,KM.cap,.045,r+.57,0,'x',6));
+    g.add(cy(.036,.036,.07,KM.hous,0,r+.485,0));g.add(cy(.04,.04,.11,KM.hous,0,r+.57,0,'z',18));g.add(cy(.032,.032,.01,KM.cap,0,r+.57,.058,'z',18));g.add(cy(.012,.012,.04,KM.cap,.045,r+.57,0,'x',6));
     return g};
-  // показывающий манометр Ø100, вентиль-кран, циферблат смотрит поперёк трубы
-  const gauge=r=>{const g=new THREE.Group();tapUp(g,r,r+.26);
+  // манометр Ø100 (трубка Бурдона, M20×1.5), на паре — с сифонной трубкой (петля) и краном
+  const gauge=(r,siphon)=>{const g=new THREE.Group();tapUp(g,r,r+.26);
+    if(siphon){const t=new THREE.Mesh(new THREE.TorusGeometry(.04,.008,8,24,Math.PI*1.7),KM.body);t.position.set(0,r+.2,0);g.add(t)}
     g.add(cy(.05,.05,.045,KM.cap,0,r+.34,0,'z',28));g.add(cy(.044,.044,.006,KM.dial,0,r+.34,.026,'z',28));g.add(bx(.003,.034,.002,KM.red,.004,r+.352,.03));
     g.add(cy(.008,.008,.06,KM.brass,0,r+.285,0,'y',8));
     return g};
-  // термопреобразователь в гильзе, головка KNE
-  const tempTx=r=>{const g=new THREE.Group();
-    g.add(cy(.026,.026,.05,KM.body,0,r+.02,0,'y',12));g.add(cy(.016,.016,.12,KM.body,0,r+.1,0,'y',10));
-    g.add(cy(.042,.042,.075,KM.hous,0,r+.2,0,'y',18));g.add(cy(.045,.045,.015,KM.hous,0,r+.2,0,'y',18));g.add(sp(.044,KM.hous,0,r+.245,0));g.add(cy(.011,.011,.04,KM.cap,.05,r+.2,0,'x',6));
+  // термопреобразователь Pt100 в гильзе Ø16 на фланце DN40 PN16, взрывозащищённая соединительная головка (TE-11106/-09; паспорт стр. 8, 9)
+  const tempFl=r=>{const g=new THREE.Group(),[rp,R,t]=DN[40];
+    g.add(cy(rp+.004,rp+.004,.08,KM.body,0,r+.03,0,'y',14));g.add(cy(R,R,t,KM.flange,0,r+.08,0,'y',24));
+    for(let i=0;i<4;i++){const a=i*Math.PI/2+Math.PI/4;g.add(cy(.009,.009,t*1.8,KM.cap,.06*Math.cos(a),r+.08,.06*Math.sin(a),'y',6))}
+    g.add(cy(.014,.014,.12,KM.body,0,r+.155,0,'y',10));
+    g.add(cy(.055,.055,.085,KM.ex,0,r+.255,0,'y',22));g.add(cy(.058,.058,.012,KM.ex,0,r+.3,0,'y',22));g.add(sp(.055,KM.ex,0,r+.3,0));g.add(cy(.011,.011,.05,KM.cap,.06,r+.255,0,'x',6));
     return g};
-  // электромагнитный расходомер (фланцевый), корпус перекрывает трубу, преобразователь на шее
-  const magFlow=r=>{const g=new THREE.Group(),L=Math.max(.35,r*2.2),Rt=r*1.1;
-    g.add(cy(Rt,Rt,L,KM.hous,0,0,0,'x',28));flange(g,Rt,-L/2);flange(g,Rt,L/2);g.add(cy(Rt*1.04,Rt*1.04,L*.34,KM.body,0,0,0,'x',28));
-    g.add(cy(.045,.045,.12,KM.body,0,Rt+.05,0));g.add(bx(.2,.16,.12,KM.hous,0,Rt+.19,0));g.add(bx(.12,.07,.004,KM.cap,0,Rt+.2,.062));
+  // вихревой расходомер DN200 PN16, фланцевый, интегральное исполнение с ЖК-индикатором (FT-11101, FT-11102 DN50; стр. 19)
+  const vortex=(r,dn)=>{const g=new THREE.Group(),[rp,R]=DN[dn],L=dn===200?.32:.2;
+    g.add(cy(rp+.012,rp+.012,L,KM.hous,0,0,0,'x',28));flangeDN(g,dn,-L/2);flangeDN(g,dn,L/2);
+    const h=rp+.012;g.add(cy(.05,.05,.1,KM.body,0,h+.04,0));g.add(cy(.07,.07,.1,KM.hous,0,h+.13,0));g.add(cy(.075,.075,.02,KM.hous,0,h+.21,0));g.add(cy(.058,.058,.006,KM.cap,0,h+.223,0));
     return g};
-  // внешняя камера магнитного указателя уровня (L1/L2 TW-11101), датчик на верхнем фланце
-  const bridle=(g,rIn,rOut,y1,y2,rc)=>{ // g — в системе аппарата: горизонтальные штуцеры по радиусу
-    const xo=1,zo=0;
-    [y1,y2].forEach(y=>{const s=cy(.024,.024,rc-rIn,KM.body,(rIn+rc)/2,y,0,'x',10);g.add(s);g.add(cy(.05,.05,.02,KM.flange,rIn+.08,y,0,'x',16));g.add(bx(.07,.05,.014,KM.red,(rIn+rc)/2,y+.04,0))});
-    g.add(cy(.055,.055,y2-y1+.24,KM.body,rc,(y1+y2)/2,0,'y',20));g.add(cy(.07,.07,.02,KM.flange,rc,y2+.13,0,'y',20));g.add(cy(.07,.07,.02,KM.flange,rc,y1-.13,0,'y',20));
-    for(let i=0;i<18;i++)g.add(bx(.006,(y2-y1)/18-.01,.02,i<8?KM.red:KM.sig,rc+.062,y1+(i+.5)*(y2-y1)/18,0));   // флажки индикатора
-    g.add(cy(.03,.03,.1,KM.body,rc,y2+.2,0));g.add(cy(.04,.04,.12,KM.hous,rc,y2+.31,0));g.add(sp(.04,KM.hous,rc,y2+.37,0));g.add(cy(.011,.011,.04,KM.cap,rc+.05,y2+.31,0,'x',6))};
+  // электромагнитный расходомер DN200 PN10, раздельное исполнение: фланцевый датчик + клеммная коробка (FT-11103; стр. 20)
+  const magFlow=(r,dn)=>{const g=new THREE.Group(),[rp,R]=DN[dn],L=.4;
+    g.add(cy(rp+.015,rp+.015,L,KM.hous,0,0,0,'x',28));flangeDN(g,dn,-L/2);flangeDN(g,dn,L/2);g.add(cy(rp+.07,rp+.07,L*.55,KM.body,0,0,0,'x',28));
+    const h=rp+.07;g.add(cy(.045,.045,.07,KM.body,0,h+.02,0));g.add(cy(.07,.07,.1,KM.ex,0,h+.1,0));g.add(sp(.07,KM.ex,0,h+.15,0));
+    return g};
+  // регулирующий клапан DN50 PN16 с мембранным пневмоприводом и позиционером 4–20 мА/HART, фильтр-редуктор с манометром (LV-11106; стр. 24)
+  const ctrlValve=(r,dn)=>{const g=new THREE.Group(),[rp,R,t]=DN[dn],L=.23,k=rp/.0305;
+    g.add(cy(rp*1.12,rp*1.12,L,KM.body,0,0,0,'x',20));flangeDN(g,dn,-L/2);flangeDN(g,dn,L/2);
+    g.add(cy(rp*1.7,rp*1.7,rp*3,KM.body,0,rp*.3,0,'y',20));g.add(sp(rp*1.7,KM.body,0,-rp*1.2,0));
+    g.add(cy(rp*1.0,rp*1.2,rp*1.8,KM.body,0,rp*2.4,0));g.add(cy(rp*1.5,rp*1.5,rp*.2,KM.flange,0,rp*1.8,0,'y',24));
+    [-1,1].forEach(s=>g.add(bx(rp*.2,rp*3.6,rp*.7,KM.flange,s*rp*1.2,rp*4.4,0)));
+    const y0=rp*6.2,Ra=.125;g.add(cy(Ra,Ra,.09,KM.act,0,y0+.05,0,'y',32));g.add(cy(Ra+.008,Ra+.008,.02,KM.flange,0,y0+.11,0,'y',32));
+    g.add(cy(Ra,Ra*.7,.08,KM.act,0,y0+.16,0,'y',32));g.add(cy(Ra*.35,Ra*.7,.05,KM.act,0,y0+.22,0,'y',24));
+    g.add(bx(.1,.12,.08,KM.hous,0,y0-.04,-Ra-.04));g.add(cy(.032,.032,.016,KM.cap,0,y0+.05,-Ra-.1,'z',20));g.add(cy(.027,.027,.004,KM.dial,0,y0+.05,-Ra-.11,'z',20));
+    return g};
+  // шаровой кран DN80 PN16 с пневмоприводом одностороннего действия (пружинный возврат), 2 концевика, электромагнитный клапан (CSV-11101A/B; стр. 21–22)
+  const ballValve=(r,dn)=>{const g=new THREE.Group(),[rp,R]=DN[dn],L=.21;
+    g.add(cy(rp*1.1,rp*1.1,L,KM.body,0,0,0,'x',20));flangeDN(g,dn,-L/2);flangeDN(g,dn,L/2);g.add(sp(rp*1.4,KM.body));
+    g.add(cy(rp*.35,rp*.35,rp*1.6,KM.flange,0,rp*1.6,0));g.add(bx(rp*1.6,rp*.5,rp*1.6,KM.flange,0,rp*2.5,0));
+    g.add(cy(.07,.07,.34,KM.blue,0,rp*3.2+.05,0,'z',24));[-1,1].forEach(s=>g.add(cy(.074,.074,.03,KM.flange,0,rp*3.2+.05,s*.18,'z',24)));
+    g.add(bx(.12,.08,.1,KM.hous,0,rp*3.2+.14,0));g.add(bx(.06,.09,.05,KM.cap,.09,rp*3.2+.1,.2));
+    return g};
+  // магнитный указатель уровня (LT-11106) на штуцерах L1/L2 TW-11101: боковое-боковое присоединение DN25 PN16, база 3200 мм
+  const levelMag=(g,rIn,y1,y2,rc,t)=>{
+    // радиальные штуцеры DN25 → горизонтальный отвод вдоль касательной на t м → камера с поплавком
+    [y1,y2].forEach(y=>{g.add(cy(.017,.017,rc-rIn,KM.body,(rIn+rc)/2,y,0,'x',10));g.add(cy(.0575,.0575,.016,KM.flange,rIn+.05,y,0,'x',20));g.add(bx(.06,.04,.014,KM.red,(rIn+rc)/2,y+.04,0));
+      g.add(cy(.017,.017,Math.abs(t),KM.body,rc,y,t/2,'z',10));g.add(sp(.022,KM.body,rc,y,0))});
+    const cz=t;g.add(cy(.0315,.0315,y2-y1+.3,KM.body,rc,(y1+y2)/2,cz,'y',20));g.add(cy(.05,.05,.016,KM.flange,rc,y2+.15,cz,'y',20));g.add(cy(.05,.05,.016,KM.flange,rc,y1-.15,cz,'y',20));
+    for(let i=0;i<32;i++)g.add(bx(.006,(y2-y1)/32-.01,.024,i<14?KM.red:KM.sig,rc+.036,y1+(i+.5)*(y2-y1)/32,cz));
+    g.add(cy(.025,.025,.08,KM.body,rc,y2+.2,cz));g.add(cy(.045,.045,.12,KM.ex,rc,y2+.3,cz));g.add(sp(.045,KM.ex,rc,y2+.36,cz));g.add(cy(.011,.011,.04,KM.cap,rc+.05,y2+.3,cz,'x',6))};
   // подпись-метка (спрайт постоянного размера на экране)
   const tagTex=(txt,col)=>{const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');
     x.fillStyle='rgba(16,24,32,.88)';x.strokeStyle=col;x.lineWidth=4;const r=14;x.beginPath();x.moveTo(r,3);x.lineTo(253-r,3);x.quadraticCurveTo(253,3,253,3+r);x.lineTo(253,61-r);x.quadraticCurveTo(253,61,253-r,61);x.lineTo(r,61);x.quadraticCurveTo(3,61,3,61-r);x.lineTo(3,3+r);x.quadraticCurveTo(3,3,r,3);x.fill();x.stroke();
-    x.fillStyle='#fff';x.font='700 30px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(txt,128,34);const t=new THREE.CanvasTexture(c);return t};
+    x.fillStyle='#fff';x.font='700 30px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(txt,128,34);return new THREE.CanvasTexture(c)};
   const flowBy=pred=>flowObjs.find(o=>pred(o.f));
   const ptsOf=o=>{const c=o.path.curves,p=[c[0].v1.clone()];c.forEach(k=>p.push(k.v2.clone()));return p};
   // точка на горизонтальном участке трассы вдоль оси ax ('x'|'z'), ближайшем к заданной точке плана (X,Y)
   function spot(fo,ax,X,Y){const q=P(X,Y,0),p=ptsOf(fo);let best=null;
     for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i];if(Math.abs(a.y-b.y)>.01)continue;
       const dx=Math.abs(b.x-a.x),dz=Math.abs(b.z-a.z);if(ax==='x'?(dz>.01||dx<.3):(dx>.01||dz<.3))continue;
-      const lo=ax==='x'?Math.min(a.x,b.x):Math.min(a.z,b.z),hi=ax==='x'?Math.max(a.x,b.x):Math.max(a.z,b.z),v=ax==='x'?q.x:q.z,c=Math.max(lo+.35,Math.min(hi-.35,v));
+      const lo=ax==='x'?Math.min(a.x,b.x):Math.min(a.z,b.z),hi=ax==='x'?Math.max(a.x,b.x):Math.max(a.z,b.z),v=ax==='x'?q.x:q.z,c=Math.max(lo+.5,Math.min(hi-.5,v));
       const d=ax==='x'?Math.abs(c-v)+Math.abs(a.z-q.z):Math.abs(c-v)+Math.abs(a.x-q.x);
       if(!best||d<best.d)best={d,pos:ax==='x'?new THREE.Vector3(c,a.y,a.z):new THREE.Vector3(a.x,a.y,c)}}
     return best&&best.pos}
   const rOf=o=>o.f.r||STREAMS[o.f.s].r;
   const COL={m:'#35a7ff',v:'#ffa534'};
-  // позиции: ключ → описание (теги и режимы — регламент G111; est — тип/место оценены)
+  const D5='3147-5N111';
+  const idx=n=>`${D5}-02 «Индекс приборов», поз. ${n}`,ds=n=>`${D5}-03 «Технический паспорт», стр. ${n}`,pl=(s,el)=>`${D5}-09 «План расположения», лист ${s}${el?` (отметка EL+${el})`:''}`;
+  const FLOW_STEAM=f=>f.s==='steamlp'&&f.ea==='XX-11502';
+  const FLOW_GAS=f=>f.s==='air'&&f.a&&f.a[0]==='TW-11101'&&f.b&&f.b[0]==='BO-11101';
+  // dcs — позиция в DCS; part — что показано (по чертежу / оценено)
   const SPECS=[
-   {tag:'XV*',k:'v',name:'Отсечной клапан пара НД на плавильники',nameu:'PB bug‘ining eritgichlarga kesuvchi klapani',b:ballValve,est:1,
-    flow:f=>f.s==='steamlp'&&f.ea==='XX-11502',ax:'z',at:[5329.2,2338.34],
-    d:['Шаровой кран DN150 с пневмоприводом двойного действия, ~Lстр 0,40 м (оценка: на PFD/P&ID врезка не показана)','Сигнал положения «закрыт/открыт» на ПАЗ плавильников','Положение и тип оценены; тег — по P&ID 3147-5G111-03…05 (в проекте нет)']},
-   {tag:'PIR-11104',k:'m',name:'Давление пара НД на входе (показание, регистрация)',nameu:'Kirishdagi PB bug‘i bosimi (ko‘rsatish, qayd)',b:pressureTx,
-    flow:f=>f.s==='steamlp'&&f.ea==='XX-11502',ax:'z',at:[5330.9,2338.34],
-    d:['Рабочее давление 0,75–0,8 МПа, температура 175–180 °C, расход 2300 м³/ч (регламент, режим G111)','Преобразователь давления на 2-вентильном блоке, отбор сверху трубы (тип и размеры по каталогу, оценка)','Тег и параметры — регламент 3147-5G111; место врезки — оценка']},
-   {tag:'PV*',k:'v',name:'Регулирующий клапан давления пара НД (редуцирование 0,8 → 0,5 МПа)',nameu:'PB bug‘i bosimini rostlovchi klapan (0,8 → 0,5 MPa)',b:controlValve,est:1,
-    flow:f=>f.s==='steamlp'&&f.ea==='XX-11502',ax:'z',at:[5332.8,2338.34],
-    d:['Седельный клапан DN150 с мембранным пневмоприводом и позиционером: строительная длина 480 мм, высота ~1,0 м (типовой каталог)','Между PIR-11104 (0,75–0,8 МПа) и TIR-11107 (0,5 МПа): по регламенту давление пара снижается, клапан оценён','Тег по P&ID 3147-5G111-03…05 (в проекте нет)']},
-   {tag:'TIR-11107',k:'m',name:'Температура пара в впускной трубе пара НД (показание, регистрация)',nameu:'PB bug‘i kirish trubasida harorat (ko‘rsatish, qayd)',b:tempTx,
-    flow:f=>f.s==='steamlp'&&f.ea==='XX-11502',ax:'z',at:[5334.7,2338.34],
-    d:['Рабочая температура 158–165 °C, давление 0,5 МПа (регламент, режим G111)','Термопреобразователь в защитной гильзе, головка KNE Ø85 мм (тип по каталогу, оценка)','Тег и параметры — регламент 3147-5G111; место врезки — оценка']},
-   {tag:'LICA-11106',k:'m',name:'Уровень щёлочи в кубе скруббера TW-11101 (индикация, регулирование, сигнализация)',nameu:'TW-11101 skrubber kubidagi ishqor sathi (ko‘rsatish, rostlash, signal)',
-    custom:'tw',est:0,
-    d:['Диапазон 25–75 % (регламент); подключение к штуцерам L1/L2 аппарата (черт. 3147-5G111-36): отм. 1,0 и 3,0 м, DN40','Выносная камера Ø114 с магнитным указателем и датчиком (радарный) наверху — тип по каталогу, оценка','Управляет подпиткой технической водой (клапан LV*)']},
-   {tag:'LV*',k:'v',name:'Регулирующий клапан подпитки куба TW-11101',nameu:'TW-11101 kubini to‘ldirish rostlovchi klapani',b:controlValve,est:1,
-    flow:f=>f.code==='PW-11102-50-CB2',ax:'z',at:[5338.8,2329.4],
-    d:['Седельный клапан на линии PW-11102-50-CB2: габариты соразмерны трубе в модели (Ø160 мм), строительная длина 480 мм','Работает по LICA-11106; тег и тип — оценка по логике регулирования','Тег по P&ID 3147-5G111-03…05 (в проекте нет)']},
-   {tag:'FIA-11103',k:'m',name:'Расход раствора на орошение TW-11101 от насосов PP-11106A/B',nameu:'PP-11106A/B nasoslaridan TW-11101 ga sepish sarfi',b:magFlow,
-    flow:f=>f.s==='alkali'&&f.a&&f.a[0]==='PP-11106A/B'&&f.b&&f.b[0]==='TW-11101',ax:'z',at:[5350.0,2327.87],
-    d:['Расход 120 м³/ч, температура 50 °C, давление 0,22 МПа (регламент, режим G111)','Электромагнитный расходомер фланцевый, преобразователь на шее; длина 0,55 м (каталог, оценка)','Тег и параметры — регламент 3147-5G111; тип прибора — оценка']},
-   {tag:'PI-11106',k:'m',name:'Давление выхлопных газов после скруббера',nameu:'Skrubberdan keyingi chiqindi gazlar bosimi',b:gauge,
-    flow:f=>f.s==='air'&&f.a&&f.a[0]==='TW-11101'&&f.b&&f.b[0]==='BO-11101',ax:'x',at:[5347.49,2326.3],
-    d:['−5,5…−2,0 кПа (регламент, режим G111): разрежение, диапазон шкалы −10…0 кПа','Манометр (мановакуумметр) Ø100 на вентиле, на газоходе после TW-11101 (оценка по типу)','Тег и параметры — регламент 3147-5G111; место врезки — оценка']},
-   {tag:'TI-11109',k:'m',name:'Температура выхлопных газов после скруббера',nameu:'Skrubberdan keyingi chiqindi gazlar harorati',b:tempTx,
-    flow:f=>f.s==='air'&&f.a&&f.a[0]==='TW-11101'&&f.b&&f.b[0]==='BO-11101',ax:'x',at:[5347.49,2325.3],
-    d:['35–50 °C (регламент, режим G111)','Термопреобразователь в гильзе, головка KNE (каталог, оценка)','Тег и параметры — регламент 3147-5G111; место врезки — оценка']}
+   {tag:'FT-11101',dcs:'FIR-11101',k:'m',name:'Расход греющего пара НД 0,8 МПа на плавильники',nameu:'Eritgichlarga 0,8 MPa PB bug‘i sarfi',
+    b:(r)=>vortex(r,200),flow:FLOW_STEAM,ax:'z',at:[5330.4,2338.34],
+    d:['Вихревой расходомер Кармана, DN200 PN16 RF, фланцевый, интегральное исполнение с ЖК-индикатором, 4–20 мА HART, Ex tD IIIB T130 °C','Линия LS-11100-250-DB2-H3, пар 0,8 МПа (G), 180/175 °C; диапазон 0–3500 м³/ч (нормально 2300), точность ±1,0 % ВПИ','Строительная длина 320 мм — по типовому каталогу (в паспорте не указана)'],
+    src:[idx(35),ds(19),pl(2,'5,900')]},
+   {tag:'TE-11106',dcs:'TIR-11106',k:'m',name:'Температура пара НД 0,8 МПа во входном трубопроводе',nameu:'Kirish quvuridagi 0,8 MPa PB bug‘i harorati',
+    b:tempFl,flow:FLOW_STEAM,ax:'z',at:[5331.8,2338.34],
+    d:['Термопреобразователь сопротивления Pt100 кл. A, бронированный Ø6, гильза Ø16 (S31608) на фланце DN40 PN16 RF, головка Ex tD IIIB IP65, диапазон 0–200 °C','Линия LS-11100-250-DB2-H3, пар 0,8 МПа (G), 180/175 °C','Размеры головки и вылета — по типовому каталогу'],
+    src:[idx(6),ds(8),pl(2,'6,200')]},
+   {tag:'PT-11104',dcs:'PIR-11104',k:'m',name:'Давление греющего пара НД 0,8 МПа на входе',nameu:'Kirishdagi 0,8 MPa PB bug‘i bosimi',
+    b:pressureTx,flow:FLOW_STEAM,ax:'z',at:[5332.8,2338.34],
+    d:['Преобразователь давления, короткое исполнение, в комплекте двухвентильный блок (вертикальный монтаж), диапазон 0–1,0 МПа','Линия LS-11100-250-DB2-H3, пар 0,8 МПа (G), 180/175 °C','В чертеже прибор стоит на отм. EL+1,200 на стойке с импульсной линией; в модели смонтирован прямо на трубу, потому что отметка трассы пара в модели иная'],
+    src:[idx(13),ds(14),pl(2,'1,200')]},
+   {tag:'PG-11105',dcs:'',k:'m',name:'Манометр на паропроводе НД 0,8 МПа',nameu:'0,8 MPa PB bug‘i quvuridagi manometr',
+    b:(r)=>gauge(r,true),flow:FLOW_STEAM,ax:'z',at:[5333.9,2338.34],
+    d:['Манометр показывающий радиальный, трубка Бурдона S31608, шкала Ø100, 0–1,6 МПа, класс 1,6, резьба M20×1,5, IP65, с защитой от перегрузки','Линия LS-11100-250-DB2-H3, пар 0,8 МПа (G); на паре — сифонная трубка (петля)','Сифон и кран показаны по типовому монтажу (черт. -05, лист 1)'],
+    src:[idx(22),ds(10)]},
+   {tag:'LT-11106',dcs:'LIAC-11105',k:'m',name:'Уровень промывочной воды в башне динамической волны TW-11101',nameu:'TW-11101 minorasidagi yuvish suvi sathi',
+    custom:'tw',
+    d:['Магнитно-указательный уровнемер с выходом 4–20 мА HART, диапазон 0–3200 мм, ±10 мм, боковое-боковое присоединение DN25 PN16 RF, корпус S30403/PTFE','Расстояние между фланцами 3200 мм: штуцеры L1/L2 аппарата (черт. 3147-5H111-04-01, DN25 PN16) на отм. +1,000 и +4,200 м; внутри 60/30 °C, −5,5…−4 кПа','Диаметр камеры и положение датчика — по типовому каталогу'],
+    src:[idx(33),ds(18),pl(5,'4,300'),'3147-5H111-04-01 «Мощная волновая башня TW-11101», таблица штуцеров']},
+   {tag:'LV-11106',dcs:'LIAC-11105',k:'v',name:'Регулирующий клапан технологической воды в башню TW-11101',nameu:'TW-11101 minorasiga texnologik suv rostlovchi klapani',
+    b:(r)=>ctrlValve(r,50),flow:f=>f.code==='PW-11102-50-CB2',ax:'z',at:[5339,2329.4],
+    d:['Пневматический односедельный клапан DN50 PN16 RF, корпус/затвор нерж., Cv 45, мембранный привод, позиционер 4–20 мА/HART, фильтр-редуктор, манометр 0–600 кПа','Линия PW-030202-50-CB3, технологическая вода, регулирование по уровню LT-11106','Строительная длина 230 мм и габариты привода — по типовому каталогу; линия в модели имеет код PW-11102-50-CB2'],
+    src:[idx(33),ds(24),pl(5,'1,200')]},
+   {tag:'FT-11103',dcs:'FIA-11103',k:'m',name:'Расход промывочной воды от насосов PP-11106A/B в башню',nameu:'PP-11106A/B nasoslaridan minoraga yuvish suvi sarfi',
+    b:(r)=>magFlow(r,200),flow:f=>f.s==='alkali'&&f.a&&f.a[0]==='PP-11106A/B'&&f.b&&f.b[0]==='TW-11101',ax:'z',at:[5350.0,2327.87],
+    d:['Электромагнитный расходомер DN200 PN10 RF, футеровка PTFE, электроды тантал, ±0,5 %, диапазон 0–200 м³/ч (нормально 120), раздельное исполнение, 4–20 мА HART','Линия WW-11103-200-CE2, 0,22 МПа (G), 50/30 °C','Строительная длина 400 мм и клеммная коробка — по типовому каталогу; вынесенный преобразователь не показан'],
+    src:[idx(37),ds(20),pl(4,'1,200')]},
+   {tag:'PT-11107',dcs:'PIR-11107',k:'m',name:'Давление промывочной воды на входе насоса PP-11106A/B',nameu:'PP-11106A/B nasosi kirishidagi yuvish suvi bosimi',
+    b:pressureTx,flow:f=>f.s==='alkali'&&f.a&&f.a[0]==='TW-11101'&&f.b&&f.b[0]==='PP-11106A/B',ax:'z',at:[5349.8,2327.9],
+    d:['Преобразователь давления, короткое исполнение, двухвентильный блок, диапазон 0–0,5 МПа','Линия WW-11103-150-CE2, 0,22 МПа (G), 50/30 °C','Отметка по плану EL+1,200 (комбинированная подпись с PHT-11101 и FT-11103); в модели прибор на трубе'],
+    src:[idx(16),ds(14),pl(4,'1,200')]},
+   {tag:'PT-11106',dcs:'PIR-11106',k:'m',name:'Давление в газоходе после башни TW-11101',nameu:'TW-11101 minorasidan keyingi gaz yo‘lidagi bosim',
+    b:pressureTx,flow:FLOW_GAS,ax:'x',at:[5347.49,2325.6],
+    d:['Датчик перепада давления (измерение избыточного), двухвентильный блок, диапазон −10…0 кПа','Газоход VT-11109-700-CE9 (S2507), отходящий газ 70/50 °C','Отметка по плану EL+1,200; в модели прибор на газоходе'],
+    src:[idx(15),ds(13),pl(4,'1,200')]},
+   {tag:'TE-11109',dcs:'TIR-11109',k:'m',name:'Температура отходящих газов после башни TW-11101',nameu:'TW-11101 minorasidan keyingi gazlar harorati',
+    b:tempFl,flow:FLOW_GAS,ax:'x',at:[5347.49,2324.4],
+    d:['Термопреобразователь Pt100 кл. A, гильза Ø16 на фланце DN40 PN16 RF, головка Ex tD IIIB IP65, диапазон 0–200 °C','Газоход VT-11109-700-CE9, отходящий газ 70/50 °C','Отметка по плану EL+1,600; в модели прибор на газоходе'],
+    src:[idx(9),ds(9),pl(4,'1,600')]},
+   {tag:'FT-11102',dcs:'FIR-11102',k:'m',name:'Расход конденсата на выходе насосов PP-11105A/B',nameu:'PP-11105A/B chiqishida kondensat sarfi',
+    b:(r)=>vortex(r,50),flow:f=>f.code==='SC-111133-80-DB2-P3',ax:'x',at:[5363.54,2333.3],
+    d:['Вихревой расходомер DN50 PN16 RF, интегральное исполнение, диапазон 0–35 м³/ч (нормально 20), ±1,0 %','Линия SC-111145-80-DB2-H1, конденсат 158/100 °C; в модели линия к станции деминерализации имеет код SC-111133-80','Строительная длина 200 мм — по каталогу'],
+    src:[idx(36),ds(19),pl(3,'4,200')]},
+   {tag:'CSV-11101A',dcs:'',k:'v',name:'Отсечной клапан конденсата на станцию деминерализации',nameu:'Demineralizatsiya stansiyasiga kondensat kesuvchi klapani',
+    b:(r)=>ballValve(r,80),flow:f=>f.code==='SC-111133-80-DB2-P3',ax:'x',at:[5363.54,2331.4],
+    d:['Шаровой клапан DN80 PN16 RF с мягким уплотнением, пневмопривод одностороннего действия (при потере воздуха закрыт), 2 концевых выключателя, 1/4″ NPTF, IP65','Линия SC-111145-80-DB2-H1, конденсат 0,3 МПа (G), включение/отключение подачи на станцию деминерализованной воды','Строительная длина 210 мм и габариты привода — по каталогу'],
+    src:[idx(38),ds(21),pl(3,'1,400')]},
+   {tag:'CSV-11101B',dcs:'',k:'v',name:'Отсечной клапан конденсата на станцию оборотной воды',nameu:'Aylanma suv stansiyasiga kondensat kesuvchi klapani',
+    b:(r)=>ballValve(r,80),flow:f=>f.code==='SC-111136-80-DB2-P3',ax:'x',at:[5361.61,2331.4],
+    d:['Шаровой клапан DN80 PN16 RF с мягким уплотнением, пневмопривод одностороннего действия (при потере воздуха закрыт), 2 концевых выключателя, 1/4″ NPTF, IP65','Линия SC-111148-80-DB2-H1, конденсат; подача на станцию оборотной воды','Строительная длина 210 мм и габариты привода — по каталогу'],
+    src:[idx(38),ds(22),pl(3,'1,400')]}
   ];
   SPECS.forEach(sp0=>{
     let g,anchor,r=0;
     if(sp0.custom==='tw'){const tw=(byTag['TW-11101']||[])[0];if(!tw)return;
-      // штуцеры L1/L2 TW-11101: угол 245° от севера, отм. 1,0 и 3,0 (C: nzR(D/2,a+5,…)); внешний радиус штуцера 1,2+0,2
-      const gg=new THREE.Group(),a=245*Math.PI/180;bridle(gg,1.4,1.4,1.0,3.0,1.78);gg.rotation.y=Math.PI/2-a;   // +X группы → направление pol(r,a)
-      g=new THREE.Group();g.add(gg);g.position.copy(P(5347.8,2329.2,0));anchor=new THREE.Vector3(0,3.9,0).add(g.position);
-      const pa=new THREE.Vector3(1.78*Math.sin(a),0,-1.78*Math.cos(a));anchor.add(pa);
-      g.userData.tw=true;
+      // штуцеры L1/L2 TW-11101: угол 20° от севера (по чертежу 240°, но там в модели проходят линии всасывания — смещено) (nzR(D/2,a+5,…))
+      const gg=new THREE.Group(),a=20*Math.PI/180;levelMag(gg,1.4,1.0,4.2,1.9,0);gg.rotation.y=Math.PI/2-a;
+      g=new THREE.Group();g.add(gg);g.position.copy(P(5347.8,2329.2,0));anchor=new THREE.Vector3(2.7*Math.sin(a),4.9,-2.7*Math.cos(a)).add(g.position);
     }else{
       const fo=flowBy(sp0.flow);if(!fo){console.warn('KIP: нет трассы для',sp0.tag);return}
       const pos=spot(fo,sp0.ax,sp0.at[0],sp0.at[1]);if(!pos){console.warn('KIP: нет участка для',sp0.tag);return}
       r=rOf(fo);const inner=sp0.b(r);g=new THREE.Group();g.add(inner);g.position.copy(pos);
       if(sp0.ax==='z')g.rotation.y=Math.PI/2;      // локальная ось X вдоль трубы
-      // клапаны и расходомер стоят «по ходу», приборы-врезки — сверху; для z-участков приводы/позиционеры смотрят на запад
-      const top=new THREE.Box3().setFromObject(g);anchor=pos.clone();anchor.y=Math.max(top.max.y,pos.y)+.1;
+      const top=new THREE.Box3().setFromObject(g);anchor=pos.clone();anchor.y=Math.max(top.max.y,pos.y)+.12;
     }
     g.userData.kip=sp0;KIP.g.add(g);g.traverse(c=>{if(c.isMesh){c.userData.kipOwner=sp0;KIP.pick.push(c)}});
     const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTex(sp0.tag,COL[sp0.k]),depthTest:false,transparent:true,sizeAttenuation:false}));
@@ -3890,9 +3926,9 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
   controls.addEventListener('change',kipLod);
   const info=$('kipInfo'),kipClose=()=>{info.hidden=true};
   function kipShow(sp0){const uz=currentLang==='uz';
-    $('kiSt').textContent=(uz?'KIPiA · ':'КИП · ')+(sp0.k==='v'?(uz?'armatura':'арматура'):(uz?'o‘lchash':'измерение'))+(sp0.est?(uz?' · taxminiy':' · оценка'):'');
-    $('kiNm').textContent=sp0.tag.replace('*','')+(sp0.est?' (поз. уточняется)':'')+' · '+((uz&&sp0.nameu)?sp0.nameu:sp0.name);
-    $('kiWhy').innerHTML=sp0.d.map(t=>'<div>'+esc(t)+'</div>').join('')+'<div class="mono">'+(uz?'Chizma: 3147-5G111-03…05 (P&ID) loyihada yo‘q; teglar — reglament':'Чертёж: P&ID 3147-5G111-03…05 (в проекте нет); теги — регламент 3147-5G111')+'</div>';
+    $('kiSt').textContent=(uz?'KIPiA · ':'КИП · ')+(sp0.k==='v'?(uz?'armatura':'арматура'):(uz?'o‘lchash':'измерение'));
+    $('kiNm').textContent=sp0.tag+(sp0.dcs?' ('+sp0.dcs+')':'')+' · '+((uz&&sp0.nameu)?sp0.nameu:sp0.name);
+    $('kiWhy').innerHTML=sp0.d.map(t=>'<div>'+esc(t)+'</div>').join('')+'<div class="mono">'+(uz?'Chizmalar: ':'Чертежи: ')+sp0.src.map(esc).join('; ')+'</div>';
     info.hidden=false}
   $('kiX').onclick=kipClose;
   const kr=new THREE.Raycaster(),km2=new THREE.Vector2();let kd=null;
