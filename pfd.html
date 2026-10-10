@@ -14,7 +14,7 @@
   --shadow:0 10px 30px rgba(20,32,29,.16);
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  --imgfilter:none;
+  --imgfilter:none; --eqf:#F2F6F5; --hatch:#B9C4C1;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -24,7 +24,7 @@
     --s-water:#4CC265; --s-steam:#FF6B5E; --s-steamlp:#7CCBFA; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
     --s-alkali:#B18CF0; --s-sulfur:#C99158;
     --shadow:0 10px 30px rgba(0,0,0,.5);
-    --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05);
+    --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05); --eqf:#1B2724; --hatch:#3B4A46;
   }
 }
 :root[data-theme="dark"]{
@@ -34,7 +34,7 @@
   --s-water:#4CC265; --s-steam:#FF6B5E; --s-steamlp:#7CCBFA; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
   --s-alkali:#B18CF0; --s-sulfur:#C99158;
   --shadow:0 10px 30px rgba(0,0,0,.5);
-  --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05);
+  --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05); --eqf:#1B2724; --hatch:#3B4A46;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
@@ -60,10 +60,27 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
 #stage.anim{transition:transform .45s cubic-bezier(.2,.7,.2,1)}
 #stage img{position:absolute;inset:0;display:none;width:100%;height:100%;filter:var(--imgfilter);pointer-events:none;-webkit-user-drag:none;opacity:.5;z-index:2}
-body.scan #stage img{display:block}
+body.scan #stage img,body.cmp #stage img{display:block}
+body.scan #stage img{opacity:1}
+body.scan #art{visibility:hidden}
 #art{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #art .ln{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 #art .fl{fill:var(--ink);stroke:none}
+#art .sb{fill:var(--eqf);stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+#art .sl{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+#art .sl2{fill:none;stroke:var(--ink);stroke-width:3}
+#art .sl0{fill:none;stroke:var(--ink);stroke-width:3}
+#art .st{fill:none;stroke:var(--ink2);stroke-width:1.7}
+#art .sf{fill:var(--ink);stroke:none}
+#art .sx{fill:var(--hatch);fill-opacity:.45;stroke:none}
+#art .sd{fill:url(#pfdD);stroke:var(--ink);stroke-width:2}
+#art .sd2{fill:url(#pfdH);stroke:none}
+#art .sd3{fill:url(#pfdN);stroke:none}
+#art .sc{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-dasharray:10 6;stroke-linecap:round;stroke-linejoin:round}
+#art .sc0{fill:none;stroke:var(--ink);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+#art .sdb{fill:none;stroke:var(--ink2);stroke-width:2.6;stroke-dasharray:14 8}
+#art .sn2{font:700 24px var(--sans);fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+#art .fire{fill:#E8742A;stroke:var(--ink);stroke-width:1.6}
 #art .pp{stroke-width:7;stroke-linecap:butt;fill:none}
 #art .dsh{fill:none;stroke:var(--ink2);stroke-width:2.4;stroke-dasharray:30 12 3 12}
 #art .dsm{fill:none;stroke:var(--ink2);stroke-width:2.2;stroke-dasharray:22 7 3 7}
@@ -136,6 +153,7 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
   <div class="leg" id="leg"></div>
   <button class="btn" id="bZones" type="button" aria-pressed="true"></button>
   <button class="btn" id="bScan" type="button" aria-pressed="false"></button>
+  <button class="btn" id="bCmp" type="button" aria-pressed="false"></button>
   <div class="zoom">
     <button class="btn" id="zOut" type="button" aria-label="−">−</button>
     <span class="zl" id="zl">100%</span>
@@ -154,6 +172,7 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
 <script src="lang.js"></script>
 <script src="theme.js"></script>
 <script src="pfd/pfd-data.js"></script>
+<script src="pfd/symbols.js"></script>
 <script>
 (function(){
 'use strict';
@@ -165,7 +184,7 @@ const KCOL={gas:'--s-gas',air:'--s-air',acid:'--s-acid',water:'--s-water',steam:
 
 const UI={
   ru:{
-    scan:'Скан', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист',
+    scan:'Скан', cmp:'Наложение', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист',
     hint:'Колесо / щипок — масштаб, перетаскивание — сдвиг. Нажмите на аппарат или на ромб с номером потока.',
     close:'Закрыть', qty:'Количество', mass:'Масса, кг', also:'Также на листах', streams:'Потоки у аппарата',
     to3d:'Показать в 3D', toFlow:'Показать в схеме потоков', stream:'Поток', onSheets:'На листах', joins:'Связывает аппараты',
@@ -178,7 +197,7 @@ const UI={
     unit:{th:'т/ч'}, gas:'газ', acid:'кислота', water:'вода', steam:'пар', sulfur:'сера', reagent:'реагент', air:'воздух'
   },
   uz:{
-    scan:'Skan', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq',
+    scan:'Skan', cmp:'Ustma-ust', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq',
     hint:'G‘ildirak / chimchilash — masshtab, sudrash — siljitish. Apparatni yoki oqim raqamli romb ustiga bosing.',
     close:'Yopish', qty:'Soni', mass:'Massa, kg', also:'Boshqa varaqlarda', streams:'Apparatdagi oqimlar',
     to3d:'3D da ko‘rsatish', toFlow:'Oqim sxemasida ko‘rsatish', stream:'Oqim', onSheets:'Varaqlarda', joins:'Bog‘laydigan apparatlar',
@@ -256,7 +275,13 @@ vp.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')hideTip()});
 $('zIn').onclick=()=>zoomAt(k*1.4,vp.clientWidth/2,vp.clientHeight/2);
 $('zOut').onclick=()=>zoomAt(k/1.4,vp.clientWidth/2,vp.clientHeight/2);
 $('zFit').onclick=()=>fit(true);
-$('bScan').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('scan',on);if(on)img.src=sheetOf(sheet).scan||('pfd/scan/sheet'+sheet+'.jpg')};
+function setScan(mode){          // '' — вектор, 'scan' — оригинальный скан, 'cmp' — скан поверх вектора
+  document.body.classList.toggle('scan',mode==='scan');document.body.classList.toggle('cmp',mode==='cmp');
+  $('bScan').setAttribute('aria-pressed',mode==='scan');$('bCmp').setAttribute('aria-pressed',mode==='cmp');
+  if(mode)img.src='pfd/scan/sheet'+sheet+'.jpg'}
+const scanMode=()=>document.body.classList.contains('scan')?'scan':document.body.classList.contains('cmp')?'cmp':'';
+$('bScan').onclick=()=>setScan(scanMode()==='scan'?'':'scan');
+$('bCmp').onclick=()=>setScan(scanMode()==='cmp'?'':'cmp');
 $('bZones').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('zones',on)};
 window.addEventListener('resize',()=>{const was=k/fitK;computeFit();k=Math.max(fitK,was*fitK);applyView()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard();else if(e.key==='+'||e.key==='=')$('zIn').click();else if(e.key==='-')$('zOut').click()});
@@ -271,7 +296,9 @@ function paintLeg(){const g=$('leg');g.textContent='';MEDIA.forEach(m=>{const b=
 function applyMedium(){art.querySelectorAll('[data-m]').forEach(n=>n.classList.toggle('dim',!!medium&&n.dataset.m!==medium))}
 function drawArt(s){
   art.textContent='';
+  PFDSYM.defs(art);
   mk('path',{d:s.fill,class:'fl'},art);mk('path',{d:s.art,class:'ln'},art);
+  (s.sym||[]).forEach(q=>PFDSYM.draw(art,q));
   const gp=mk('g',{},art);
   s.pipes.forEach(p=>mk('line',{x1:p[2],y1:p[3],x2:p[4],y2:p[5],class:'pp',stroke:`var(${MCOL[p[1]]||'--ink'})`,'data-m':p[1]},gp));
   
@@ -312,7 +339,7 @@ function drawArt(s){
 // ---------- sheets ----------
 function mk(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const a in attrs)n.setAttribute(a,attrs[a]);if(parent)parent.appendChild(n);return n}
 function showSheet(n,keepView){
-  sheet=n;const s=sheetOf(n);if(document.body.classList.contains('scan'))img.src='pfd/scan/sheet'+n+'.jpg';drawArt(s);
+  sheet=n;const s=sheetOf(n);if(scanMode())img.src='pfd/scan/sheet'+n+'.jpg';drawArt(s);
   ov.textContent='';
   const gz=mk('g',{},ov);
   [...s.eq].sort((a,b)=>area(b.box)-area(a.box)).forEach(e=>{
@@ -468,7 +495,7 @@ window.addEventListener('message',e=>{
 function paint(l){
   lang=l==='uz'?'uz':'ru';const T=L();
   $('q').placeholder=T.search;$('q').setAttribute('aria-label',T.search);
-  $('bZones').textContent=T.zones;$('bScan').textContent=T.scan;paintLeg();$('zFit').textContent=T.fit;$('hint').textContent=T.hint;
+  $('bZones').textContent=T.zones;$('bScan').textContent=T.scan;$('bCmp').textContent=T.cmp;paintLeg();$('zFit').textContent=T.fit;$('hint').textContent=T.hint;
   document.title=T.title;paintTabs();fillSearch();
   if(sel&&sel.t==='eq'){const f=eqByApp[sel.app].find(x=>x.sheet===sheet);if(f)openEqCard(f.eq,sheet)}
   else if(sel&&sel.t==='st')openStCard(sel.id);
