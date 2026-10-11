@@ -5128,6 +5128,8 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    flowObjs.forEach(f=>f.dots.forEach(d=>d.visible=false))}
  // Кнопка «Строительство» временно скрыта (анимация будет настроена позже): для возврата поставить true
  const SHOW_BUILD_TAB=false;
+ const SHOW_KIP_BTN=false;   // кнопка «КИП» скрыта (слой и данные сохранены); true — вернуть
+ $('bKip').hidden=!SHOW_KIP_BTN;
  $('tabBuild').hidden=!SHOW_BUILD_TAB;
  $('tabBuild').onclick=()=>{if(!BU.on)setBuild(true)};
  $('buPlay').onclick=()=>{if(BU.t>=BU_T1)BU.t=BU_T0;BU.play=!BU.play;buApply()};
