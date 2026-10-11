@@ -224,7 +224,7 @@ const UI={
   ru:{
     allm:'Все среды', scan:'Скан', cmp:'Наложение', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист', scanLoad:'Загрузка скана…', scanErr:'Скан не загрузился. Нажмите, чтобы повторить.',
 
-    ioT:'Входы и выходы', ioIn:'Вход', ioOut:'Выход', ioN:'№', ioMed:'Среда', ioQ:'Расход', ioTemp:'T, °C', ioP:'P', ioSumIn:'Σ вход', ioSumOut:'Σ выход', ioBal:'Баланс (вход − выход)', ioOk:'сходится', ioDiff:'не сходится по таблице чертежа',
+    ioT:'Входы и выходы', ioIn:'Вход', ioOut:'Выход', ioN:'№', ioMed:'Среда', ioQ:'Расход', ioTemp:'T, °C', ioP:'P', ioSumIn:'Σ вход', ioSumOut:'Σ выход', ioBal:'Баланс (вход − выход)', ioBalM:'Баланс по массе, газ + жидкость (все листы)', ioOk:'сходится', ioDiff:'не сходится по таблице чертежа',
     ioPump:'через насос', ioNone:'Для этого потока на схеме нет аппаратов.', ioMin:'Свернуть', ioMax:'Развернуть', ioNote:'Баланс по данным таблицы PFD без поправок. Расходы газа в Нм³/ч, остальных сред в т/ч; разные единицы не суммируются. Нажмите строку — поток подсветится на схеме.', ioOfStream:'поток', ioOfEq:'аппарат', nm3:'Нм³/ч', tph:'т/ч', ioNoOut:'выходы на схеме не обозначены', ioNoIn:'входы на схеме не обозначены',
     hint:'Колесо / щипок — масштаб, перетаскивание — сдвиг. Нажмите на аппарат или на ромб с номером потока.',
     close:'Закрыть', qty:'Количество', mass:'Масса, кг', also:'Также на листах', streams:'Потоки у аппарата',
@@ -240,7 +240,7 @@ const UI={
   uz:{
     allm:'Barcha muhitlar', scan:'Skan', cmp:'Ustma-ust', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq', scanLoad:'Skan yuklanmoqda…', scanErr:'Skan yuklanmadi. Qayta urinish uchun bosing.',
 
-    ioT:'Kirish va chiqishlar', ioIn:'Kirish', ioOut:'Chiqish', ioN:'№', ioMed:'Muhit', ioQ:'Sarf', ioTemp:'T, °C', ioP:'P', ioSumIn:'Σ kirish', ioSumOut:'Σ chiqish', ioBal:'Balans (kirish − chiqish)', ioOk:'mos keladi', ioDiff:'chizma jadvali bo‘yicha mos kelmaydi',
+    ioT:'Kirish va chiqishlar', ioIn:'Kirish', ioOut:'Chiqish', ioN:'№', ioMed:'Muhit', ioQ:'Sarf', ioTemp:'T, °C', ioP:'P', ioSumIn:'Σ kirish', ioSumOut:'Σ chiqish', ioBal:'Balans (kirish − chiqish)', ioBalM:'Massa balansi, gaz + suyuqlik (barcha varaqlar)', ioOk:'mos keladi', ioDiff:'chizma jadvali bo‘yicha mos kelmaydi',
     ioPump:'nasos orqali', ioNone:'Bu oqim uchun sxemada apparat yo‘q.', ioMin:'Yig‘ish', ioMax:'Yoyish', ioNote:'Balans PFD jadvali ma’lumotlari bo‘yicha, tuzatishsiz. Gaz sarfi Nm³/soat, boshqa muhitlar t/soat; turli birliklar qo‘shilmaydi. Qatorni bossangiz, oqim sxemada ajratiladi.', ioOfStream:'oqim', ioOfEq:'apparat', nm3:'Nm³/soat', tph:'t/soat', ioNoOut:'chiqishlar sxemada ko‘rsatilmagan', ioNoIn:'kirishlar sxemada ko‘rsatilmagan',
     hint:'G‘ildirak / chimchilash — masshtab, sudrash — siljitish. Apparatni yoki oqim raqamli romb ustiga bosing.',
     close:'Yopish', qty:'Soni', mass:'Massa, kg', also:'Boshqa varaqlarda', streams:'Apparatdagi oqimlar',
@@ -510,6 +510,15 @@ function ioFlows(tag){ // [{id,dir:'in'|'out',thru}]
     if(src.includes(tag))r.push({id,dir:'out'});
     if(thru.includes(tag)){r.push({id,dir:'in',thru:1});r.push({id,dir:'out',thru:1})}});
   return r}
+const MW=[64.066,80.06,31.998,28.013];
+function massOf(id){const z=ST[id];if(!z)return null;
+  if(z.g)return (z.g[0]*MW[0]+z.g[1]*MW[1]+z.g[2]*MW[2]+z.g[3]*MW[3]+(z.g[5]||0)*18.015)/22414;
+  return typeof z.th==='number'?z.th:null}
+function massBal(tag){let i=0,o=0,ni=0,no=0;const seen=new Set();
+  SH.forEach(sh=>Object.entries(sh.flow||{}).forEach(([k,[src,dst,thru]])=>{const q=massOf(k);if(q===null||seen.has(k))return;seen.add(k);
+    if(dst.includes(tag)||thru.includes(tag)){i+=q;ni++}
+    if(src.includes(tag)||thru.includes(tag)){o+=q;no++}}));
+  return ni&&no?{d:i-o,pc:i?Math.abs(i-o)/i*100:0}:null}
 function ioCard(e){
   const T=L(),c=CARD[e.app],fl=ioFlows(e.tag).sort((a,b)=>a.id-b.id);
   const row=f=>{const z=ST[f.id],v=ioVals(f.id);if(!z||!v)return '';
@@ -524,8 +533,12 @@ function ioCard(e){
   let foot='';
   ['nm3','th'].forEach(u=>{const g=sum[u];if(!g.ni&&!g.no)return;const un=u==='nm3'?T.nm3:T.tph;
     foot+=`<tr class="sum"><td colspan="2">${esc(T.ioSumIn)} / ${esc(T.ioSumOut)}</td><td class="r" colspan="3">${g.ni?fmt(+g.i.toFixed(2)):'—'} / ${g.no?fmt(+g.o.toFixed(2)):'—'} ${esc(un)}</td></tr>`;
-    if(g.ni&&g.no){const d=g.i-g.o,pc=g.i?Math.abs(d)/g.i*100:0,ok=pc<=0.5;
+    if(g.ni&&g.no&&u==='th'){const d=g.i-g.o,pc=g.i?Math.abs(d)/g.i*100:0,ok=pc<=0.5;
       foot+=`<tr class="bal ${ok?'good':'warn'}"><td colspan="2">${esc(T.ioBal)}</td><td class="r" colspan="3">${d>0?'+':''}${fmt(+d.toFixed(2))} ${esc(un)} · ${ok?esc(T.ioOk):fmt(+pc.toFixed(1))+' % — '+esc(T.ioDiff)}</td></tr>`}});
+  // газ в Нм³/ч не сохраняется (SO₂+½O₂→SO₃, поглощение SO₃ в кислоту): баланс — по массе, по всем листам, газ + жидкость
+  const mb=massBal(e.tag);
+  if(mb&&sum.nm3.ni&&sum.nm3.no){const ok=mb.pc<=0.5;
+    foot+=`<tr class="bal ${ok?'good':'warn'}"><td colspan="2">${esc(T.ioBalM)}</td><td class="r" colspan="3">${mb.d>0?'+':''}${fmt(+mb.d.toFixed(2))} ${esc(T.tph)} · ${ok?esc(T.ioOk):fmt(+mb.pc.toFixed(1))+' % — '+esc(T.ioDiff)}</td></tr>`}
   return `<div class="ioc"><h3><span class="tag">${esc(e.tag)}</span>${esc(c?nm(c,'n'):'')}</h3><table class="iot"><thead><tr><th>${esc(T.ioN)}</th><th>${esc(T.ioMed)}</th><th class="r">${esc(T.ioQ)}</th><th class="r">${esc(T.ioTemp)}</th><th class="r">${esc(T.ioP)}</th></tr></thead><tbody>${sec('in','in')}${sec('out','out')}${foot}</tbody></table></div>`}
 function ioShow(tags,sid){
   const T=L(),label=sid?`${T.stream} ${sid}`:tags[0];ioAct=sid||null;
