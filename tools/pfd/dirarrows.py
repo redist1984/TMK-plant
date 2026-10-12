@@ -32,7 +32,7 @@ def _at(ch,t):  # точка и направление на расстоянии
         t-=L
 def _len(ch): return sum(_d(a,b) for a,b in zip(ch,ch[1:]))
 
-def make(sh,kind_of,sheetno,frm=None):
+def make(sh,kind_of,sheetno,frm=None,skip=()):   # skip — потоки, у которых стрелки заданы вручную (manual.ARROWS)
     frm=frm or {}
     boxes={e['tag']:e['box'] for e in sh['eq']}
     flow=sh.get('flow',{}); terms=sh['terms']
@@ -40,7 +40,7 @@ def make(sh,kind_of,sheetno,frm=None):
     res=[]; log=[]
     for x in sh['st']:
         sid=x['id']
-        if x.get('ref') or not x['lines']: continue
+        if x.get('ref') or not x['lines'] or sid in skip: continue
         src,dst,thru=[],[],[]
         if str(sid) in flow: src,dst,thru=flow[str(sid)]
         for ch in chains(x['lines']):
