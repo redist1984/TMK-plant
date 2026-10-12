@@ -2983,7 +2983,9 @@ function start(){
      // (EL+8,540), N10 fixed-end condensate DN25 at the bottom (EL+6,380), m jacket circulation DN25
      // (EL+7,260), N6 movable-jacket steam DN32 at the skid end (EL+6,300)
      const nz=(x,y,z,d,L,ax_)=>{const n=cyl(d,d,L,M.steelDark,10);if(ax_==='z')n.rotation.x=Math.PI/2;else if(ax_==='x')n.rotation.z=Math.PI/2;n.position.set(x,y,z);fg.add(n)};
-     nz(3.706,ax+.95,.1,.14,.4);nz(3.706,2.535,.1,.24,.04);
+     nz(3.537,ax+.95,0,.14,.4);nz(3.537,2.6,0,.24,.04);nz(3.62,2.535,.1,.06,.17,'x');   // top stack N5/N7/N11/N12 + N8 stub along x
+     nz(4.015,.75,0,.16,.55,'x');nz(4.015,.75,.31,.2,.55,'x');nz(4.29,.75,0,.24,.04,'x');nz(4.29,.75,.31,.3,.04,'x');   // N2 feed DN100×150, N3 outlet DN150×200 through the head
+     [-.69,.69].forEach(z=>nz(4.2,1.74,z,.13,.5,'x'));                                                        // N4/N9 vibrator air G1/2
      nz(3.67,.65,0,.14,.8);nz(3.67,.375,-.14,.06,.28,'z');
      nz(3.61,1.255,1.085,.06,.27,'z');
      nz(-5.0,.295,1.35,.07,.4,'x');
