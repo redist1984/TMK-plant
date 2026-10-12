@@ -263,7 +263,7 @@ const UI={
     to3d:'Показать в 3D', toFlow:'Показать в схеме потоков', stream:'Поток', onSheets:'На листах', joins:'Связывает аппараты',
     gasRef:'Газовый поток: параметры — в таблице листа 1.', openSheet1:'Открыть лист 1',
     pfdTag:'Позиция на PFD', noCard:'Карточка аппарата в модели не найдена.', noLine:'Линия потока на этом листе не выделена.',
-    reg:'По регламенту', pfdNote:'Позиция по PFD', tailNote:'На PFD блок без обозначения («система очистки хвостовых газов»): сопоставлен с TW-11304 по составу потоков 72–74.',
+    reg:'По регламенту', pfdNote:'Позиция по PFD', attNote:'Вода на впрысковые пароохладители XX-11401 и XX-11402 (чертёж 3147-5R114-03): до паровых линий поток показан водой. В расчётном режиме по таблице PFD расход 0 т/ч.', tailNote:'На PFD блок без обозначения («система очистки хвостовых газов»): сопоставлен с TW-11304 по составу потоков 72–74.',
     wt:'Концентрация, % масс.', th:'Расход, т/ч', rho:'Плотность, кг/м³', m3:'Расход, м³/ч', t:'Температура, °C', p:'Давление',
     pMPa:'МПа (изб.)', pkPa:'кПа (изб.)', comps:{SO2:'SO₂, Нм³/ч',SO3:'SO₃, Нм³/ч',O2:'O₂, Нм³/ч',N2:'N₂, Нм³/ч',dry:'Итого сухой, Нм³/ч',H2O:'H₂O, Нм³/ч',wet:'Итого влажный, Нм³/ч'},
     src:'Источник: ', title:'Технологическая схема материальных потоков (PFD), WZ-POT-262, Rev. A',
@@ -279,7 +279,7 @@ const UI={
     to3d:'3D da ko‘rsatish', toFlow:'Oqim sxemasida ko‘rsatish', stream:'Oqim', onSheets:'Varaqlarda', joins:'Bog‘laydigan apparatlar',
     gasRef:'Gaz oqimi: parametrlar 1-varaq jadvalida.', openSheet1:'1-varaqni ochish',
     pfdTag:'PFD dagi pozitsiya', noCard:'Modelda apparat kartochkasi topilmadi.', noLine:'Bu varaqda oqim chizig‘i ajratilmagan.',
-    reg:'Reglament bo‘yicha', pfdNote:'PFD bo‘yicha pozitsiya', tailNote:'PFD da bu blokning belgisi yo‘q («chiqindi gazlarni tozalash tizimi»): 72–74 oqimlar tarkibiga ko‘ra TW-11304 ga mos qo‘yilgan.',
+    reg:'Reglament bo‘yicha', pfdNote:'PFD bo‘yicha pozitsiya', attNote:'XX-11401 va XX-11402 purkash bug‘ sovutgichlariga suv (3147-5R114-03 chizmasi): bug‘ liniyalarigacha oqim suv sifatida ko‘rsatilgan. PFD jadvalidagi hisob rejimida sarf 0 t/soat.', tailNote:'PFD da bu blokning belgisi yo‘q («chiqindi gazlarni tozalash tizimi»): 72–74 oqimlar tarkibiga ko‘ra TW-11304 ga mos qo‘yilgan.',
     wt:'Konsentratsiya, % massa', th:'Sarf, t/soat', rho:'Zichlik, kg/m³', m3:'Sarf, m³/soat', t:'Harorat, °C', p:'Bosim',
     pMPa:'MPa (ortiqcha)', pkPa:'kPa (ortiqcha)', comps:{SO2:'SO₂, Nm³/soat',SO3:'SO₃, Nm³/soat',O2:'O₂, Nm³/soat',N2:'N₂, Nm³/soat',dry:'Jami quruq, Nm³/soat',H2O:'H₂O, Nm³/soat',wet:'Jami nam, Nm³/soat'},
     src:'Manba: ', title:'Moddiy oqimlarning texnologik sxemasi (PFD), WZ-POT-262, Rev. A',
@@ -636,6 +636,7 @@ function openStCard(id){
    <h2><span class="dot" style="background:var(${KCOL[s&&s.k==='gas'&&s.n==='Воздух'?'air':(s&&s.k)]||'--accent'})"></span>${esc(T.stream)} ${id}${s?' · '+esc(s.n):''}</h2>
    ${ref?`<p class="note">${esc(T.gasRef)}</p><div class="acts"><button class="btn pri" type="button" id="bS1">${esc(T.openSheet1)}</button></div>`:`<dl class="kv">${rows}</dl>`}
    ${x&&!x.lines.length&&!ref?`<p class="note">${esc(T.noLine)}</p>`:''}
+   ${id===104?`<p class="note">${esc(T.attNote)}</p>`:''}
    ${eqs.length?`<div class="eyebrow">${esc(T.joins)}</div><div class="chips">${eqs.map(e=>`<button type="button" data-tag="${esc(e.tag)}">${esc(e.tag)}</button>`).join('')}</div>`:''}
    ${on.length>1?`<div class="eyebrow">${esc(T.onSheets)}</div><div class="chips">${on.map(n=>`<button type="button" data-sh="${n}">${esc(T.sheet)} ${n}</button>`).join('')}</div>`:''}
    <p class="note">${esc(T.src)}${esc(D.meta.code)}, ${esc(nm(D.meta.sheets[sheet-1],'name'))}</p>`);

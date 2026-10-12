@@ -245,6 +245,13 @@ for sh in '123':
                 for e in (2,4):
                     if abs(a[e]-x)<=4 and abs(a[e+1]-y)<=4: a[e],a[e+1]=r[0],r[1]
             ar[0],ar[1]=r[0],r[1]
+    # куски труб, отданные потоку вручную (см. manual.ASSIGN)
+    for (_sh,_sid),_segs in M.ASSIGN.items():
+        if _sh!=sh: continue
+        for _x1,_y1,_x2,_y2 in _segs:
+            _hit=[a for a in pipes if sorted([(a[2],a[3]),(a[4],a[5])])==sorted([(_x1,_y1),(_x2,_y2)])]
+            if not _hit: print('  ASSIGN: нет куска трубы',sh,_sid,(_x1,_y1,_x2,_y2))
+            for a in _hit: a[0]=_sid; a[1]=kind_of(sh,_sid)
     stl=[dict(id=sid,c=list(pos[sid]),ref=int(sh=='3' and sid in M.REF3),lines=[P(k) for k in trace[sid]]) for sid in sorted(pos)]
     for sid in sorted(pos):
         if sh=='3' and sid in M.REF3: continue
@@ -355,14 +362,20 @@ for sh in '123':
             if e<b[0]: b=(e,k)
         return b[1]
     dak=[darr_kind(a) for a in M.DARR.get(sh,[])]
+    for (_sh,_sid),_segs in M.ASSIGN.items():
+        if _sh==sh:
+            for _x in stl:
+                if _x['id']==_sid: _x['lines']+=[list(q) for q in _segs]
     sheets.append(dict(n=int(sh),w=W,h=H,eq=eq,st=stl,art=art_eq,artk=art_k,fill=fillp,pipes=pipes,
                        arrows=arrows,dash=[],darr=M.DARR.get(sh,[]),valves=vlv,dashm=dsh,dashk=dshk,darrk=dak,lines=M.LINES.get(sh,[]),terms=terms,texts=txs,instr=ins,flow={str(k):[list(x) for x in v] for k,v in M.FLOW.get(sh,{}).items()},sym=[dict(tag=tag,t=t,p=p) for tag,t,p,z in SYM.get(sh,[])]))
     print('лист',sh,'потоков',len(pos),'кусков труб',len(pipes),'стрелок',len(arrows),'линий-аппаратов',len(paths),'заливок',len(fills),'предупреждений',len(warn))
     for w in warn: print('  ',w)
 import dirarrows
 for _s in sheets:
-    _r,_log=dirarrows.make(_s,kind_of,_s['n'],M.FROM); _s['arrows']=_s['arrows']+_r
+    _r,_log=dirarrows.make(_s,kind_of,_s['n'],M.FROM,{q[4] for q in M.ARROWS.get(str(_s['n']),[])}); _s['arrows']=_s['arrows']+_r
     for w in _log: print('  стрелки:',w)
+    for _x,_y,_dx,_dy,_sid in M.ARROWS.get(str(_s['n']),[]):
+        _s['arrows'].append([_x,_y,_dx,_dy,kind_of(str(_s['n']),_sid),_sid,'f'])
 # 50 (сера) указана в таблице листа 2; 101/102 — по таблице листа 3
 n_,wt,th,rho,m3,t=TB.ACID[50]; streams[50].update(k='sulfur',n=n_,th=th,rho=rho,m3=m3,t=t)
 for sid in (101,102):
