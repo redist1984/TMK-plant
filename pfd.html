@@ -179,6 +179,29 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
 .iot tr.bal.good td{color:var(--accent)}
 .ionote{margin:6px 0 0;font-size:11.5px;color:var(--ink3)}
 @media (max-width:760px){body.ioopen #card{display:none}#io{max-height:46%}.ioc{min-width:calc(100vw - 22px)}.iot td.nm{max-width:78px}.ioc{padding:6px}.iot{font-size:11px}.iot th{font-size:9.5px;letter-spacing:0}.iot .g{padding-left:5px}.iot td{padding-right:3px}.iot td.u,.iot th.u{font-size:9.5px;padding-left:2px}}
+
+/* полный экран: как в схеме потоков — кнопка слева сверху, ☰ справа с панелью управления вместо верхней панели */
+.fs-fab{position:absolute;left:10px;top:10px;z-index:5;width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink2);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.fs-fab[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--panel))}
+.fs-fab svg{width:18px;height:18px}
+.fsmenu-fab{display:none;position:fixed;z-index:7;right:14px;top:calc(env(safe-area-inset-top,0px) + 14px);width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);box-shadow:var(--shadow);font-size:18px;line-height:1;cursor:pointer;padding:0}
+.fsmenu-fab[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+body.fs-mode .fsmenu-fab{display:block}
+body.fs-mode .fs-fab{position:fixed;left:14px;top:calc(env(safe-area-inset-top,0px) + 14px)}
+.fspanel{display:none;position:fixed;z-index:6;right:14px;top:calc(env(safe-area-inset-top,0px) + 62px);width:min(300px,calc(100vw - 28px));max-height:calc(100dvh - env(safe-area-inset-top,0px) - 140px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:color-mix(in srgb,var(--panel) 95%,transparent);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px}
+body.fs-mode .fspanel.open{display:block}
+.fspanel .bar{display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:0;border:0;background:transparent}
+.fspanel .seg{display:flex;flex-direction:column}
+.fspanel .seg button+button{border-left:0;border-top:1px solid var(--line)}
+.fspanel .seg button{text-align:left}
+.fspanel #q{max-width:none;min-width:0;width:100%;flex:none}
+.fspanel .leg{display:flex;flex-direction:column;flex-wrap:nowrap;overflow:visible;order:0;gap:5px}
+.fspanel .leg button{justify-content:flex-start;width:100%}
+.fspanel .btn{width:100%;text-align:left}
+.fspanel .zoom{margin-left:0;justify-content:space-between}
+.fspanel .zoom{display:flex;gap:6px}.fspanel .zoom .btn{width:auto;flex:0 0 auto;text-align:center}.fspanel .zoom .zl{flex:1}.fspanel #zFit{flex:1 1 auto;font-size:12.5px}
+body.fs-mode #io{max-height:34%}
+@media (min-width:761px){body.fs-mode.fs-panel-open #card{margin-right:0}}
 @media (max-width:760px){
   .leg{flex:1 1 100%;flex-wrap:nowrap;overflow-x:auto;order:3;padding-bottom:2px}
   .leg button{flex:0 0 auto;white-space:nowrap}
@@ -188,7 +211,7 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
 </style>
 </head>
 <body class="zones">
-<div class="bar">
+<div class="bar" id="tBar">
   <div class="seg" id="tabs" role="tablist"></div>
   <input id="q" type="search" list="qlist" autocomplete="off" aria-label="Поиск">
   <datalist id="qlist"></datalist>
@@ -203,8 +226,11 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
     <button class="btn" id="zFit" type="button"></button>
   </div>
 </div>
+<div class="fspanel" id="fsPanel"></div>
 <div class="main">
   <div id="vp">
+    <button class="fs-fab" type="button" id="bFullscreen" aria-pressed="false"><svg id="fsIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg></button>
+    <button class="fsmenu-fab" type="button" id="bFsMenu" aria-expanded="true" aria-controls="fsPanel">☰</button>
     <div id="stage"><svg id="art" preserveAspectRatio="none"></svg><img id="img" alt="" draggable="false"><svg id="ov" preserveAspectRatio="none"></svg></div>
     <div id="tip"></div>
     <div id="scanNote" hidden role="status"></div>
@@ -228,7 +254,7 @@ const KCOL={gas:'--s-gas',air:'--s-air',acid:'--s-acid',water:'--s-water',steam:
 
 const UI={
   ru:{
-    allm:'Все среды', scan:'Скан', cmp:'Наложение', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист', scanLoad:'Загрузка скана…', scanErr:'Скан не загрузился. Нажмите, чтобы повторить.',
+    allm:'Все среды', scan:'Скан', cmp:'Наложение', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист', fsEnter:'Во весь экран', fsExit:'Выйти из полноэкранного режима', fsMenu:'Панель управления: листы, поиск, среды, скан, масштаб', scanLoad:'Загрузка скана…', scanErr:'Скан не загрузился. Нажмите, чтобы повторить.',
 
     ioU:'ед.', kPa:'кПа', MPa:'МПа', ioT:'Входы и выходы', ioIn:'Вход', ioOut:'Выход', ioN:'№', ioMed:'Среда', ioQ:'Расход', ioTemp:'T, °C', ioP:'Давление', ioSumIn:'Σ вход', ioSumOut:'Σ выход', ioBal:'Баланс (вход − выход)', ioBalM:'Баланс по массе, газ + жидкость (все листы)', ioOk:'сходится', ioDiff:'не сходится по таблице чертежа',
     ioPump:'через насос', ioNone:'Для этого потока на схеме нет аппаратов.', ioMin:'Свернуть', ioMax:'Развернуть', ioNote:'Баланс по данным таблицы PFD без поправок. Расходы газа в Нм³/ч, остальных сред в т/ч; разные единицы не суммируются. Нажмите строку — поток подсветится на схеме.', ioOfStream:'поток', ioOfEq:'аппарат', nm3:'Нм³/ч', tph:'т/ч', ioNoOut:'выходы на схеме не обозначены', ioNoIn:'входы на схеме не обозначены',
@@ -244,7 +270,7 @@ const UI={
     unit:{th:'т/ч'}, gas:'газ', acid:'кислота', water:'вода', steam:'пар', sulfur:'сера', reagent:'реагент', air:'воздух'
   },
   uz:{
-    allm:'Barcha muhitlar', scan:'Skan', cmp:'Ustma-ust', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq', scanLoad:'Skan yuklanmoqda…', scanErr:'Skan yuklanmadi. Qayta urinish uchun bosing.',
+    allm:'Barcha muhitlar', scan:'Skan', cmp:'Ustma-ust', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq', fsEnter:'To‘liq ekran', fsExit:'To‘liq ekrandan chiqish', fsMenu:'Boshqaruv paneli: varaqlar, qidiruv, muhitlar, skan, masshtab', scanLoad:'Skan yuklanmoqda…', scanErr:'Skan yuklanmadi. Qayta urinish uchun bosing.',
 
     ioU:'birl.', kPa:'kPa', MPa:'MPa', ioT:'Kirish va chiqishlar', ioIn:'Kirish', ioOut:'Chiqish', ioN:'№', ioMed:'Muhit', ioQ:'Sarf', ioTemp:'T, °C', ioP:'Bosim', ioSumIn:'Σ kirish', ioSumOut:'Σ chiqish', ioBal:'Balans (kirish − chiqish)', ioBalM:'Massa balansi, gaz + suyuqlik (barcha varaqlar)', ioOk:'mos keladi', ioDiff:'chizma jadvali bo‘yicha mos kelmaydi',
     ioPump:'nasos orqali', ioNone:'Bu oqim uchun sxemada apparat yo‘q.', ioMin:'Yig‘ish', ioMax:'Yoyish', ioNote:'Balans PFD jadvali ma’lumotlari bo‘yicha, tuzatishsiz. Gaz sarfi Nm³/soat, boshqa muhitlar t/soat; turli birliklar qo‘shilmaydi. Qatorni bossangiz, oqim sxemada ajratiladi.', ioOfStream:'oqim', ioOfEq:'apparat', nm3:'Nm³/soat', tph:'t/soat', ioNoOut:'chiqishlar sxemada ko‘rsatilmagan', ioNoIn:'kirishlar sxemada ko‘rsatilmagan',
@@ -637,12 +663,31 @@ window.addEventListener('message',e=>{
   if(d.stream!==undefined)selectStream(+d.stream);else if(d.tag)selectEq(d.tag);
 });
 
+// ---------- полный экран ----------
+const FS_ENTER='<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>';
+const FS_EXIT='<path d="M9 3v3a2 2 0 0 1-2 2H4"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>';
+const bFs=$('bFullscreen'),bFsMenu=$('bFsMenu'),fsPanel=$('fsPanel'),tBar=$('tBar'),tBarSlot=document.createComment('fs-slot');
+tBar.parentNode.insertBefore(tBarSlot,tBar);
+let fsOn=false,fsMenuTouched=false;const fsNarrow=()=>window.innerWidth<=760;
+['bFullscreen','bFsMenu'].forEach(id=>$(id).addEventListener('pointerdown',e=>e.stopPropagation()));
+function paintFs(){const T=L();bFs.setAttribute('aria-pressed',String(fsOn));bFs.title=bFs.ariaLabel=fsOn?T.fsExit:T.fsEnter;$('fsIcon').innerHTML=fsOn?FS_EXIT:FS_ENTER;bFsMenu.title=T.fsMenu;bFsMenu.setAttribute('aria-label',T.fsMenu)}
+function fsPanelState(){const o=fsOn&&bFsMenu.getAttribute('aria-expanded')==='true';fsPanel.classList.toggle('open',o);document.body.classList.toggle('fs-panel-open',o)}
+bFsMenu.addEventListener('click',()=>{fsMenuTouched=true;bFsMenu.setAttribute('aria-expanded',String(bFsMenu.getAttribute('aria-expanded')!=='true'));fsPanelState()});
+function setFullscreen(on,notifyParent){
+  fsOn=on;document.body.classList.toggle('fs-mode',fsOn);paintFs();
+  if(fsOn)fsPanel.appendChild(tBar);else tBarSlot.parentNode.insertBefore(tBar,tBarSlot.nextSibling);
+  if(fsOn&&!fsMenuTouched)bFsMenu.setAttribute('aria-expanded',String(!fsNarrow()));
+  fsPanelState();relayout();
+  if(notifyParent!==false){try{window.parent.postMessage({__tmkFullscreen:true,on:fsOn},'*')}catch(e){}}}
+bFs.addEventListener('click',()=>setFullscreen(!fsOn));
+window.addEventListener('message',e=>{const d=e.data;if(d&&d.__tmkFullscreen)setFullscreen(!!d.on,false)});
+
 // ---------- language / theme ----------
 function paint(l){
   lang=l==='uz'?'uz':'ru';const T=L();
   $('q').placeholder=T.search;$('q').setAttribute('aria-label',T.search);
   $('bZones').textContent=T.zones;$('bScan').textContent=T.scan;$('bCmp').textContent=T.cmp;paintLeg();$('zFit').textContent=T.fit;$('hint').textContent=T.hint;if(ioCur)ioShow(ioCur.tags,ioCur.sid);
-  document.title=T.title;paintTabs();fillSearch();
+  document.title=T.title;paintFs();paintTabs();fillSearch();
   if(sel&&sel.t==='eq'){const f=eqByApp[sel.app].find(x=>x.sheet===sheet);if(f)openEqCard(f.eq,sheet)}
   else if(sel&&sel.t==='st')openStCard(sel.id);
 }
