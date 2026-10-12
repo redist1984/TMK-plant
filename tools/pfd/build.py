@@ -169,7 +169,8 @@ for sh in '123':
                 for p in T.pts(segs[k]):
                     if b[0]-24<=p[0]<=b[2]+24 and b[1]-24<=p[1]<=b[3]+24: hit=True
             if hit: near.append(sid)
-        eq.append(dict(tag=t,app=APP.get(t,t),box=b,streams=sorted(near)))
+        near=sorted(set(near)|set(M.EQ_STREAMS.get((sh,t),[])))
+        eq.append(dict(tag=t,app=APP.get(t,t),box=b,streams=near))
     # --- линии аппаратов: векторизация без труб, текста и ромбов
     drop=np.zeros(g.shape,np.uint8)
     for k in drawn:
@@ -362,7 +363,7 @@ for sh in '123':
             if e<b[0]: b=(e,k)
         return b[1]
     dak=[darr_kind(a) for a in M.DARR.get(sh,[])]
-    for (_sh,_sid),_segs in M.ASSIGN.items():
+    for (_sh,_sid),_segs in list(M.ASSIGN.items())+list(M.EXTRA_LINES.items()):
         if _sh==sh:
             for _x in stl:
                 if _x['id']==_sid: _x['lines']+=[list(q) for q in _segs]
