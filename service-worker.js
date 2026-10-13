@@ -1,4 +1,4 @@
-const CACHE = 'tmk-plant-v112';
+const CACHE = 'tmk-plant-v113';
 const ASSETS = [
   "logo.png",
   "sec_img/eq_EX-13501_2.jpg",

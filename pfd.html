@@ -372,7 +372,11 @@ $('scanNote').addEventListener('pointerdown',e=>e.stopPropagation());
 $('scanNote').onclick=()=>{if(scanMode())loadScan()};
 $('bZones').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('zones',on)};
 window.addEventListener('resize',()=>{const was=k/fitK;computeFit();k=Math.max(fitK,was*fitK);applyView()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard();else if(e.key==='+'||e.key==='=')$('zIn').click();else if(e.key==='-')$('zOut').click()});
+document.addEventListener('keydown',e=>{
+  const t=e.target,typing=t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable);
+  if(e.key==='Escape')closeCard();
+  else if(typing||e.ctrlKey||e.metaKey||e.altKey)return;   // «-» и «+» в поиске («EX-11201») не должны менять масштаб
+  else if(e.key==='+'||e.key==='=')$('zIn').click();else if(e.key==='-')$('zOut').click()});
 
 // ---------- vector layer ----------
 const MEDIA=[['gas','Газ','Gaz'],['air','Воздух','Havo'],['acid','Кислота','Kislota'],['water','Вода','Suv'],['steam','Пар ВД','YuB bug‘'],['steamlp','Пар НД','PB bug‘'],['sulfur','Сера','Oltingugurt'],['alkali','Щёлочь','Ishqor']];
