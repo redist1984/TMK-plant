@@ -62,11 +62,11 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(22px,3vw,34px);lin
 .btn.ghost{background:transparent}
 .gost{font-size:11.5px;color:var(--ink3);margin-left:auto}
 .stage{position:relative}
-.diagram{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:auto;touch-action:pan-x pan-y;cursor:grab}
+.diagram{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:auto;touch-action:pan-x pan-y;cursor:grab;height:clamp(420px,calc(100dvh - 90px),1180px);overscroll-behavior:auto}
 .diagram.panning{cursor:grabbing;user-select:none}
 .diagram svg{transform-origin:0 0}
-.zoombar{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;padding:6px 10px;
-  background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.zoombar{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:6;display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 10px;
+  background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
 .zoombar button{width:36px;height:36px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-size:17px;
   border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .zoombar button:active{background:var(--line)}
@@ -249,13 +249,13 @@ body.fs-mode .fspanel .fsnav{display:flex}
   </div>
   <button class="help-fab" type="button" id="bHelp" title="Подсказка по управлению" aria-label="Подсказка по управлению">?</button>
   <div class="diagram" id="diagram"></div>
+  <div class="zoombar" role="group" aria-label="Масштаб схемы">
+    <button type="button" id="zOut" title="Уменьшить" aria-label="Уменьшить">−</button>
+    <div class="zlevel" id="zLevel">100%</div>
+    <button type="button" id="zIn" title="Увеличить" aria-label="Увеличить">+</button>
+    <button type="button" id="zReset" title="Сбросить масштаб" aria-label="Сбросить масштаб">⤾</button>
+  </div>
   <aside class="detail closed" id="detail" aria-live="polite"></aside>
-</div>
-<div class="zoombar" role="group" aria-label="Масштаб схемы">
-  <button type="button" id="zOut" title="Уменьшить" aria-label="Уменьшить">−</button>
-  <div class="zlevel" id="zLevel">100%</div>
-  <button type="button" id="zIn" title="Увеличить" aria-label="Увеличить">+</button>
-  <button type="button" id="zReset" title="Сбросить масштаб" aria-label="Сбросить масштаб">⤾</button>
 </div>
 
 <section class="table">
@@ -740,14 +740,18 @@ document.getElementById('diagram').appendChild(svg);
   }
   function setZoom(z, anchor){
     const newZoom=Math.min(MAX_Z,Math.max(MIN_Z,z));
-    if(anchor){
-      // keep the point under the pinch midpoint / cursor visually fixed
-      const ratio=newZoom/zoom;
-      diagram.scrollLeft=(diagram.scrollLeft+anchor.x)*ratio-anchor.x;
-      diagram.scrollTop=(diagram.scrollTop+anchor.y)*ratio-anchor.y;
-    }
+    if(Math.abs(newZoom-zoom)<1e-6){ apply(); return; }
+    // keep the point under the pinch midpoint / cursor (buttons: the centre of the
+    // window) visually fixed. The new scale must be applied BEFORE scrolling:
+    // scrollLeft/scrollTop are clamped to the current scrollable size, so setting
+    // them first (old code) shifted the schema on every zoom step.
+    const a=anchor||{x:diagram.clientWidth/2,y:diagram.clientHeight/2};
+    const ratio=newZoom/zoom;
+    const cx=diagram.scrollLeft+a.x, cy=diagram.scrollTop+a.y;
     zoom=newZoom;
     apply();
+    diagram.scrollLeft=cx*ratio-a.x;
+    diagram.scrollTop=cy*ratio-a.y;
   }
   zIn.addEventListener('click',()=>setZoom(zoom+STEP));
   zOut.addEventListener('click',()=>setZoom(zoom-STEP));
@@ -787,6 +791,10 @@ document.getElementById('diagram').appendChild(svg);
   let panPtr=null, panStartX=0, panStartY=0, panScrollL=0, panScrollT=0, panMoved=false, suppressClick=false;
   diagram.addEventListener('pointerdown',e=>{
     if(e.pointerType!=='mouse' || e.button!==0) return;
+    // a press on the native scrollbar must stay a scrollbar drag: starting our own
+    // pan there as well made the two fight and the schema jumped
+    const r=diagram.getBoundingClientRect();
+    if(e.clientX-r.left-diagram.clientLeft>=diagram.clientWidth || e.clientY-r.top-diagram.clientTop>=diagram.clientHeight) return;
     panPtr=e.pointerId; panStartX=e.clientX; panStartY=e.clientY;
     panScrollL=diagram.scrollLeft; panScrollT=diagram.scrollTop; panMoved=false;
     // Pointer capture is grabbed lazily, only once a real drag starts (see
