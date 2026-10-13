@@ -201,7 +201,8 @@ body.fs-mode .fspanel.open{display:block}
 .fspanel .zoom{margin-left:0;justify-content:space-between}
 .fspanel .zoom{display:flex;gap:6px}.fspanel .zoom .btn{width:auto;flex:0 0 auto;text-align:center}.fspanel .zoom .zl{flex:1}.fspanel #zFit{flex:1 1 auto;font-size:12.5px}
 body.fs-mode #io{max-height:34%}
-@media (min-width:761px){body.fs-mode.fs-panel-open #card{margin-right:0}}
+/* in full screen the card starts below the ☰ button; with the control panel open the card and the «Входы и выходы» panel stay left of it */
+@media (min-width:761px){body.fs-mode #card.open{margin-top:62px}body.fs-mode.fs-panel-open #card{margin-right:300px}body.fs-mode.fs-panel-open #io{padding-right:300px}}
 @media (max-width:760px){
   .leg{flex:1 1 100%;flex-wrap:nowrap;overflow-x:auto;order:3;padding-bottom:2px}
   .leg button{flex:0 0 auto;white-space:nowrap}

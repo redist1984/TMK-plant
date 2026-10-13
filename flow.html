@@ -64,6 +64,8 @@ h1{font-family:var(--display);font-weight:600;font-size:clamp(22px,3vw,34px);lin
 .stage{position:relative}
 .diagram{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:auto;touch-action:pan-x pan-y;cursor:grab;height:clamp(420px,calc(100dvh - 90px),1180px);overscroll-behavior:auto}
 .diagram.panning{cursor:grabbing;user-select:none}
+.diagram{display:flex}
+.diagram #sizer{position:relative;margin:auto;flex:none}
 .diagram svg{transform-origin:0 0}
 .zoombar{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:6;display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 10px;
   background:color-mix(in srgb,var(--panel) 94%,transparent);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow)}
@@ -206,6 +208,8 @@ body.fs-mode .fspanel .bar{display:flex;flex-direction:column;align-items:stretc
 body.fs-mode .fspanel .fsnav{display:flex}
 .fsnav select{font:13px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:100%}
 @media (min-width:761px){body.fs-mode.fs-panel-open aside.detail{right:306px;width:min(400px,calc(100vw - 334px))}}
+/* in full screen the card starts below the ☰ and full-screen buttons, so they never cover its close button */
+body.fs-mode aside.detail{top:calc(env(safe-area-inset-top,0px) + 62px)}
 </style>
 </head>
 <body>
@@ -253,7 +257,7 @@ body.fs-mode .fspanel .fsnav{display:flex}
     <button type="button" id="zOut" title="Уменьшить" aria-label="Уменьшить">−</button>
     <div class="zlevel" id="zLevel">100%</div>
     <button type="button" id="zIn" title="Увеличить" aria-label="Увеличить">+</button>
-    <button type="button" id="zReset" title="Сбросить масштаб" aria-label="Сбросить масштаб">⤾</button>
+    <button type="button" id="zReset" title="Вся схема на экране" aria-label="Вся схема на экране">⤾</button>
   </div>
   <aside class="detail closed" id="detail" aria-live="polite"></aside>
 </div>
@@ -707,7 +711,11 @@ const svgNS='http://www.w3.org/2000/svg';
 const W=2570,H=1790,PAD=50; // PAD: поле вокруг схемы, чтобы линии по краю не обрезались
 function el(tag,attrs,parent){const e=document.createElementNS(svgNS,tag);for(const k in attrs){const v=attrs[k];if((k==='fill'||k==='stroke')&&String(v).includes('var('))e.style[k]=v;else e.setAttribute(k,v)}if(parent)parent.appendChild(e);return e}
 const svg=el('svg',{viewBox:`${-PAD} ${-PAD} ${W+2*PAD} ${H+2*PAD}`,role:'img','aria-label':'Технологическая схема потоков завода'});
-document.getElementById('diagram').appendChild(svg);
+// sizer: an element whose size follows the zoom, so the scrollable area always equals the
+// scaled drawing (a bare CSS transform keeps the layout size, which left empty scroll space
+// when zoomed out and made the whole schema impossible to fit on a phone)
+const sizer=document.createElement('div');sizer.id='sizer';
+document.getElementById('diagram').appendChild(sizer);sizer.appendChild(svg);
 
 // --- Zoom: buttons, two-finger pinch, and Ctrl/Cmd+wheel on desktop ------
 // The schema is drawn on a wide fixed canvas (W×H above), way wider than a phone
@@ -719,7 +727,8 @@ document.getElementById('diagram').appendChild(svg);
   const diagram=document.getElementById('diagram');
   const zIn=document.getElementById('zIn'), zOut=document.getElementById('zOut'),
         zReset=document.getElementById('zReset'), zLevel=document.getElementById('zLevel');
-  const BASE_WIDTH=Math.round((W+2*PAD)*0.62), MIN_Z=0.4, MAX_Z=3, STEP=0.25;
+  const BASE_WIDTH=Math.round((W+2*PAD)*0.62), BASE_H=Math.round(BASE_WIDTH*(H+2*PAD)/(W+2*PAD)),
+        MIN_Z=0.4, MAX_Z=3, STEP=0.25;
   let zoom=1;
 
   // Fixed once, never resized per zoom level: the SVG keeps its natural
@@ -730,32 +739,44 @@ document.getElementById('diagram').appendChild(svg);
   // that's what caused the flicker, worst on a single highlighted stream.
   svg.style.width=BASE_WIDTH+'px';
   svg.style.minWidth=BASE_WIDTH+'px';
-  svg.style.height='auto';
+  svg.style.height=BASE_H+'px';
+  svg.style.position='absolute';svg.style.left='0';svg.style.top='0';
 
+  // zoom that fits the whole schema into the window (the smallest allowed zoom)
+  function fitZoom(){
+    const cw=diagram.clientWidth-8, ch=diagram.clientHeight-8;
+    return Math.max(0.05,Math.min(cw/BASE_WIDTH,ch/BASE_H));
+  }
+  const minZ=()=>Math.min(MIN_Z,fitZoom());
   function apply(){
     svg.style.transform='scale('+zoom+')';
+    sizer.style.width=Math.round(BASE_WIDTH*zoom)+'px';
+    sizer.style.height=Math.round(BASE_H*zoom)+'px';
     zLevel.textContent=Math.round(zoom*100)+'%';
     zIn.disabled=zoom>=MAX_Z-1e-6;
-    zOut.disabled=zoom<=MIN_Z+1e-6;
+    zOut.disabled=zoom<=minZ()+1e-6;
   }
   function setZoom(z, anchor){
-    const newZoom=Math.min(MAX_Z,Math.max(MIN_Z,z));
+    const newZoom=Math.min(MAX_Z,Math.max(minZ(),z));
     if(Math.abs(newZoom-zoom)<1e-6){ apply(); return; }
     // keep the point under the pinch midpoint / cursor (buttons: the centre of the
     // window) visually fixed. The new scale must be applied BEFORE scrolling:
-    // scrollLeft/scrollTop are clamped to the current scrollable size, so setting
-    // them first (old code) shifted the schema on every zoom step.
+    // scrollLeft/scrollTop are clamped to the current scrollable size.
+    const dr=diagram.getBoundingClientRect();
     const a=anchor||{x:diagram.clientWidth/2,y:diagram.clientHeight/2};
-    const ratio=newZoom/zoom;
-    const cx=diagram.scrollLeft+a.x, cy=diagram.scrollTop+a.y;
+    const ax=dr.left+diagram.clientLeft+a.x, ay=dr.top+diagram.clientTop+a.y;
+    const sr=sizer.getBoundingClientRect();
+    const ux=(ax-sr.left)/zoom, uy=(ay-sr.top)/zoom;          // point of the drawing under the anchor
     zoom=newZoom;
     apply();
-    diagram.scrollLeft=cx*ratio-a.x;
-    diagram.scrollTop=cy*ratio-a.y;
+    const nr=sizer.getBoundingClientRect();
+    diagram.scrollLeft+=nr.left+ux*zoom-ax;
+    diagram.scrollTop+=nr.top+uy*zoom-ay;
   }
   zIn.addEventListener('click',()=>setZoom(zoom+STEP));
   zOut.addEventListener('click',()=>setZoom(zoom-STEP));
-  zReset.addEventListener('click',()=>setZoom(1));
+  zReset.addEventListener('click',()=>{ setZoom(fitZoom()); diagram.scrollLeft=0; diagram.scrollTop=0; });
+  window.addEventListener('resize',apply);
   apply();
 
   function touchDist(t){ return Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY); }
