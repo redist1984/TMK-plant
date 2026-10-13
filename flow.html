@@ -138,9 +138,24 @@ aside.detail.closed{transform:translateX(calc(100% + 24px));opacity:0;pointer-ev
 .regtbl{min-width:760px}
 .regtbl td.mono{white-space:normal}
 .regtbl a{color:var(--accent)}
-.regmini{font-size:12.5px;border-collapse:collapse;width:100%;min-width:0;margin-top:6px}
-.regmini td{padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+.regmini{font-size:12.5px;border-collapse:collapse;width:100%;min-width:0}
+.regmini td,.regmini th{padding:4px 6px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:top}
+.regmini td:last-child,.regmini th:last-child{border-right:0}
+.regmini th{font-size:11px;padding:5px 6px}
 .regmini td:first-child{color:var(--ink2)}
+/* tables inside the object card scroll on their own so the header row stays pinned */
+.tscroll{max-height:min(46dvh,340px);overflow:auto;margin-top:6px;border:1px solid var(--line);border-radius:8px;overscroll-behavior:contain}
+.flowtbl td.dir{white-space:nowrap;font-weight:600}
+.flowtbl td.dir.in{color:var(--s-water)}
+.flowtbl td.dir.out{color:var(--s-alkali)}
+.flowtbl .sn{display:flex;align-items:baseline;gap:5px}
+.flowtbl .sd{flex:none;width:8px;height:8px;border-radius:50%;background:var(--c)}
+.flowtbl button.obj{all:unset;cursor:pointer;color:var(--accent);display:block}
+.flowtbl button.obj:hover b{text-decoration:underline}
+.flowtbl button.obj:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.flowtbl button.obj b{font-family:var(--mono);font-size:11.5px}
+.flowtbl button.obj span{display:block;color:var(--ink2);font-size:11.5px}
+.flowtbl .nt{color:var(--ink3);font-size:11px;margin-top:2px}
 .gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px;margin-top:8px}
 .gal button{border:1px solid var(--line);border-radius:8px;background:#fff;padding:0;cursor:zoom-in;overflow:hidden;aspect-ratio:4/3}
 .gal img{width:100%;height:100%;object-fit:contain;display:block}
@@ -162,10 +177,11 @@ section.table{margin-top:26px}
 .filters{display:flex;flex-wrap:wrap;gap:8px}
 .filters input,.filters select{font:13px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px;min-width:0}
 .filters input{width:min(280px,100%)}
-.tbl{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+.tbl{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:auto;max-height:calc(100dvh - 150px);overscroll-behavior:auto}
 table{border-collapse:collapse;width:100%;min-width:860px;font-size:13px}
-th{position:sticky;top:0;background:var(--panel2);text-align:left;font-weight:600;font-size:12px;color:var(--ink2);padding:9px 10px;border-bottom:1px solid var(--line)}
-td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{position:sticky;top:0;z-index:2;background:var(--panel2);text-align:left;font-weight:600;font-size:12px;color:var(--ink2);padding:9px 10px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);box-shadow:0 1px 0 var(--line)}
+td{padding:8px 10px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:top}
+th:last-child,td:last-child{border-right:0}
 tr.trow{cursor:pointer} tr.trow:hover td{background:var(--panel2)}
 td.mono{font-family:var(--mono);font-weight:700;font-size:12px;white-space:nowrap}
 td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -990,9 +1006,32 @@ function selectNode(id){
   if(n&&!n.tag){showPseudo(id);return}
   const tag=n?n.tag:id; showEq(tag, n&&n.kind==='bed'?n.lab[0]:null);
 }
+// inputs / outputs of an object card, taken from the diagram edges
+function nodeTitle(id){const n=nodeEls[id];const tag=n&&n.tag;const e=tag&&EQ[tag];
+  const nm=e?((currentLang==='uz'&&e.nu)?e.nu:e.n):(n?n.lab.join(' '):'');return {tag:tag||id,nm}}
+function flowsBlock(tag,bed){
+  const L=UI[currentLang],uz=currentLang==='uz';
+  const ids=Object.keys(nodeEls).filter(k=>nodeEls[k].tag===tag&&(!bed||nodeEls[k].lab[0]===bed));
+  if(!ids.length)return '';
+  const set=new Set(ids),seen=new Set(),rows=[];
+  EDGES.forEach(([s,pts,o])=>{
+    const fi=set.has(o.f),ti=set.has(o.t); if(fi===ti)return;
+    const dir=ti?'in':'out', other=ti?o.f:o.t; if(!nodeEls[other])return;
+    const key=dir+'|'+s+'|'+other+'|'+(o.label||''); if(seen.has(key))return; seen.add(key);
+    rows.push({dir,s,other,label:o.label||'',dashed:!!o.dashed});
+  });
+  if(!rows.length)return '';
+  rows.sort((a,b)=>(a.dir===b.dir?0:a.dir==='in'?-1:1));
+  const tr=rows.map(r=>{const st=STREAMS[r.s],t=nodeTitle(r.other);
+    return `<tr><td class="dir ${r.dir}">${r.dir==='in'?(uz?'Kirish':'Вход'):(uz?'Chiqish':'Выход')}</td>
+     <td><div class="sn"><i class="sd" style="--c:var(${st.v})"></i><span>${esc(uz?(st.nu||st.n):st.n)}</span></div></td>
+     <td><button type="button" class="obj" data-n="${esc(r.other)}"><b>${esc(t.tag)}</b>${t.nm?`<span>${esc(t.nm)}</span>`:''}</button>${(r.label||r.dashed)?`<div class="nt">${esc(r.label)}${r.dashed?(r.label?'; ':'')+(uz?'yordamchi / qaytish liniyasi':'вспомогательная / возвратная линия'):''}</div>`:''}</td></tr>`}).join('');
+  return `<div class="eyebrow" style="margin-top:14px">${uz?'Kiruvchi va chiquvchi oqimlar':'Входящие и выходящие потоки'}</div>
+   <div class="tscroll"><table class="regmini flowtbl"><thead><tr><th>${uz?'Yo‘nalish':'Напр.'}</th><th>${uz?'Oqim':'Поток'}</th><th>${uz?'Qayerdan / qayerga':'Откуда / куда'}</th></tr></thead><tbody>${tr}</tbody></table></div>`;
+}
 function regFor(tag){return (DATA.reg||[]).filter(r=>r.t.includes(tag))}
 function regRows(list){const lvl=currentLang==='uz'?'daraja ':'уровень ';return list.map(r=>`<tr><td>${esc((currentLang==='uz'&&r.nu)?r.nu:r.n)}</td><td>${[r.f,r.T&&(r.T+' °C'),r.P&&(r.P+(/кПа/.test(r.P)?'':' МПа')),r.L&&(lvl+r.L),r.o].filter(Boolean).map(esc).join(' · ')}</td></tr>`).join('')}
-function regBlock(list,title){return list.length?`<div class="eyebrow" style="margin-top:14px">${title||UI[currentLang].h3b}</div><table class="regmini">${regRows(list)}</table><div class="doc">${esc(DATA.regdoc)}</div>`:''}
+function regBlock(list,title){const L=UI[currentLang];return list.length?`<div class="eyebrow" style="margin-top:14px">${title||L.h3b}</div><div class="tscroll"><table class="regmini"><thead><tr><th>${esc(L.thPoint)}</th><th>${esc(currentLang==='uz'?'Ko‘rsatkichlar':'Параметры')}</th></tr></thead><tbody>${regRows(list)}</tbody></table></div><div class="doc">${esc(DATA.regdoc)}</div>`:''}
 function showEq(tag,bed){
   const L=UI[currentLang];
   const e=EQ[tag]; if(!e){openD(`<p>${esc(L.noData)}${esc(tag)}</p>`);return}
@@ -1007,6 +1046,7 @@ function showEq(tag,bed){
      <button class="btn" type="button" id="cp">${esc(L.copyPos)}</button><span id="cpd" class="copied" hidden>${esc(L.copied)}</span></div>
    <dl class="kv"><dt>${esc(L.thQty)}</dt><dd>${esc(e.q||'—')}</dd><dt>${esc(L.thMass)}</dt><dd>${fmtW(e.w)}</dd></dl>
    ${e.d.length?`<ul class="specs">${e.d.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:`<p class="sec-note">${esc(L.noSpecs)}</p>`}
+   ${flowsBlock(e.t,bed)}
    ${regBlock(bed?regFor(e.t).filter(r=>new RegExp(bed.replace('Слой ','')+'-(й|го) сло').test(r.n)):regFor(e.t))}
    ${(IMGS[e.t]||[]).length?`<div class="eyebrow" style="margin-top:12px">${currentLang==='uz'?'Apparat chizmalari':'Чертежи аппарата'}</div><div class="gal">${IMGS[e.t].map(([f,c],i)=>`<button type="button" data-i="${i}" title="${esc(c)}"><img src="sec_img/${esc(f)}" alt="${esc(c)}" loading="lazy"></button>`).join('')}</div>`:''}
    ${e.m?howTo(e.t):''}
@@ -1017,6 +1057,7 @@ function showEq(tag,bed){
   const bPfd=document.getElementById('toPfd');
   if(bPfd)bPfd.onclick=()=>{try{window.parent.postMessage({__tmkGoto:{to:'pfd',tag:e.t,from:'flow'}},'*')}catch(err){}};
   detail.querySelectorAll('.gal button').forEach(x=>x.onclick=()=>lbOpen(IMGS[e.t],+x.dataset.i));
+  detail.querySelectorAll('.flowtbl .obj').forEach(b=>b.onclick=()=>selectNode(b.dataset.n));
   document.getElementById('cp').onclick=async()=>{const flag=document.getElementById('cpd');try{await navigator.clipboard.writeText(e.t);flag.hidden=false;flag.textContent=L.copied}catch(err){flag.hidden=false;flag.textContent=e.t+L.selectAndCopy}};
 }
 function showPseudo(id){

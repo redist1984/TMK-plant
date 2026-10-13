@@ -140,8 +140,10 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
 .acts .btn{text-align:left;padding:9px 12px}
 .note{font-size:12px;color:var(--ink3);margin:10px 0 0}
 .regmini{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
-.regmini td{border-top:1px solid var(--line);padding:4px 0;vertical-align:top}
-.regmini td:first-child{color:var(--ink2);padding-right:8px}
+.regmini td,.regmini th{border-top:1px solid var(--line);border-right:1px solid var(--line);padding:4px 6px;vertical-align:top;text-align:left}
+.regmini th{font:600 10.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);background:var(--panel2)}
+.regmini td:last-child,.regmini th:last-child{border-right:0}
+.regmini td:first-child{color:var(--ink2)}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
 .hint{position:absolute;left:10px;bottom:10px;z-index:4;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--ink2);max-width:calc(100% - 20px);pointer-events:none;opacity:.92}
 
@@ -158,16 +160,18 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
 .ioc h3{margin:0 0 6px;font-size:13px;line-height:1.3}
 .ioc h3 .tag{margin-right:6px}
 .iot{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
-.iot th{font:600 10.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:3px 6px 3px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.iot th{position:sticky;top:0;z-index:2;background:var(--panel2);box-shadow:0 1px 0 var(--line);border-right:1px solid var(--line);padding-left:6px;font:600 10.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:3px 6px 3px 0;border-bottom:1px solid var(--line);white-space:nowrap}
 .iot th.r,.iot td.r{text-align:right}
-.iot td{padding:3px 6px 3px 0;border-bottom:1px solid var(--line);vertical-align:baseline}
+.iot td{padding:3px 6px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:baseline}
+.iot th:last-child,.iot td:last-child{border-right:0}
+.iot tr.sec td{border-right:0}
 .iot tr.sec td{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding-top:8px;border-bottom:0}
 .iot tr.sec.in td{color:var(--s-water)}
 .iot tr.sec.out td{color:var(--s-alkali)}
 .iot tr[data-id]{cursor:pointer}
 .iot tr[data-id]:hover td,.iot tr.act td{background:color-mix(in srgb,var(--accent) 14%,transparent)}
 .iot td.n b{font-family:var(--mono)}
-.iot .g{border-left:1px solid var(--line);padding-left:10px}
+.iot .g{padding-left:6px}
 .iot td.u,.iot th.u{color:var(--ink3);font-size:11px;white-space:nowrap;padding-left:4px}
 .iot td.r.g{padding-right:2px}
 .iot td.bs{font-weight:500;font-size:11.5px;white-space:normal}
@@ -264,7 +268,7 @@ const UI={
     to3d:'Показать в 3D', toFlow:'Показать в схеме потоков', stream:'Поток', onSheets:'На листах', joins:'Связывает аппараты',
     gasRef:'Газовый поток: параметры — в таблице листа 1.', openSheet1:'Открыть лист 1',
     pfdTag:'Позиция на PFD', noCard:'Карточка аппарата в модели не найдена.', noLine:'Линия потока на этом листе не выделена.',
-    reg:'По регламенту', pfdNote:'Позиция по PFD', attNote:'Вода на впрысковые пароохладители XX-11401 и XX-11402 (чертёж 3147-5R114-03): до паровых линий поток показан водой. В расчётном режиме по таблице PFD расход 0 т/ч.', tailNote:'На PFD блок без обозначения («система очистки хвостовых газов»): сопоставлен с TW-11304 по составу потоков 72–74.',
+    reg:'По регламенту', regP:'Параметр', regV:'Значение', pfdNote:'Позиция по PFD', attNote:'Вода на впрысковые пароохладители XX-11401 и XX-11402 (чертёж 3147-5R114-03): до паровых линий поток показан водой. В расчётном режиме по таблице PFD расход 0 т/ч.', tailNote:'На PFD блок без обозначения («система очистки хвостовых газов»): сопоставлен с TW-11304 по составу потоков 72–74.',
     wt:'Концентрация, % масс.', th:'Расход, т/ч', rho:'Плотность, кг/м³', m3:'Расход, м³/ч', t:'Температура, °C', p:'Давление',
     pMPa:'МПа (изб.)', pkPa:'кПа (изб.)', comps:{SO2:'SO₂, Нм³/ч',SO3:'SO₃, Нм³/ч',O2:'O₂, Нм³/ч',N2:'N₂, Нм³/ч',dry:'Итого сухой, Нм³/ч',H2O:'H₂O, Нм³/ч',wet:'Итого влажный, Нм³/ч'},
     src:'Источник: ', title:'Технологическая схема материальных потоков (PFD), WZ-POT-262, Rev. A',
@@ -280,7 +284,7 @@ const UI={
     to3d:'3D da ko‘rsatish', toFlow:'Oqim sxemasida ko‘rsatish', stream:'Oqim', onSheets:'Varaqlarda', joins:'Bog‘laydigan apparatlar',
     gasRef:'Gaz oqimi: parametrlar 1-varaq jadvalida.', openSheet1:'1-varaqni ochish',
     pfdTag:'PFD dagi pozitsiya', noCard:'Modelda apparat kartochkasi topilmadi.', noLine:'Bu varaqda oqim chizig‘i ajratilmagan.',
-    reg:'Reglament bo‘yicha', pfdNote:'PFD bo‘yicha pozitsiya', attNote:'XX-11401 va XX-11402 purkash bug‘ sovutgichlariga suv (3147-5R114-03 chizmasi): bug‘ liniyalarigacha oqim suv sifatida ko‘rsatilgan. PFD jadvalidagi hisob rejimida sarf 0 t/soat.', tailNote:'PFD da bu blokning belgisi yo‘q («chiqindi gazlarni tozalash tizimi»): 72–74 oqimlar tarkibiga ko‘ra TW-11304 ga mos qo‘yilgan.',
+    reg:'Reglament bo‘yicha', regP:'Ko‘rsatkich', regV:'Qiymat', pfdNote:'PFD bo‘yicha pozitsiya', attNote:'XX-11401 va XX-11402 purkash bug‘ sovutgichlariga suv (3147-5R114-03 chizmasi): bug‘ liniyalarigacha oqim suv sifatida ko‘rsatilgan. PFD jadvalidagi hisob rejimida sarf 0 t/soat.', tailNote:'PFD da bu blokning belgisi yo‘q («chiqindi gazlarni tozalash tizimi»): 72–74 oqimlar tarkibiga ko‘ra TW-11304 ga mos qo‘yilgan.',
     wt:'Konsentratsiya, % massa', th:'Sarf, t/soat', rho:'Zichlik, kg/m³', m3:'Sarf, m³/soat', t:'Harorat, °C', p:'Bosim',
     pMPa:'MPa (ortiqcha)', pkPa:'kPa (ortiqcha)', comps:{SO2:'SO₂, Nm³/soat',SO3:'SO₃, Nm³/soat',O2:'O₂, Nm³/soat',N2:'N₂, Nm³/soat',dry:'Jami quruq, Nm³/soat',H2O:'H₂O, Nm³/soat',wet:'Jami nam, Nm³/soat'},
     src:'Manba: ', title:'Moddiy oqimlarning texnologik sxemasi (PFD), WZ-POT-262, Rev. A',
@@ -614,7 +618,7 @@ function openEqCard(e,shn){
    <div><span class="tag">${esc(e.app)}</span>${e.tag!==e.app?`<span class="pill" title="${esc(T.pfdTag)}">PFD: ${esc(e.tag)}</span>`:''}${c&&c.m?'<span class="pill ok">3D</span>':''}</div>
    ${c?`<dl class="kv"><dt>${esc(T.qty)}</dt><dd>${esc(c.q||'—')}</dd><dt>${esc(T.mass)}</dt><dd>${c.w?fmt(+c.w):'—'}</dd></dl>
      ${c.d.length?`<ul class="specs">${c.d.slice(0,6).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
-     ${regRows?`<div class="eyebrow">${esc(T.reg)}</div><table class="regmini">${regRows}</table>`:''}`:`<p class="note">${esc(T.noCard)}</p>`}
+     ${regRows?`<div class="eyebrow">${esc(T.reg)}</div><table class="regmini"><thead><tr><th>${esc(T.regP)}</th><th>${esc(T.regV)}</th></tr></thead><tbody>${regRows}</tbody></table>`:''}`:`<p class="note">${esc(T.noCard)}</p>`}
    ${e.streams.length?`<div class="eyebrow">${esc(T.streams)}</div><div class="chips">${e.streams.map(id=>`<button type="button" data-st="${id}">${id}</button>`).join('')}</div>`:''}
    ${others.length?`<div class="eyebrow">${esc(T.also)}</div><div class="chips">${others.map(x=>`<button type="button" data-sh="${x.sheet}" data-tag="${esc(x.eq.tag)}">${esc(T.sheet)} ${x.sheet}</button>`).join('')}</div>`:''}
    <div class="acts"><button class="btn pri" type="button" id="b3d">${esc(T.to3d)}</button><button class="btn" type="button" id="bFlow">${esc(T.toFlow)}</button></div>
