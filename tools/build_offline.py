@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Сборка офлайн-версии: один самодостаточный HTML (работает по file://, без сети).
 
-Запуск:  python3 tools/build_offline.py [--out DIR] [--no-recompress]
+Запуск:  python3 tools/build_offline.py [--out DIR] [--no-recompress] [--with-pdf --name TMK-plant-offline-pdf.html]
 Результат: DIR/TMK-plant-offline.html (+ DIR/docs_pdf/ — PDF-чертежи, открываются ссылками рядом с html).
 
 Что делает: вкладки (model/flow/pfd/docs/settings/help) вкладываются в index как srcdoc-iframe,
@@ -13,6 +13,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ap = argparse.ArgumentParser()
 ap.add_argument('--out', default=os.path.join(ROOT, 'dist-offline'))
 ap.add_argument('--no-recompress', action='store_true')
+ap.add_argument('--with-pdf', action='store_true', help='встроить PDF из docs_pdf в сам html (файл ~230 МБ)')
+ap.add_argument('--name', default='TMK-plant-offline.html')
 a = ap.parse_args()
 P = lambda *p: os.path.join(ROOT, *p)
 rd = lambda p, m='r': open(P(p), m, **({'encoding': 'utf-8'} if m == 'r' else {})).read()
@@ -64,15 +66,24 @@ for d in ('sec_img', 'pfd/scan'):
     for f in sorted(os.listdir(P(d))):
         if f.lower().endswith(('.jpg', '.png')): add_asset(d + '/' + f)
 
+if a.with_pdf:
+    for f in sorted(os.listdir(P('docs_pdf'))):
+        if f.lower().endswith('.pdf'): assets['docs_pdf/' + f] = ('application/pdf', rd('docs_pdf/' + f, 'rb'))
+
 # --- страницы-вкладки
 # Динамические ссылки на картинки идут через A() (определён в каждой странице), см. ASSET_SHIM.
 SHIM = '<script>window.A=function(p){try{return parent.__tmkAsset(p)}catch(e){return p}};</script>'
+PDF_CLICK = '''<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^="docs_pdf/"]');
+if(!a)return;var u=parent.__tmkAsset(decodeURI(a.getAttribute('href')));if(u&&u.indexOf('blob:')===0){e.preventDefault();window.open(u,'_blank')}});</script>'''
 pages = {}
 for name in ('model', 'flow', 'pfd', 'docs', 'settings', 'help'):
     h = common(inline_scripts(rd(name + '.html')))
     h = h.replace('src="sec_img/${esc(f)}"', 'src="${A(\'sec_img/\'+f)}"')
     h = h.replace("src='sec_img/'+f", "src=A('sec_img/'+f)")
     h = h.replace("const u='pfd/scan/sheet'+sheet+'.jpg'", "const u=A('pfd/scan/sheet'+sheet+'.jpg')")
+    if a.with_pdf and name == 'docs':
+        # ссылки на PDF открываем через blob-URL, собранный из встроенных данных
+        h = h.replace('</body>', PDF_CLICK + '</body>', 1)
     h = h.replace('<head>', '<head>' + SHIM, 1)
     pages[name] = h
 
@@ -110,9 +121,10 @@ last = idx.rindex('</iframe>') + len('</iframe>')
 idx = idx[:last] + '\n' + blobs + loader + idx[last:]
 
 os.makedirs(a.out, exist_ok=True)
-out = os.path.join(a.out, 'TMK-plant-offline.html')
+out = os.path.join(a.out, a.name)
 open(out, 'w', encoding='utf-8').write(idx)
-dst = os.path.join(a.out, 'docs_pdf')
-if os.path.exists(dst): shutil.rmtree(dst)
-shutil.copytree(P('docs_pdf'), dst)
+if not a.with_pdf:
+    dst = os.path.join(a.out, 'docs_pdf')
+    if os.path.exists(dst): shutil.rmtree(dst)
+    shutil.copytree(P('docs_pdf'), dst)
 print('OK', out, round(os.path.getsize(out) / 1e6, 1), 'MB')
