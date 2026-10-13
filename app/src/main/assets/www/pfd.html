@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
+<link rel="icon" href="icon-192.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PFD — технологическая схема материальных потоков</title>
@@ -9,32 +10,32 @@
 :root{
   --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
   --line:#CBD5D2; --accent:#0B6E66; --accent-ink:#FFFFFF; --paper:#FFFFFF;
-  --s-water:#23873A; --s-steam:#C9302A; --s-air:#2362C0; --s-gas:#C79A00; --s-acid:#DD6A12;
+  --s-water:#23873A; --s-steam:#C9302A; --s-steamlp:#2DB4F0; --s-air:#2362C0; --s-gas:#C79A00; --s-acid:#DD6A12;
   --s-alkali:#7A4DB8; --s-sulfur:#8A5A2B;
   --shadow:0 10px 30px rgba(20,32,29,.16);
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  --imgfilter:none;
+  --imgfilter:none; --eqf:#F2F6F5; --hatch:#B9C4C1;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     color-scheme:dark;
     --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
     --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C; --paper:#121A18;
-    --s-water:#4CC265; --s-steam:#FF6B5E; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
+    --s-water:#4CC265; --s-steam:#FF6B5E; --s-steamlp:#7CCBFA; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
     --s-alkali:#B18CF0; --s-sulfur:#C99158;
     --shadow:0 10px 30px rgba(0,0,0,.5);
-    --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05);
+    --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05); --eqf:#1B2724; --hatch:#3B4A46;
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
   --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
   --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C; --paper:#121A18;
-  --s-water:#4CC265; --s-steam:#FF6B5E; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
+  --s-water:#4CC265; --s-steam:#FF6B5E; --s-steamlp:#7CCBFA; --s-air:#5B9BFF; --s-gas:#F2C230; --s-acid:#FF9A45;
   --s-alkali:#B18CF0; --s-sulfur:#C99158;
   --shadow:0 10px 30px rgba(0,0,0,.5);
-  --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05);
+  --imgfilter:invert(.9) hue-rotate(180deg) brightness(1.05); --eqf:#1B2724; --hatch:#3B4A46;
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
@@ -60,10 +61,30 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #stage{position:absolute;left:0;top:0;transform-origin:0 0;will-change:transform}
 #stage.anim{transition:transform .45s cubic-bezier(.2,.7,.2,1)}
 #stage img{position:absolute;inset:0;display:none;width:100%;height:100%;filter:var(--imgfilter);pointer-events:none;-webkit-user-drag:none;opacity:.5;z-index:2}
-body.scan #stage img{display:block}
+body.scan #stage img,body.cmp #stage img{display:block}
+body.scan #stage img{opacity:1}
+body.scan:not(.scanwait) #art{visibility:hidden}
+#scanNote{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:6;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 12px;font-size:13px;color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer}
+#scanNote.err{border-color:#c0392b;color:#c0392b}
+#scanNote[hidden]{display:none}
 #art{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 #art .ln{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
 #art .fl{fill:var(--ink);stroke:none}
+#art .sb{fill:var(--eqf);stroke:var(--ink);stroke-width:3;stroke-linejoin:round}
+#art .sl{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+#art .sl2{fill:none;stroke:var(--ink);stroke-width:3}
+#art .sl0{fill:none;stroke:var(--ink);stroke-width:3}
+#art .st{fill:none;stroke:var(--ink2);stroke-width:1.7}
+#art .sf{fill:var(--ink);stroke:none}
+#art .sx{fill:var(--hatch);fill-opacity:.45;stroke:none}
+#art .sd{fill:url(#pfdD);stroke:var(--ink);stroke-width:2}
+#art .sd2{fill:url(#pfdH);stroke:none}
+#art .sd3{fill:url(#pfdN);stroke:none}
+#art .sc{fill:none;stroke:var(--ink);stroke-width:2.6;stroke-dasharray:10 6;stroke-linecap:round;stroke-linejoin:round}
+#art .sc0{fill:none;stroke:var(--ink);stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+#art .sdb{fill:none;stroke:var(--ink2);stroke-width:2.6;stroke-dasharray:14 8}
+#art .sn2{font:700 24px var(--sans);fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+#art .fire{fill:#E8742A;stroke:var(--ink);stroke-width:1.6}
 #art .pp{stroke-width:7;stroke-linecap:butt;fill:none}
 #art .dsh{fill:none;stroke:var(--ink2);stroke-width:2.4;stroke-dasharray:30 12 3 12}
 #art .dsm{fill:none;stroke:var(--ink2);stroke-width:2.2;stroke-dasharray:22 7 3 7}
@@ -77,7 +98,10 @@ body.scan #stage img{display:block}
 #art .tn{font:500 18px var(--sans);fill:var(--ink2);text-anchor:middle}
 #art .tmn{fill:var(--paper);stroke:var(--ink);stroke-width:2.4;stroke-linejoin:round}
 #art .tm{font:500 19px var(--sans);fill:var(--ink)}
-#art .dim{opacity:.13}
+#art .off{display:none}
+#art .de{opacity:.3}
+#ov .stz.off{pointer-events:none}
+#ov .eqz.dz{opacity:.3}
 .leg{display:inline-flex;flex-wrap:wrap;gap:4px}
 .leg button{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:3px 9px 3px 7px;font-size:12px;cursor:pointer}
 .leg button[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
@@ -116,10 +140,73 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
 .acts .btn{text-align:left;padding:9px 12px}
 .note{font-size:12px;color:var(--ink3);margin:10px 0 0}
 .regmini{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
-.regmini td{border-top:1px solid var(--line);padding:4px 0;vertical-align:top}
-.regmini td:first-child{color:var(--ink2);padding-right:8px}
+.regmini td,.regmini th{border-top:1px solid var(--line);border-right:1px solid var(--line);padding:4px 6px;vertical-align:top;text-align:left}
+.regmini th{font:600 10.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);background:var(--panel2)}
+.regmini td:last-child,.regmini th:last-child{border-right:0}
+.regmini td:first-child{color:var(--ink2)}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
 .hint{position:absolute;left:10px;bottom:10px;z-index:4;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-size:12px;color:var(--ink2);max-width:calc(100% - 20px);pointer-events:none;opacity:.92}
+
+#io{flex:0 0 auto;max-height:40%;display:flex;flex-direction:column;border-top:1px solid var(--line);background:var(--panel)}
+#io[hidden]{display:none}
+#io .ioh{display:flex;align-items:center;gap:8px;padding:6px 10px;flex:0 0 auto}
+#io .ioh b{font-size:13px}
+#io .ioh span{color:var(--ink3);font-size:12px;flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#io .ioh button{border:0;background:transparent;color:var(--ink2);cursor:pointer;font-size:12.5px;padding:3px 8px;border-radius:6px}
+#io .ioh button:hover{background:var(--panel2)}
+#io.min .iob{display:none}
+.iob{display:flex;gap:10px;overflow:auto;padding:0 10px 10px;align-items:flex-start}
+.ioc{flex:0 0 auto;min-width:min(100%,470px);max-width:100%;border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:8px 10px}
+.ioc h3{margin:0 0 6px;font-size:13px;line-height:1.3}
+.ioc h3 .tag{margin-right:6px}
+.iot{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.iot th{position:sticky;top:0;z-index:2;background:var(--panel2);box-shadow:0 1px 0 var(--line);border-right:1px solid var(--line);padding-left:6px;font:600 10.5px var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);text-align:left;padding:3px 6px 3px 0;border-bottom:1px solid var(--line);white-space:nowrap}
+.iot th.r,.iot td.r{text-align:right}
+.iot td{padding:3px 6px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);vertical-align:baseline}
+.iot th:last-child,.iot td:last-child{border-right:0}
+.iot tr.sec td{border-right:0}
+.iot tr.sec td{font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding-top:8px;border-bottom:0}
+.iot tr.sec.in td{color:var(--s-water)}
+.iot tr.sec.out td{color:var(--s-alkali)}
+.iot tr[data-id]{cursor:pointer}
+.iot tr[data-id]:hover td,.iot tr.act td{background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.iot td.n b{font-family:var(--mono)}
+.iot .g{padding-left:6px}
+.iot td.u,.iot th.u{color:var(--ink3);font-size:11px;white-space:nowrap;padding-left:4px}
+.iot td.r.g{padding-right:2px}
+.iot td.bs{font-weight:500;font-size:11.5px;white-space:normal}
+.iot tr.sum.first td{border-top:1px solid var(--ink3)}
+.iot td small{color:var(--ink3)}
+.iot tr.sum td{font-weight:600;border-bottom:0}
+.iot tr.bal td{font-weight:600}
+.iot tr.bal.warn td{color:#c0392b}
+.iot tr.bal.good td{color:var(--accent)}
+.ionote{margin:6px 0 0;font-size:11.5px;color:var(--ink3)}
+@media (max-width:760px){body.ioopen #card{display:none}#io{max-height:46%}.ioc{min-width:calc(100vw - 22px)}.iot td.nm{max-width:78px}.ioc{padding:6px}.iot{font-size:11px}.iot th{font-size:9.5px;letter-spacing:0}.iot .g{padding-left:5px}.iot td{padding-right:3px}.iot td.u,.iot th.u{font-size:9.5px;padding-left:2px}}
+
+/* полный экран: как в схеме потоков — кнопка слева сверху, ☰ справа с панелью управления вместо верхней панели */
+.fs-fab{position:absolute;left:10px;top:10px;z-index:5;width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink2);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.fs-fab[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--panel))}
+.fs-fab svg{width:18px;height:18px}
+.fsmenu-fab{display:none;position:fixed;z-index:7;right:14px;top:calc(env(safe-area-inset-top,0px) + 14px);width:38px;height:38px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);box-shadow:var(--shadow);font-size:18px;line-height:1;cursor:pointer;padding:0}
+.fsmenu-fab[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
+body.fs-mode .fsmenu-fab{display:block}
+body.fs-mode .fs-fab{position:fixed;left:14px;top:calc(env(safe-area-inset-top,0px) + 14px)}
+.fspanel{display:none;position:fixed;z-index:6;right:14px;top:calc(env(safe-area-inset-top,0px) + 62px);width:min(300px,calc(100vw - 28px));max-height:calc(100dvh - env(safe-area-inset-top,0px) - 140px);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:color-mix(in srgb,var(--panel) 95%,transparent);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px}
+body.fs-mode .fspanel.open{display:block}
+.fspanel .bar{display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:0;border:0;background:transparent}
+.fspanel .seg{display:flex;flex-direction:column}
+.fspanel .seg button+button{border-left:0;border-top:1px solid var(--line)}
+.fspanel .seg button{text-align:left}
+.fspanel #q{max-width:none;min-width:0;width:100%;flex:none}
+.fspanel .leg{display:flex;flex-direction:column;flex-wrap:nowrap;overflow:visible;order:0;gap:5px}
+.fspanel .leg button{justify-content:flex-start;width:100%}
+.fspanel .btn{width:100%;text-align:left}
+.fspanel .zoom{margin-left:0;justify-content:space-between}
+.fspanel .zoom{display:flex;gap:6px}.fspanel .zoom .btn{width:auto;flex:0 0 auto;text-align:center}.fspanel .zoom .zl{flex:1}.fspanel #zFit{flex:1 1 auto;font-size:12.5px}
+body.fs-mode #io{max-height:34%}
+/* in full screen the card starts below the ☰ button; with the control panel open the card and the «Входы и выходы» panel stay left of it */
+@media (min-width:761px){body.fs-mode #card.open{margin-top:62px}body.fs-mode.fs-panel-open #card{margin-right:300px}body.fs-mode.fs-panel-open #io{padding-right:300px}}
 @media (max-width:760px){
   .leg{flex:1 1 100%;flex-wrap:nowrap;overflow-x:auto;order:3;padding-bottom:2px}
   .leg button{flex:0 0 auto;white-space:nowrap}
@@ -129,13 +216,14 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
 </style>
 </head>
 <body class="zones">
-<div class="bar">
+<div class="bar" id="tBar">
   <div class="seg" id="tabs" role="tablist"></div>
   <input id="q" type="search" list="qlist" autocomplete="off" aria-label="Поиск">
   <datalist id="qlist"></datalist>
   <div class="leg" id="leg"></div>
   <button class="btn" id="bZones" type="button" aria-pressed="true"></button>
   <button class="btn" id="bScan" type="button" aria-pressed="false"></button>
+  <button class="btn" id="bCmp" type="button" aria-pressed="false"></button>
   <div class="zoom">
     <button class="btn" id="zOut" type="button" aria-label="−">−</button>
     <span class="zl" id="zl">100%</span>
@@ -143,17 +231,23 @@ body.zones .stz{stroke:var(--accent);stroke-opacity:.0}
     <button class="btn" id="zFit" type="button"></button>
   </div>
 </div>
+<div class="fspanel" id="fsPanel"></div>
 <div class="main">
   <div id="vp">
+    <button class="fs-fab" type="button" id="bFullscreen" aria-pressed="false"><svg id="fsIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg></button>
+    <button class="fsmenu-fab" type="button" id="bFsMenu" aria-expanded="true" aria-controls="fsPanel">☰</button>
     <div id="stage"><svg id="art" preserveAspectRatio="none"></svg><img id="img" alt="" draggable="false"><svg id="ov" preserveAspectRatio="none"></svg></div>
     <div id="tip"></div>
+    <div id="scanNote" hidden role="status"></div>
     <div class="hint" id="hint"></div>
   </div>
   <aside id="card" aria-live="polite"></aside>
 </div>
+<section id="io" hidden aria-label="Входы и выходы"><div class="ioh"><b id="ioT"></b><span id="ioS"></span><button type="button" id="ioMin"></button><button type="button" id="ioX" aria-label="×">×</button></div><div class="iob" id="iob"></div></section>
 <script src="lang.js"></script>
 <script src="theme.js"></script>
 <script src="pfd/pfd-data.js"></script>
+<script src="pfd/symbols.js"></script>
 <script>
 (function(){
 'use strict';
@@ -161,30 +255,36 @@ const D=window.TMK_PFD, SH=D.sheets, CARD=D.cards, ST=D.streams;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const NS='http://www.w3.org/2000/svg';
-const KCOL={gas:'--s-gas',air:'--s-air',acid:'--s-acid',water:'--s-water',steam:'--s-steam',sulfur:'--s-sulfur',reagent:'--s-alkali'};
+const KCOL={gas:'--s-gas',air:'--s-air',acid:'--s-acid',water:'--s-water',steam:'--s-steam',steamlp:'--s-steamlp',sulfur:'--s-sulfur',reagent:'--s-alkali'};
 
 const UI={
   ru:{
-    scan:'Скан', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист',
+    allm:'Все среды', scan:'Скан', cmp:'Наложение', sheet:'Лист', search:'Найти позицию или поток (EX-11201, 53…)', zones:'Зоны', fit:'Весь лист', fsEnter:'Во весь экран', fsExit:'Выйти из полноэкранного режима', fsMenu:'Панель управления: листы, поиск, среды, скан, масштаб', scanLoad:'Загрузка скана…', scanErr:'Скан не загрузился. Нажмите, чтобы повторить.',
+
+    ioU:'ед.', kPa:'кПа', MPa:'МПа', ioT:'Входы и выходы', ioIn:'Вход', ioOut:'Выход', ioN:'№', ioMed:'Среда', ioQ:'Расход', ioTemp:'T, °C', ioP:'Давление', ioSumIn:'Σ вход', ioSumOut:'Σ выход', ioBal:'Баланс (вход − выход)', ioBalM:'Баланс по массе, газ + жидкость (все листы)', ioOk:'сходится', ioDiff:'не сходится по таблице чертежа',
+    ioPump:'через насос', ioNone:'Для этого потока на схеме нет аппаратов.', ioMin:'Свернуть', ioMax:'Развернуть', ioNote:'Баланс по данным таблицы PFD без поправок. Расходы газа в Нм³/ч, остальных сред в т/ч; разные единицы не суммируются. Нажмите строку — поток подсветится на схеме.', ioOfStream:'поток', ioOfEq:'аппарат', nm3:'Нм³/ч', tph:'т/ч', ioNoOut:'выходы на схеме не обозначены', ioNoIn:'входы на схеме не обозначены',
     hint:'Колесо / щипок — масштаб, перетаскивание — сдвиг. Нажмите на аппарат или на ромб с номером потока.',
     close:'Закрыть', qty:'Количество', mass:'Масса, кг', also:'Также на листах', streams:'Потоки у аппарата',
     to3d:'Показать в 3D', toFlow:'Показать в схеме потоков', stream:'Поток', onSheets:'На листах', joins:'Связывает аппараты',
     gasRef:'Газовый поток: параметры — в таблице листа 1.', openSheet1:'Открыть лист 1',
     pfdTag:'Позиция на PFD', noCard:'Карточка аппарата в модели не найдена.', noLine:'Линия потока на этом листе не выделена.',
-    reg:'По регламенту', pfdNote:'Позиция по PFD', tailNote:'На PFD блок без обозначения («система очистки хвостовых газов»): сопоставлен с TW-11304 по составу потоков 72–74.',
+    reg:'По регламенту', regP:'Параметр', regV:'Значение', pfdNote:'Позиция по PFD', attNote:'Вода на впрысковые пароохладители XX-11401 и XX-11402 (чертёж 3147-5R114-03): до паровых линий поток показан водой. В расчётном режиме по таблице PFD расход 0 т/ч.', tailNote:'На PFD блок без обозначения («система очистки хвостовых газов»): сопоставлен с TW-11304 по составу потоков 72–74.',
     wt:'Концентрация, % масс.', th:'Расход, т/ч', rho:'Плотность, кг/м³', m3:'Расход, м³/ч', t:'Температура, °C', p:'Давление',
     pMPa:'МПа (изб.)', pkPa:'кПа (изб.)', comps:{SO2:'SO₂, Нм³/ч',SO3:'SO₃, Нм³/ч',O2:'O₂, Нм³/ч',N2:'N₂, Нм³/ч',dry:'Итого сухой, Нм³/ч',H2O:'H₂O, Нм³/ч',wet:'Итого влажный, Нм³/ч'},
     src:'Источник: ', title:'Технологическая схема материальных потоков (PFD), WZ-POT-262, Rev. A',
     unit:{th:'т/ч'}, gas:'газ', acid:'кислота', water:'вода', steam:'пар', sulfur:'сера', reagent:'реагент', air:'воздух'
   },
   uz:{
-    scan:'Skan', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq',
+    allm:'Barcha muhitlar', scan:'Skan', cmp:'Ustma-ust', sheet:'Varaq', search:'Pozitsiya yoki oqimni qidiring (EX-11201, 53…)', zones:'Zonalar', fit:'Butun varaq', fsEnter:'To‘liq ekran', fsExit:'To‘liq ekrandan chiqish', fsMenu:'Boshqaruv paneli: varaqlar, qidiruv, muhitlar, skan, masshtab', scanLoad:'Skan yuklanmoqda…', scanErr:'Skan yuklanmadi. Qayta urinish uchun bosing.',
+
+    ioU:'birl.', kPa:'kPa', MPa:'MPa', ioT:'Kirish va chiqishlar', ioIn:'Kirish', ioOut:'Chiqish', ioN:'№', ioMed:'Muhit', ioQ:'Sarf', ioTemp:'T, °C', ioP:'Bosim', ioSumIn:'Σ kirish', ioSumOut:'Σ chiqish', ioBal:'Balans (kirish − chiqish)', ioBalM:'Massa balansi, gaz + suyuqlik (barcha varaqlar)', ioOk:'mos keladi', ioDiff:'chizma jadvali bo‘yicha mos kelmaydi',
+    ioPump:'nasos orqali', ioNone:'Bu oqim uchun sxemada apparat yo‘q.', ioMin:'Yig‘ish', ioMax:'Yoyish', ioNote:'Balans PFD jadvali ma’lumotlari bo‘yicha, tuzatishsiz. Gaz sarfi Nm³/soat, boshqa muhitlar t/soat; turli birliklar qo‘shilmaydi. Qatorni bossangiz, oqim sxemada ajratiladi.', ioOfStream:'oqim', ioOfEq:'apparat', nm3:'Nm³/soat', tph:'t/soat', ioNoOut:'chiqishlar sxemada ko‘rsatilmagan', ioNoIn:'kirishlar sxemada ko‘rsatilmagan',
     hint:'G‘ildirak / chimchilash — masshtab, sudrash — siljitish. Apparatni yoki oqim raqamli romb ustiga bosing.',
     close:'Yopish', qty:'Soni', mass:'Massa, kg', also:'Boshqa varaqlarda', streams:'Apparatdagi oqimlar',
     to3d:'3D da ko‘rsatish', toFlow:'Oqim sxemasida ko‘rsatish', stream:'Oqim', onSheets:'Varaqlarda', joins:'Bog‘laydigan apparatlar',
     gasRef:'Gaz oqimi: parametrlar 1-varaq jadvalida.', openSheet1:'1-varaqni ochish',
     pfdTag:'PFD dagi pozitsiya', noCard:'Modelda apparat kartochkasi topilmadi.', noLine:'Bu varaqda oqim chizig‘i ajratilmagan.',
-    reg:'Reglament bo‘yicha', pfdNote:'PFD bo‘yicha pozitsiya', tailNote:'PFD da bu blokning belgisi yo‘q («chiqindi gazlarni tozalash tizimi»): 72–74 oqimlar tarkibiga ko‘ra TW-11304 ga mos qo‘yilgan.',
+    reg:'Reglament bo‘yicha', regP:'Ko‘rsatkich', regV:'Qiymat', pfdNote:'PFD bo‘yicha pozitsiya', attNote:'XX-11401 va XX-11402 purkash bug‘ sovutgichlariga suv (3147-5R114-03 chizmasi): bug‘ liniyalarigacha oqim suv sifatida ko‘rsatilgan. PFD jadvalidagi hisob rejimida sarf 0 t/soat.', tailNote:'PFD da bu blokning belgisi yo‘q («chiqindi gazlarni tozalash tizimi»): 72–74 oqimlar tarkibiga ko‘ra TW-11304 ga mos qo‘yilgan.',
     wt:'Konsentratsiya, % massa', th:'Sarf, t/soat', rho:'Zichlik, kg/m³', m3:'Sarf, m³/soat', t:'Harorat, °C', p:'Bosim',
     pMPa:'MPa (ortiqcha)', pkPa:'kPa (ortiqcha)', comps:{SO2:'SO₂, Nm³/soat',SO3:'SO₃, Nm³/soat',O2:'O₂, Nm³/soat',N2:'N₂, Nm³/soat',dry:'Jami quruq, Nm³/soat',H2O:'H₂O, Nm³/soat',wet:'Jami nam, Nm³/soat'},
     src:'Manba: ', title:'Moddiy oqimlarning texnologik sxemasi (PFD), WZ-POT-262, Rev. A',
@@ -256,42 +356,81 @@ vp.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')hideTip()});
 $('zIn').onclick=()=>zoomAt(k*1.4,vp.clientWidth/2,vp.clientHeight/2);
 $('zOut').onclick=()=>zoomAt(k/1.4,vp.clientWidth/2,vp.clientHeight/2);
 $('zFit').onclick=()=>fit(true);
-$('bScan').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('scan',on);if(on)img.src=sheetOf(sheet).scan||('pfd/scan/sheet'+sheet+'.jpg')};
+function setScan(mode){          // '' — вектор, 'scan' — оригинальный скан, 'cmp' — скан поверх вектора
+  document.body.classList.toggle('scan',mode==='scan');document.body.classList.toggle('cmp',mode==='cmp');
+  $('bScan').setAttribute('aria-pressed',mode==='scan');$('bCmp').setAttribute('aria-pressed',mode==='cmp');
+  if(mode)loadScan();else scanNote('')}
+// скан грузится отдельно: пока файл не пришёл, вектор не прячем и показываем статус
+let scanTok=0,scanFail=false;
+function scanNote(t,err){const n=$('scanNote');n.textContent=t;n.hidden=!t;n.classList.toggle('err',!!err);document.body.classList.toggle('scanwait',!!t)}
+function loadScan(){
+  const u='pfd/scan/sheet'+sheet+'.jpg',t=++scanTok,T=L();
+  if((img.getAttribute('src')||'').split('?')[0]===u&&img.complete&&img.naturalWidth){scanNote('');return}
+  scanNote(T.scanLoad);
+  img.onload=()=>{if(t===scanTok)scanNote('')};
+  img.onerror=()=>{if(t===scanTok){scanFail=true;scanNote(T.scanErr,true)}};
+  img.removeAttribute('src');img.src=scanFail?u+'?r='+Date.now():u;scanFail=false}
+const scanMode=()=>document.body.classList.contains('scan')?'scan':document.body.classList.contains('cmp')?'cmp':'';
+$('bScan').onclick=()=>setScan(scanMode()==='scan'?'':'scan');
+$('bCmp').onclick=()=>setScan(scanMode()==='cmp'?'':'cmp');
+$('scanNote').addEventListener('pointerdown',e=>e.stopPropagation());
+$('scanNote').onclick=()=>{if(scanMode())loadScan()};
 $('bZones').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';e.currentTarget.setAttribute('aria-pressed',on);document.body.classList.toggle('zones',on)};
 window.addEventListener('resize',()=>{const was=k/fitK;computeFit();k=Math.max(fitK,was*fitK);applyView()});
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCard();else if(e.key==='+'||e.key==='=')$('zIn').click();else if(e.key==='-')$('zOut').click()});
+document.addEventListener('keydown',e=>{
+  const t=e.target,typing=t&&(/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)||t.isContentEditable);
+  if(e.key==='Escape')closeCard();
+  else if(typing||e.ctrlKey||e.metaKey||e.altKey)return;   // «-» и «+» в поиске («EX-11201») не должны менять масштаб
+  else if(e.key==='+'||e.key==='=')$('zIn').click();else if(e.key==='-')$('zOut').click()});
 
 // ---------- vector layer ----------
-const MEDIA=[['gas','Газ','Gaz'],['air','Воздух','Havo'],['acid','Кислота','Kislota'],['water','Вода','Suv'],['steam','Пар','Bug‘'],['sulfur','Сера','Oltingugurt'],['alkali','Щёлочь','Ishqor']];
+const MEDIA=[['gas','Газ','Gaz'],['air','Воздух','Havo'],['acid','Кислота','Kislota'],['water','Вода','Suv'],['steam','Пар ВД','YuB bug‘'],['steamlp','Пар НД','PB bug‘'],['sulfur','Сера','Oltingugurt'],['alkali','Щёлочь','Ishqor']];
 const MCOL=Object.assign({},KCOL,{alkali:'--s-alkali'});
 let medium=null;
-function paintLeg(){const g=$('leg');g.textContent='';MEDIA.forEach(m=>{const b=document.createElement('button');b.type='button';b.style.setProperty('--c',`var(${MCOL[m[0]]})`);
+const kindOf=id=>{const s=ST[id];return s?(s.k==='gas'&&s.n==='Воздух'?'air':s.k==='reagent'?'alkali':s.k):''};
+function setMedium(m){medium=m;paintLeg();applyMedium()}
+function paintLeg(){const g=$('leg');g.textContent='';
+  const all=document.createElement('button');all.type='button';all.className='all';all.setAttribute('aria-pressed',String(!medium));all.textContent=L().allm;all.onclick=()=>setMedium(null);g.appendChild(all);
+  MEDIA.forEach(m=>{const b=document.createElement('button');b.type='button';b.style.setProperty('--c',`var(${MCOL[m[0]]})`);
   b.setAttribute('aria-pressed',String(medium===m[0]));b.innerHTML='<i></i>'+esc(lang==='uz'?m[2]:m[1]);
-  b.onclick=()=>{medium=medium===m[0]?null:m[0];paintLeg();applyMedium()};g.appendChild(b)})}
-function applyMedium(){art.querySelectorAll('[data-m]').forEach(n=>n.classList.toggle('dim',!!medium&&n.dataset.m!==medium))}
+  b.onclick=()=>setMedium(medium===m[0]?null:m[0]);g.appendChild(b)})}
+// при выбранной среде остаются только её линии, стрелки, ромбы, выводы, арматура и КИП; аппараты, где среда не участвует, приглушены
+function applyMedium(){
+  const eqOn=new Set();
+  if(medium)sheetOf(sheet).eq.forEach(e=>{if((e.streams||[]).some(id=>kindOf(id)===medium))eqOn.add(e.tag)});
+  document.body.classList.toggle('medium',!!medium);
+  art.querySelectorAll('[data-m]').forEach(n=>n.classList.toggle('off',!!medium&&n.dataset.m!==medium&&n.dataset.m!=='eq'));
+  art.querySelectorAll('[data-m=""]').forEach(n=>{n.classList.remove('off');n.classList.toggle('de',!!medium)});
+  art.querySelectorAll('[data-t],[data-m="eq"]').forEach(n=>n.classList.toggle('de',!!medium&&!eqOn.has(n.dataset.t)));
+  ov.querySelectorAll('.eqz').forEach(n=>n.classList.toggle('dz',!!medium&&!eqOn.has(n.dataset.tag)));
+  art.querySelectorAll('.dsm,.dsa').forEach(n=>{n.classList.remove('de');n.classList.toggle('off',!!medium&&n.dataset.m!==medium)});
+  ov.querySelectorAll('.stz').forEach(n=>n.classList.toggle('off',!!medium&&kindOf(+n.dataset.id)!==medium))}
 function drawArt(s){
   art.textContent='';
-  mk('path',{d:s.fill,class:'fl'},art);mk('path',{d:s.art,class:'ln'},art);
+  PFDSYM.defs(art);
+  mk('path',{d:s.fill,class:'fl','data-m':'eq'},art);mk('path',{d:s.art,class:'ln','data-m':'eq'},art);
+  for(const k in s.artk)mk('path',{d:s.artk[k],class:'ln','data-m':k},art);
+  (s.sym||[]).forEach(q=>PFDSYM.draw(art,q));
   const gp=mk('g',{},art);
   s.pipes.forEach(p=>mk('line',{x1:p[2],y1:p[3],x2:p[4],y2:p[5],class:'pp',stroke:`var(${MCOL[p[1]]||'--ink'})`,'data-m':p[1]},gp));
   
   s.arrows.forEach(a=>{const[x,y,dx,dy,kd]=a;const L=22,Wd=12;
     mk('polygon',{points:`${x},${y} ${x-dx*L-dy*Wd},${y-dy*L+dx*Wd} ${x-dx*L+dy*Wd},${y-dy*L-dx*Wd}`,fill:`var(${MCOL[kd]||'--ink'})`,'data-m':kd},art)});
-  s.dashm.forEach(d=>mk('polyline',{points:d.map(q=>q.join(',')).join(' '),class:'dsm'},art));
-  s.darr.forEach(a=>{const[x,y,dx,dy]=a,L=16,Wd=7;mk('polygon',{points:`${x},${y} ${x-dx*L-dy*Wd},${y-dy*L+dx*Wd} ${x-dx*L+dy*Wd},${y-dy*L-dx*Wd}`,class:'fl'},art)});
+  s.dashm.forEach((d,i)=>mk('polyline',{points:d.map(q=>q.join(',')).join(' '),class:'dsm','data-m':(s.dashk||[])[i]||''},art));
+  s.darr.forEach((a,i)=>{const[x,y,dx,dy]=a,L=16,Wd=7;mk('polygon',{'data-m':(s.darrk||[])[i]||'',points:`${x},${y} ${x-dx*L-dy*Wd},${y-dy*L+dx*Wd} ${x-dx*L+dy*Wd},${y-dy*L-dx*Wd}`,class:'fl dsa'},art)});
   s.lines.forEach(d=>mk('polyline',{points:d.map(q=>q.join(',')).join(' '),class:'ln'},art));
-  s.valves.forEach(v=>{const[x,y,o,a]=v,R=11;
-    mk('polygon',{points:o==='h'?`${x-R},${y-8} ${x+R},${y+8} ${x+R},${y-8} ${x-R},${y+8}`:`${x-8},${y-R} ${x+8},${y+R} ${x-8},${y+R} ${x+8},${y-R}`,class:'vl'},art);
+  s.valves.forEach(v=>{const[x,y,o,a,vk]=v,R=11,dm={'data-m':vk||''};
+    mk('polygon',{points:o==='h'?`${x-R},${y-8} ${x+R},${y+8} ${x+R},${y-8} ${x-R},${y+8}`:`${x-8},${y-R} ${x+8},${y+R} ${x-8},${y+R} ${x+8},${y-R}`,class:'vl',...dm},art);
     if(a){const dx=a==='r'?1:a==='l'?-1:0,dy=a==='d'?1:a==='u'?-1:0;
-      mk('line',{x1:x,y1:y,x2:x+dx*14,y2:y+dy*14,class:'ln'},art);
+      mk('line',{x1:x,y1:y,x2:x+dx*14,y2:y+dy*14,class:'ln',...dm},art);
       const cx=x+dx*14,cy=y+dy*14,r=11,px=-dy,py=dx;
-      mk('path',{d:`M${cx+px*r},${cy+py*r}A${r},${r} 0 0 ${0} ${cx-px*r},${cy-py*r}Z`,class:'vl'},art)}});
+      mk('path',{d:`M${cx+px*r},${cy+py*r}A${r},${r} 0 0 ${0} ${cx-px*r},${cy-py*r}Z`,class:'vl',...dm},art)}});
   s.eq.forEach(e=>{const c=CARD[e.app];const cx=(e.box[0]+e.box[2])/2,y=e.box[3]+24;
-    const t=mk('text',{x:cx,y,class:'tg'},art);t.textContent=e.tag;
+    const t=mk('text',{x:cx,y,class:'tg','data-t':e.tag},art);t.textContent=e.tag;
     if(c){const nmx=nm(c,'n').replace(/\s*\(.*\)\s*$/,'');const w=Math.max(150,e.box[2]-e.box[0]+40),per=Math.max(14,Math.floor(w/11));
       const words=nmx.split(' ');const ls=[];let cur='';words.forEach(wd=>{if((cur+' '+wd).trim().length>per&&cur){ls.push(cur);cur=wd}else cur=(cur+' '+wd).trim()});if(cur)ls.push(cur);
-      ls.slice(0,3).forEach((l,i)=>{const n=mk('text',{x:cx,y:y+22+i*20,class:'tn'},art);n.textContent=l})}});
-  s.terms.forEach(t=>{const[ex,ey,ux,uy,fl,txt,lx,ly,anc]=t,Lw=58,Hh=17;
+      ls.slice(0,3).forEach((l,i)=>{const n=mk('text',{x:cx,y:y+22+i*20,class:'tn','data-t':e.tag},art);n.textContent=l})}});
+  s.terms.forEach(t=>{const[ex,ey,ux,uy,fl,txt,lx,ly,anc,tk]=t,Lw=58,Hh=17;
     const tip=fl==='in'?[ex,ey]:[ex+ux*Lw,ey+uy*Lw];
     const a=fl==='in'?[ex+ux*(Lw-18),ey+uy*(Lw-18)]:[ex+ux*(Lw-18),ey+uy*(Lw-18)];
     const px=-uy,py=ux;const o=fl==='in'?[ex+ux*Lw,ey+uy*Lw]:[ex,ey];
@@ -300,11 +439,11 @@ function drawArt(s){
     const sh=18,dir=fl==='in'?-1:1;                         // острие смотрит по потоку
     const bb=[base[0]+ux*(fl==='in'?0:0),base[1]];
     const pts=[[base[0]+px*Hh,base[1]+py*Hh],[far[0]-ux*dir*sh+px*Hh,far[1]-uy*dir*sh+py*Hh],[far[0],far[1]],[far[0]-ux*dir*sh-px*Hh,far[1]-uy*dir*sh-py*Hh],[base[0]-px*Hh,base[1]-py*Hh]];
-    mk('polygon',{points:pts.map(q=>q.join(',')).join(' '),class:'tmn'},art);
-    const n=mk('text',{x:lx,y:ly,class:'tm','text-anchor':anc||'start'},art);n.textContent=txt});
-  s.texts.forEach(t=>{if(!t[2])return;const n=mk('text',{x:t[0],y:t[1],class:'tm','text-anchor':t[3]||'start'},art);n.textContent=t[2]});
-  s.instr.forEach(c=>{mk('circle',{cx:c[0],cy:c[1],r:c[2],class:'dm'},art);const n=mk('text',{x:c[0],y:c[1],class:'dn',style:'font-size:'+(c[3].length>2?15:19)+'px'},art);n.textContent=c[3]});
-  s.st.forEach(x=>{const g=mk('g',{class:x.ref?'ref':''},art);
+    mk('polygon',{points:pts.map(q=>q.join(',')).join(' '),class:'tmn','data-m':tk||''},art);
+    const n=mk('text',{x:lx,y:ly,class:'tm','text-anchor':anc||'start','data-m':tk||''},art);n.textContent=txt});
+  s.texts.forEach(t=>{if(!t[2])return;const n=mk('text',{x:t[0],y:t[1],class:'tm','text-anchor':t[3]||'start','data-m':t[4]||''},art);n.textContent=t[2]});
+  s.instr.forEach(c=>{mk('circle',{cx:c[0],cy:c[1],r:c[2],class:'dm','data-m':c[4]||''},art);const n=mk('text',{x:c[0],y:c[1],class:'dn','data-m':c[4]||'',style:'font-size:'+(c[3].length>2?15:19)+'px'},art);n.textContent=c[3]});
+  s.st.forEach(x=>{const g=mk('g',{class:x.ref?'ref':'','data-m':kindOf(x.id)},art);
     mk('polygon',{points:`${x.c[0]},${x.c[1]-32} ${x.c[0]+32},${x.c[1]} ${x.c[0]},${x.c[1]+32} ${x.c[0]-32},${x.c[1]}`,class:'dm'},g);
     const t=mk('text',{x:x.c[0],y:x.c[1],class:'dn'},g);t.textContent=x.id});
   applyMedium();
@@ -312,12 +451,11 @@ function drawArt(s){
 // ---------- sheets ----------
 function mk(tag,attrs,parent){const n=document.createElementNS(NS,tag);for(const a in attrs)n.setAttribute(a,attrs[a]);if(parent)parent.appendChild(n);return n}
 function showSheet(n,keepView){
-  sheet=n;const s=sheetOf(n);if(document.body.classList.contains('scan'))img.src='pfd/scan/sheet'+n+'.jpg';drawArt(s);
+  sheet=n;ioHide();const s=sheetOf(n);if(scanMode())loadScan();drawArt(s);
   ov.textContent='';
   const gz=mk('g',{},ov);
   [...s.eq].sort((a,b)=>area(b.box)-area(a.box)).forEach(e=>{
     const r=mk('rect',{x:e.box[0],y:e.box[1],width:e.box[2]-e.box[0],height:e.box[3]-e.box[1],rx:8,class:'eqz','data-k':'eq','data-tag':e.tag,'data-app':e.app},gz);
-    const t=mk('title',{},r);t.textContent=e.tag;
   });
   s.st.forEach(x=>{mk('circle',{cx:x.c[0],cy:x.c[1],r:34,class:'stz','data-k':'st','data-id':x.id},gz)});
   mk('g',{class:'hl',id:'hl'},ov);
@@ -333,17 +471,19 @@ function paintTabs(){const t=$('tabs');t.textContent='';SH.forEach(s=>{const m=D
 // ---------- hover tooltip ----------
 const tip=$('tip');
 function hideTip(){tip.style.display='none'}
-function stLine(id){const s=ST[id];if(!s)return '';
-  if(s.k==='gas')return `${s.n} · ${fmt(s.g[8])} °C · ${fmt(s.g[7])} кПа · ${fmt(s.g[6])} Нм³/ч`;
-  if(s.k==='steam'||(s.p!==undefined))return `${s.n} · ${fmt(s.t)} °C · ${fmt(s.p)} МПа · ${fmt(s.th)} т/ч`;
-  return `${s.n}${s.wt?' '+s.wt+' %':''} · ${fmt(s.t)} °C · ${fmt(s.th)} т/ч`}
-function eqLine(app){const c=CARD[app];if(!c)return '';const r=c.reg[0];
-  const first=r?[r.f,r.T&&(r.T+' °C'),r.P&&(r.P+' МПа')].filter(Boolean).join(' · '):(c.d[0]||'');return first}
+const smalls=a=>(a||[]).filter(Boolean).map(l=>`<small>${esc(l)}</small>`).join('');
+// значения в подсказке — по одному параметру в строке
+function stLine(id){const s=ST[id],T=L();if(!s)return [];
+  if(s.k==='gas')return [s.n,`${T.t}: ${fmt(s.g[8])}`,`${T.p}, ${T.pkPa}: ${fmt(s.g[7])}`,`${T.comps.wet}: ${fmt(s.g[6])}`];
+  if(s.k==='steam'||s.k==='steamlp'||(s.p!==undefined))return [s.n,`${T.t}: ${fmt(s.t)}`,`${T.p}, ${T.pMPa}: ${fmt(s.p)}`,`${T.th}: ${fmt(s.th)}`];
+  return [s.n,s.wt?`${T.wt}: ${s.wt}`:'',`${T.t}: ${fmt(s.t)}`,`${T.th}: ${fmt(s.th)}`]}
+function eqLine(app){const c=CARD[app];if(!c)return [];const r=c.reg[0];
+  return r?[r.f,r.T&&(r.T+' °C'),r.P&&(r.P+' МПа')].filter(Boolean):[c.d[0]||'']}
 function hover(e){
   const el=e.target.closest&&e.target.closest('[data-k]');if(!el){hideTip();return}
   let html;
-  if(el.dataset.k==='eq'){const c=CARD[el.dataset.app];html=`<b>${esc(el.dataset.tag)}</b> ${esc(c?nm(c,'n'):'')}<small>${esc(eqLine(el.dataset.app))}</small>`}
-  else{const id=el.dataset.id,x=sheetOf(sheet).st.find(s=>String(s.id)===id);html=`<b>${esc(L().stream)} ${esc(id)}</b>${x&&x.ref?'':`<small>${esc(stLine(id))}</small>`}`}
+  if(el.dataset.k==='eq'){const c=CARD[el.dataset.app];html=`<b>${esc(el.dataset.tag)}</b> ${esc(c?nm(c,'n'):'')}${smalls(eqLine(el.dataset.app))}`}
+  else{const id=el.dataset.id,x=sheetOf(sheet).st.find(s=>String(s.id)===id);html=`<b>${esc(L().stream)} ${esc(id)}</b>${x&&x.ref?'':smalls(stLine(id))}`}
   tip.innerHTML=html;tip.style.display='block';
   const r=vp.getBoundingClientRect();let x=e.clientX-r.left+14,y=e.clientY-r.top+14;
   if(x+tip.offsetWidth>r.width-6)x=e.clientX-r.left-tip.offsetWidth-10;
@@ -380,16 +520,17 @@ function selectEq(key,o){ // key — тег на PFD или тег модели
   const pref=eqByApp[app].find(x=>x.sheet===(o.sheet||sheet))||ent;
   if(pref.sheet!==sheet)showSheet(pref.sheet,true);
   sel={t:'eq',tag:pref.eq.tag,app};
-  paintSel();openEqCard(pref.eq,pref.sheet);
+  paintSel();openEqCard(pref.eq,pref.sheet);ioShow([pref.eq.tag]);
   if(o.zoom!==false)zoomBox(pref.eq.box,300,1.0);
   return true;
 }
 function selectStream(id,o){
   o=o||{};
+  if(medium&&kindOf(id)!==medium)setMedium(null);
   let s=sheet;
   if(!sheetOf(s).st.some(x=>x.id===id&&!x.ref)){const f=stSheets(id)[0];if(f)s=f;else{const g=SH.find(z=>z.st.some(x=>x.id===id));if(!g)return false;s=g.n}}
   if(s!==sheet)showSheet(s,true);
-  sel={t:'st',id};paintSel();openStCard(id);
+  sel={t:'st',id};paintSel();openStCard(id);ioForStream(id);
   const x=sheetOf(sheet).st.find(z=>z.id===id);
   if(o.zoom!==false&&x){const pts=x.lines.length?x.lines.flatMap(l=>[[l[0],l[1]],[l[2],l[3]]]):[x.c];
     const xs=pts.map(p=>p[0]).concat(x.c[0]),ys=pts.map(p=>p[1]).concat(x.c[1]);
@@ -397,8 +538,75 @@ function selectStream(id,o){
   return true;
 }
 
+// ---------- входы и выходы по аппарату ----------
+const ioEl=$('io');let ioCur=null,ioAct=null,ioMinPref=null;
+const unitOf=k=>(k==='gas'||k==='air')?'nm3':'th';
+function ioVals(id){const z=ST[id];if(!z)return null;
+  if(z.g)return {u:'nm3',q:z.g[6],t:z.g[8],p:z.g[7],pu:'kPa'};
+  return {u:'th',q:z.th,t:z.t,p:z.p,pu:z.p!==undefined?'MPa':''}}
+function ioFlows(tag){ // [{id,dir:'in'|'out',thru}]
+  const fl=sheetOf(sheet).flow||{},r=[];
+  Object.keys(fl).forEach(k=>{const [src,dst,thru]=fl[k],id=+k;
+    if(dst.includes(tag))r.push({id,dir:'in'});
+    if(src.includes(tag))r.push({id,dir:'out'});
+    if(thru.includes(tag)){r.push({id,dir:'in',thru:1});r.push({id,dir:'out',thru:1})}});
+  return r}
+const MW=[64.066,80.06,31.998,28.013];
+function massOf(id){const z=ST[id];if(!z)return null;
+  if(z.g)return (z.g[0]*MW[0]+z.g[1]*MW[1]+z.g[2]*MW[2]+z.g[3]*MW[3]+(z.g[5]||0)*18.015)/22414;
+  return typeof z.th==='number'?z.th:null}
+function massBal(tag){let i=0,o=0,ni=0,no=0;const seen=new Set();
+  SH.forEach(sh=>Object.entries(sh.flow||{}).forEach(([k,[src,dst,thru]])=>{const q=massOf(k);if(q===null||seen.has(k))return;seen.add(k);
+    if(dst.includes(tag)||thru.includes(tag)){i+=q;ni++}
+    if(src.includes(tag)||thru.includes(tag)){o+=q;no++}}));
+  return ni&&no?{d:i-o,pc:i?Math.abs(i-o)/i*100:0}:null}
+function ioCard(e){
+  const T=L(),c=CARD[e.app],fl=ioFlows(e.tag).sort((a,b)=>a.id-b.id);
+  const row=f=>{const z=ST[f.id],v=ioVals(f.id);if(!z||!v)return '';
+    const col=`var(${KCOL[z.k==='gas'&&z.n==='Воздух'?'air':z.k]||'--accent'})`;
+    const qu=v.q===undefined?'':(v.u==='nm3'?T.nm3:T.tph),pu=v.p===undefined?'':(v.pu==='kPa'?T.kPa:v.pu==='MPa'?T.MPa:'');
+    return `<tr data-id="${f.id}"${ioAct===f.id?' class="act"':''}><td class="n"><span class="dot" style="background:${col}"></span><b>${f.id}</b></td><td class="nm">${esc(z.n)}${z.wt?` <small>${esc(z.wt)} %</small>`:''}${f.thru?` <small>· ${esc(T.ioPump)}</small>`:''}</td><td class="r g">${v.q===undefined?'—':fmt(v.q)}</td><td class="u">${esc(qu)}</td><td class="r g">${v.t===undefined?'—':fmt(v.t)}</td><td class="r g">${v.p===undefined?'—':fmt(v.p)}</td><td class="u">${esc(pu)}</td></tr>`};
+  const sec=(d,cls)=>{const l=fl.filter(f=>f.dir===d);
+    return `<tr class="sec ${cls}"><td colspan="7">${esc(d==='in'?T.ioIn:T.ioOut)}</td></tr>`+(l.length?l.map(row).join(''):`<tr><td colspan="7"><small>${esc(d==='in'?T.ioNoIn:T.ioNoOut)}</small></td></tr>`)};
+  const sum={nm3:{i:0,o:0,ni:0,no:0},th:{i:0,o:0,ni:0,no:0}};
+  fl.forEach(f=>{const v=ioVals(f.id);if(!v||typeof v.q!=='number')return;const g=sum[v.u];if(f.dir==='in'){g.i+=v.q;g.ni++}else{g.o+=v.q;g.no++}});
+  let foot='';
+  ['nm3','th'].forEach(u=>{const g=sum[u];if(!g.ni&&!g.no)return;const un=u==='nm3'?T.nm3:T.tph;
+    foot+=`<tr class="sum first"><td colspan="2">${esc(T.ioSumIn)}</td><td class="r g">${g.ni?fmt(+g.i.toFixed(2)):'—'}</td><td class="u">${esc(un)}</td><td colspan="3"></td></tr><tr class="sum"><td colspan="2">${esc(T.ioSumOut)}</td><td class="r g">${g.no?fmt(+g.o.toFixed(2)):'—'}</td><td class="u">${esc(un)}</td><td colspan="3"></td></tr>`;
+    if(g.ni&&g.no&&u==='th'){const d=g.i-g.o,pc=g.i?Math.abs(d)/g.i*100:0,ok=pc<=0.5;
+      foot+=`<tr class="bal ${ok?'good':'warn'}"><td colspan="2">${esc(T.ioBal)}</td><td class="r g">${d>0?'+':''}${fmt(+d.toFixed(2))}</td><td class="u">${esc(un)}</td><td colspan="3" class="bs">${ok?esc(T.ioOk):fmt(+pc.toFixed(1))+' % — '+esc(T.ioDiff)}</td></tr>`}});
+  // газ в Нм³/ч не сохраняется (SO₂+½O₂→SO₃, поглощение SO₃ в кислоту): баланс — по массе, по всем листам, газ + жидкость
+  const mb=massBal(e.tag);
+  if(mb&&sum.nm3.ni&&sum.nm3.no){const ok=mb.pc<=0.5;
+    foot+=`<tr class="bal ${ok?'good':'warn'}"><td colspan="2">${esc(T.ioBalM)}</td><td class="r g">${mb.d>0?'+':''}${fmt(+mb.d.toFixed(2))}</td><td class="u">${esc(T.tph)}</td><td colspan="3" class="bs">${ok?esc(T.ioOk):fmt(+mb.pc.toFixed(1))+' % — '+esc(T.ioDiff)}</td></tr>`}
+  return `<div class="ioc"><h3><span class="tag">${esc(e.tag)}</span>${esc(c?nm(c,'n'):'')}</h3><table class="iot"><thead><tr><th>${esc(T.ioN)}</th><th>${esc(T.ioMed)}</th><th class="r g">${esc(T.ioQ)}</th><th class="u">${esc(T.ioU)}</th><th class="r g">${esc(T.ioTemp)}</th><th class="r g">${esc(T.ioP)}</th><th class="u">${esc(T.ioU)}</th></tr></thead><tbody>${sec('in','in')}${sec('out','out')}${foot}</tbody></table></div>`}
+function ioShow(tags,sid){
+  const T=L(),label=sid?`${T.stream} ${sid}`:tags[0];ioAct=sid||null;
+  const eqs=tags.map(t=>sheetOf(sheet).eq.find(e=>e.tag===t)).filter(Boolean);
+  if(!eqs.length){ioHide();return}
+  ioCur={tags,sid};
+  $('ioT').textContent=T.ioT;$('ioS').textContent=label;
+  $('iob').innerHTML=eqs.map(ioCard).join('')+`<p class="ionote" style="flex:0 0 220px">${esc(T.ioNote)}</p>`;
+  ioEl.hidden=false;ioMinSet(ioMinPref===null?matchMedia('(max-width:760px)').matches:ioMinPref);relayout();
+  $('iob').querySelectorAll('tr[data-id]').forEach(r=>r.onclick=()=>ioRow(+r.dataset.id));
+}
+function ioHide(){ioCur=null;ioAct=null;const was=ioEl.hidden;ioEl.hidden=true;document.body.classList.remove('ioopen');if(!was)relayout()}
+function ioMinSet(m){ioEl.classList.toggle('min',m);document.body.classList.toggle('ioopen',!m&&!ioEl.hidden);$('ioMin').textContent=m?L().ioMax:L().ioMin}
+function ioRow(id){ // подсветить поток на схеме, не меняя набор аппаратов в панели
+  ioAct=id;sel={t:'st',id};paintSel();openStCard(id);
+  $('iob').querySelectorAll('tr[data-id]').forEach(r=>r.classList.toggle('act',+r.dataset.id===id))}
+function ioForStream(id){
+  const f=(sheetOf(sheet).flow||{})[id];let tags=f?[...new Set([...f[0],...f[2],...f[1]])]:[];
+  if(!tags.length)tags=sheetOf(sheet).eq.filter(e=>e.streams.includes(id)&&Object.keys(sheetOf(sheet).flow||{}).length&&ioFlows(e.tag).some(x=>x.id===id)).map(e=>e.tag);
+  if(!tags.length){ioHide();return}
+  ioShow(tags,id)}
+const relayout=()=>{const was=k/fitK;computeFit();k=Math.max(fitK,was*fitK);applyView()};
+new ResizeObserver(relayout).observe(vp);
+$('ioMin').onclick=()=>{ioMinPref=!ioEl.classList.contains('min');ioMinSet(ioMinPref)};
+$('ioX').onclick=ioHide;
+
 // ---------- card ----------
-function closeCard(){card.classList.remove('open');sel=null;paintSel()}
+function closeCard(){card.classList.remove('open');sel=null;paintSel();ioHide()}
 function openCard(html){card.innerHTML=`<button class="x" type="button" id="cx" aria-label="${esc(L().close)}">×</button>`+html;card.classList.add('open');card.scrollTop=0;$('cx').onclick=closeCard}
 function openEqCard(e,shn){
   const c=CARD[e.app],T=L();
@@ -410,7 +618,7 @@ function openEqCard(e,shn){
    <div><span class="tag">${esc(e.app)}</span>${e.tag!==e.app?`<span class="pill" title="${esc(T.pfdTag)}">PFD: ${esc(e.tag)}</span>`:''}${c&&c.m?'<span class="pill ok">3D</span>':''}</div>
    ${c?`<dl class="kv"><dt>${esc(T.qty)}</dt><dd>${esc(c.q||'—')}</dd><dt>${esc(T.mass)}</dt><dd>${c.w?fmt(+c.w):'—'}</dd></dl>
      ${c.d.length?`<ul class="specs">${c.d.slice(0,6).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
-     ${regRows?`<div class="eyebrow">${esc(T.reg)}</div><table class="regmini">${regRows}</table>`:''}`:`<p class="note">${esc(T.noCard)}</p>`}
+     ${regRows?`<div class="eyebrow">${esc(T.reg)}</div><table class="regmini"><thead><tr><th>${esc(T.regP)}</th><th>${esc(T.regV)}</th></tr></thead><tbody>${regRows}</tbody></table>`:''}`:`<p class="note">${esc(T.noCard)}</p>`}
    ${e.streams.length?`<div class="eyebrow">${esc(T.streams)}</div><div class="chips">${e.streams.map(id=>`<button type="button" data-st="${id}">${id}</button>`).join('')}</div>`:''}
    ${others.length?`<div class="eyebrow">${esc(T.also)}</div><div class="chips">${others.map(x=>`<button type="button" data-sh="${x.sheet}" data-tag="${esc(x.eq.tag)}">${esc(T.sheet)} ${x.sheet}</button>`).join('')}</div>`:''}
    <div class="acts"><button class="btn pri" type="button" id="b3d">${esc(T.to3d)}</button><button class="btn" type="button" id="bFlow">${esc(T.toFlow)}</button></div>
@@ -437,6 +645,7 @@ function openStCard(id){
    <h2><span class="dot" style="background:var(${KCOL[s&&s.k==='gas'&&s.n==='Воздух'?'air':(s&&s.k)]||'--accent'})"></span>${esc(T.stream)} ${id}${s?' · '+esc(s.n):''}</h2>
    ${ref?`<p class="note">${esc(T.gasRef)}</p><div class="acts"><button class="btn pri" type="button" id="bS1">${esc(T.openSheet1)}</button></div>`:`<dl class="kv">${rows}</dl>`}
    ${x&&!x.lines.length&&!ref?`<p class="note">${esc(T.noLine)}</p>`:''}
+   ${id===104?`<p class="note">${esc(T.attNote)}</p>`:''}
    ${eqs.length?`<div class="eyebrow">${esc(T.joins)}</div><div class="chips">${eqs.map(e=>`<button type="button" data-tag="${esc(e.tag)}">${esc(e.tag)}</button>`).join('')}</div>`:''}
    ${on.length>1?`<div class="eyebrow">${esc(T.onSheets)}</div><div class="chips">${on.map(n=>`<button type="button" data-sh="${n}">${esc(T.sheet)} ${n}</button>`).join('')}</div>`:''}
    <p class="note">${esc(T.src)}${esc(D.meta.code)}, ${esc(nm(D.meta.sheets[sheet-1],'name'))}</p>`);
@@ -464,12 +673,31 @@ window.addEventListener('message',e=>{
   if(d.stream!==undefined)selectStream(+d.stream);else if(d.tag)selectEq(d.tag);
 });
 
+// ---------- полный экран ----------
+const FS_ENTER='<path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>';
+const FS_EXIT='<path d="M9 3v3a2 2 0 0 1-2 2H4"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>';
+const bFs=$('bFullscreen'),bFsMenu=$('bFsMenu'),fsPanel=$('fsPanel'),tBar=$('tBar'),tBarSlot=document.createComment('fs-slot');
+tBar.parentNode.insertBefore(tBarSlot,tBar);
+let fsOn=false,fsMenuTouched=false;const fsNarrow=()=>window.innerWidth<=760;
+['bFullscreen','bFsMenu'].forEach(id=>$(id).addEventListener('pointerdown',e=>e.stopPropagation()));
+function paintFs(){const T=L();bFs.setAttribute('aria-pressed',String(fsOn));bFs.title=bFs.ariaLabel=fsOn?T.fsExit:T.fsEnter;$('fsIcon').innerHTML=fsOn?FS_EXIT:FS_ENTER;bFsMenu.title=T.fsMenu;bFsMenu.setAttribute('aria-label',T.fsMenu)}
+function fsPanelState(){const o=fsOn&&bFsMenu.getAttribute('aria-expanded')==='true';fsPanel.classList.toggle('open',o);document.body.classList.toggle('fs-panel-open',o)}
+bFsMenu.addEventListener('click',()=>{fsMenuTouched=true;bFsMenu.setAttribute('aria-expanded',String(bFsMenu.getAttribute('aria-expanded')!=='true'));fsPanelState()});
+function setFullscreen(on,notifyParent){
+  fsOn=on;document.body.classList.toggle('fs-mode',fsOn);paintFs();
+  if(fsOn)fsPanel.appendChild(tBar);else tBarSlot.parentNode.insertBefore(tBar,tBarSlot.nextSibling);
+  if(fsOn&&!fsMenuTouched)bFsMenu.setAttribute('aria-expanded',String(!fsNarrow()));
+  fsPanelState();relayout();
+  if(notifyParent!==false){try{window.parent.postMessage({__tmkFullscreen:true,on:fsOn},'*')}catch(e){}}}
+bFs.addEventListener('click',()=>setFullscreen(!fsOn));
+window.addEventListener('message',e=>{const d=e.data;if(d&&d.__tmkFullscreen)setFullscreen(!!d.on,false)});
+
 // ---------- language / theme ----------
 function paint(l){
   lang=l==='uz'?'uz':'ru';const T=L();
   $('q').placeholder=T.search;$('q').setAttribute('aria-label',T.search);
-  $('bZones').textContent=T.zones;$('bScan').textContent=T.scan;paintLeg();$('zFit').textContent=T.fit;$('hint').textContent=T.hint;
-  document.title=T.title;paintTabs();fillSearch();
+  $('bZones').textContent=T.zones;$('bScan').textContent=T.scan;$('bCmp').textContent=T.cmp;paintLeg();$('zFit').textContent=T.fit;$('hint').textContent=T.hint;if(ioCur)ioShow(ioCur.tags,ioCur.sid);
+  document.title=T.title;paintFs();paintTabs();fillSearch();
   if(sel&&sel.t==='eq'){const f=eqByApp[sel.app].find(x=>x.sheet===sheet);if(f)openEqCard(f.eq,sheet)}
   else if(sel&&sel.t==='st')openStCard(sel.id);
 }

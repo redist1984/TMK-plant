@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ru">
 <head>
+<link rel="icon" href="icon-192.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Документы проекта</title>
@@ -45,6 +46,9 @@ body{position:relative}
 <h2 id="tH2b">Перечень отделений завода</h2>
 <table id="sectbl"><thead><tr><th id="thCode">Код</th><th id="thSec">Отделение</th><th id="thDoc">Документы-основания</th></tr></thead><tbody></tbody></table>
 
+<h2 id="tH2c"></h2>
+<p class="sub" id="pKip"></p>
+
 <footer id="tFooter">Массу и характеристики оборудования, нормы технологического режима и полный перечень позиций см. во вкладке «Схема потоков». Источник данных — технологические схемы 3147-5G111…5R115, перечни оборудования и временный технологический регламент проекта. Часть исходных PDF (например, чертежи в архивах .rar) в это приложение не вошла — см. пояснение в чате.</footer>
 
 <script src="lang.js"></script>
@@ -56,7 +60,7 @@ body{position:relative}
 // just with its filename as the title — see renderPdfList() below.
 // title: [ru, uz]; doc (drawing number) doesn't need translating.
 const KNOWN = {
- "docs_pdf/PFD-WZ-POT-262.pdf": {title:["PFD · Технологическая схема материальных потоков (3 листа: дымогазовая, кислотная, паровая системы) — открыта во вкладке «PFD»","PFD · Moddiy oqimlarning texnologik sxemasi (3 varaq: tutun-gaz, kislota, bug‘ tizimlari) — «PFD» yorlig‘ida ochiladi"],doc:"WZ-POT-262, Rev.A 2025.5 (Yunnan Chemical Design Institute)"},
+ "docs_pdf/PFD-WZ-POT-262.pdf": {title:["PFD · Технологическая схема материальных потоков (3 листа: дымогазовая, кислотная, паровая системы; пар разделён на ВД — потоки 109–111, и НД — потоки 113, 115, 116) — открыта во вкладке «PFD»","PFD · Moddiy oqimlarning texnologik sxemasi (3 varaq: tutun-gaz, kislota, bug‘ tizimlari; bug‘ YuB 109–111 va PB 113, 115, 116 oqimlariga bo‘lingan) — «PFD» yorlig‘ida ochiladi"],doc:"WZ-POT-262, Rev.A 2025.5 (Yunnan Chemical Design Institute)"},
  "docs_pdf/Construction-schedule-2026.pdf": {title:["График строительно-монтажных работ (по нему — вкладка «Строительство» в 3D-модели)","Qurilish-montaj ishlari jadvali (3D-modeldagi «Qurilish» yorlig‘i shu bo‘yicha)"],doc:"График для работы, MS Project, 2026"},
  "docs_pdf/GP-plant-render.pdf": {title:["Генплан завода — визуализация с экспликацией зданий","Zavod bosh rejasi — binolar eksplikatsiyasi bilan vizualizatsiya"],doc:"рендер генплана"},
  "docs_pdf/Hg121-raised-track-06-P-2025-14-AS.pdf": {title:["121 · Повышенный путь № 6 в складе серы (АС, 12 листов)","121 · Oltingugurt omboridagi 6-sonli ko‘tarilgan yo‘l (AS, 12 varaq)"],doc:"06-П/2025-14.00-01-АС"},
@@ -213,6 +217,8 @@ const UI = {
     sub:'Исходные листы (PDF) технологических планов и P&ID, по которым построены схема потоков, 3D-модель и галереи чертежей оборудования. Открываются системным просмотрщиком PDF на устройстве.',
     h2a:'Планы размещения оборудования и P&ID по отделениям',
     h2b:'Перечень отделений завода',
+    h2c:'Слой «КИП» в 3D-модели (отделение 111, по чертежам КИПиА)',
+    pKip:'Кнопка «КИП» в 3D-модели показывает 13 приборов отделения 111 на трубах и аппаратах (пар НД 0,8 МПа к плавильникам, скруббер TW-11101, насосы PP-11106A/B, конденсат): FT-11101, TE-11106, PT-11104, PG-11105, LT-11106, LV-11106, FT-11103, PT-11107, PT-11106, TE-11109, FT-11102, CSV-11101A/B. Теги, типы, DN/PN, диапазоны и отметки взяты из проекта КИПиА 3147-5N111: индекс приборов -02, технические паспорта -03, план расположения -09 (Rev.A 2026.07), монтажные схемы -05, штуцеры L1/L2 — из чертежа 3147-5H111-04-01. Габариты корпусов, строительные длины и приводы — по типовым каталогам. Положение вдоль трубы выбрано по плану -09 с точностью нескольких метров (трассы труб в модели не совпадают с чертежом линия в линию); уровнемер LT-11106 смещён с угла 240° на 20°, потому что на 240° в модели проходят линии всасывания. Не показаны: приборы паропровода 0,5 МПа (линия LS-111141-100 в модели отсутствует), HV-11101, приборы бака конденсата VE-11101. Отделение 112 (сжигание серы и конверсия, проект 3147-5N112, план -09 листы 1–6): 56 приборов на газоходах, печи FU-11201 и конвертере RE-11201 — термопары и термосопротивления, датчики давления, электрические регулирующие клапаны TV/HV, паровой и серный расходомеры. Места на газоходах выбраны по отметкам EL плана (положение вдоль трассы оценено); на конвертере приборы стоят на уровне слоёв катализатора, угол по окружности оценён. Не показаны: приборы линий природного газа и КИП-воздуха (в модели нет линий NG-11201/11203, IA-11201), детекторы газа и сирена (план -07 не разобран), воздухоподогреватель EX-11208, линия PA-11201. Нажатие на прибор открывает карточку с источником.',
     thCode:'Код', thSec:'Отделение', thDoc:'Документы-основания',
     footer:'Массу и характеристики оборудования, нормы технологического режима и полный перечень позиций см. во вкладке «Схема потоков». Источник данных — технологические схемы 3147-5G111…5R115, перечни оборудования и временный технологический регламент проекта. Часть исходных PDF (например, чертежи в архивах .rar) в это приложение не вошла — см. пояснение в чате.',
     emptyPdf:'Пока нет ни одного PDF — они появятся после первой синхронизации с Google Диском.',
@@ -227,6 +233,8 @@ const UI = {
     sub:'Oqim sxemasi, 3D-model va jihozlar chizmalari galereyalari asos qilib olingan texnologik rejalar va P&ID varaqlari (PDF). Qurilmadagi tizim PDF ko‘ruvchisida ochiladi.',
     h2a:'Bo‘limlar bo‘yicha jihozlarni joylashtirish rejalari va P&ID',
     h2b:'Zavod bo‘limlari ro‘yxati',
+    h2c:'3D-modeldagi «KIPiA» qatlami (111-bo‘lim, KIPiA chizmalari bo‘yicha)',
+    pKip:'3D-modeldagi «KIPiA» tugmasi 111-bo‘limning 13 ta asbobini ko‘rsatadi: FT-11101, TE-11106, PT-11104, PG-11105, LT-11106, LV-11106, FT-11103, PT-11107, PT-11106, TE-11109, FT-11102, CSV-11101A/B. Teglar, turlar, DN/PN, diapazonlar va belgilar 3147-5N111 KIPiA loyihasidan olingan: asboblar indeksi -02, texnik pasportlar -03, joylashuv rejasi -09 (Rev.A 2026.07), montaj sxemalari -05, L1/L2 shtutserlari — 3147-5H111-04-01 chizmasidan. Korpus o‘lchamlari, qurilish uzunliklari va yuritmalar tipik kataloglar bo‘yicha. Quvur bo‘yicha joylashuv rejadan bir necha metr aniqlikda tanlangan. LT-11106 sath o‘lchagich modelda so‘rish liniyalari bilan to‘qnashmasligi uchun 240° dan 20° ga siljitilgan. Ko‘rsatilmagan: 0,5 MPa bug‘ liniyasi asboblari (LS-111141-100 modelda yo‘q), HV-11101, VE-11101 kondensat baki asboblari. 112-bo‘lim (oltingugurt yoqish va konversiya, 3147-5N112 loyihasi, -09 reja 1–6 varaqlar): gaz yo‘llari, FU-11201 pechi va RE-11201 konverteridagi 56 ta asbob. Gaz yo‘llarida joylar reja belgilari (EL) bo‘yicha tanlangan, quvur bo‘ylab joylashuv taxminiy; konverterda asboblar katalizator qatlamlari sathida. Ko‘rsatilmagan: tabiiy gaz va KIP havosi liniyalari asboblari (modelda NG-11201/11203, IA-11201 yo‘q), gaz detektorlari va sirena, EX-11208 havo isitgichi. Asbobni bosish manba bilan kartochkani ochadi.',
     thCode:'Kod', thSec:'Bo‘lim', thDoc:'Asos hujjatlar',
     footer:'Jihozlarning massasi va tavsiflari, texnologik rejim normalari va to‘liq ro‘yxat — «Oqim sxemasi» bo‘limida. Ma’lumotlar manbai — 3147-5G111…5R115 texnologik sxemalari, jihozlar ro‘yxatlari va loyihaning vaqtinchalik texnologik reglamenti. Ba’zi asl PDF fayllar (masalan, .rar arxividagi chizmalar) ilovaga kiritilmagan.',
     emptyPdf:'Hozircha bitta ham PDF yo‘q — ular Google Disk bilan birinchi sinxronlashdan so‘ng paydo bo‘ladi.',
@@ -295,6 +303,8 @@ function paintUI(lang){
   document.getElementById('tSub').innerHTML = L.sub.replace('P&ID','P&amp;ID');
   document.getElementById('tH2a').innerHTML = L.h2a.replace('P&ID','P&amp;ID');
   document.getElementById('tH2b').textContent = L.h2b;
+  document.getElementById('tH2c').textContent = L.h2c;
+  document.getElementById('pKip').innerHTML = L.pKip.replace('P&ID','P&amp;ID');
   document.getElementById('thCode').textContent = L.thCode;
   document.getElementById('thSec').textContent = L.thSec;
   document.getElementById('thDoc').textContent = L.thDoc;
