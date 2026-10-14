@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<link rel="icon" href="icon-192.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Блокировки — причины и следствия</title>
+<script>try{var __t=localStorage.getItem('tmk_theme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
+  --line:#CBD5D2; --accent:#0B6E66; --accent-ink:#FFFFFF;
+  --k-stop:#C9302A; --k-trip:#A3191B; --k-valve:#2362C0; --k-start:#23873A; --k-alarm:#C79A00; --k-info:#72827D;
+  --shadow:0 10px 30px rgba(20,32,29,.16);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
+    --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C;
+    --k-stop:#FF6B5E; --k-trip:#FF4D4D; --k-valve:#5B9BFF; --k-start:#4CC265; --k-alarm:#F2C230; --k-info:#7F908B;
+    --shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
+  --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C;
+  --k-stop:#FF6B5E; --k-trip:#FF4D4D; --k-valve:#5B9BFF; --k-start:#4CC265; --k-alarm:#F2C230; --k-info:#7F908B;
+  --shadow:0 10px 30px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans);display:flex;flex-direction:column;overflow:hidden}
+button,input,select{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--panel);flex:0 0 auto}
+.btn{white-space:nowrap;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 11px;font-weight:500;font-size:12.5px;cursor:pointer}
+.btn:active{background:var(--panel2)}
+.btn[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent)}
+#q{flex:1 1 180px;min-width:130px;max-width:300px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:6px 10px;font-size:13px}
+#sh{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:6px 8px;font-size:12.5px;max-width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.chip[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);font-weight:600}
+.scroll{flex:1 1 auto;min-height:0;overflow:auto;padding:12px 10px 28px}
+.wrap{max-width:1100px;margin:0 auto}
+.intro{font-size:13px;color:var(--ink2);margin:0 0 12px}
+.count{font-size:12px;color:var(--ink3);margin:0 0 8px}
+.legend{display:none;margin:0 0 12px;padding:10px 12px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.legend.on{display:block}
+.legend dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 12px;margin:0}
+.legend dt{font:700 12px var(--mono);color:var(--accent)}
+.legend dd{margin:0;font-size:13px}
+.vendor{margin:0 0 10px;padding:8px 10px;border:1px solid var(--line);border-left:4px solid var(--k-alarm);border-radius:8px;background:var(--panel);font-size:12.5px;color:var(--ink2)}
+h2.grp{font-size:14px;margin:16px 0 8px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+h2.grp small{font:12px var(--mono);color:var(--ink3);font-weight:500}
+.card{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--kc,var(--k-info));border-radius:10px;margin:0 0 10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.card.hl{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
+.ch{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;padding:9px 12px 4px}
+.ch b{font-size:14px}
+.kind{font:600 11px var(--sans);color:var(--kc);border:1px solid var(--kc);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.ids{font:11.5px var(--mono);color:var(--ink3);margin-left:auto}
+.plain{padding:0 12px 8px;color:var(--ink);font-size:13.5px}
+.flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:stretch;padding:0 12px 10px}
+.col{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+.col h4{margin:0 0 6px;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3)}
+.row{display:flex;gap:6px;padding:4px 0;border-top:1px dashed var(--line);font-size:12.5px;align-items:baseline;flex-wrap:wrap}
+.row:first-of-type{border-top:0}
+.row .tg{font:700 12px var(--mono);cursor:default;white-space:nowrap}
+.row .cd{margin-left:auto;font:600 12px var(--mono);color:var(--kc);text-align:right}
+.row .tx{flex:1 1 140px;color:var(--ink2);min-width:0}
+.mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:74px;text-align:center}
+.mid .lg{font:700 12px var(--mono);border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--panel)}
+.mid .ar{font-size:20px;color:var(--ink3);line-height:1}
+.mid .sm{font-size:10.5px;color:var(--ink3)}
+.act{display:inline-block;font:700 10.5px var(--sans);text-transform:uppercase;border-radius:4px;padding:1px 6px;color:#fff;background:var(--kc)}
+.mods{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px}
+.mod{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--panel2);color:var(--ink2)}
+.mod b{font-family:var(--mono);color:var(--ink)}
+.eqs{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px;align-items:center}
+.eqs span{font-size:12px;color:var(--ink3)}
+.note{margin:0 12px 10px;font-size:12.5px;color:var(--ink2);padding:6px 9px;border-left:3px solid var(--k-alarm);background:var(--panel2);border-radius:4px}
+.warn{margin:0 12px 10px;font-size:12px;color:var(--ink3)}
+.empty{padding:30px 10px;text-align:center;color:var(--ink3)}
+@media (max-width:720px){
+  .flow{grid-template-columns:1fr}
+  .mid{flex-direction:row;justify-content:flex-start;min-width:0}
+  .mid .ar{transform:rotate(90deg)}
+  .ids{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div class="bar">
+  <input id="q" type="search" autocomplete="off">
+  <select id="sh"></select>
+  <div class="chips" id="kinds"></div>
+  <button class="btn" id="bLeg" type="button" aria-pressed="false"></button>
+</div>
+<div class="scroll" id="sc"><div class="wrap">
+  <p class="intro" id="intro"></p>
+  <div class="legend" id="leg"></div>
+  <p class="count" id="cnt"></p>
+  <div id="list"></div>
+</div></div>
+
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script src="interlocks-data.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const D=window.ILK;
+let lang='ru',kindsOn=new Set(),sheet='',query='',hlTag='';
+// Интерфейс на двух языках. Сами данные блокировок (чертежи) — на русском языке.
+const T={
+ ru:{ph:'Поиск: позиция, аппарат, слово',all:'Все отделения',leg:'Как читать',
+   intro:'Блокировка — это автоматическая защита: «если произошло вот это, то автоматика сделает вот что». Слева причина, справа действие автоматики. Данные взяты с листов «Логическая схема блокировок».',
+   cause:'Если',effect:'То автоматика',join:{or:'ИЛИ',and:'И','2oo3':'2 из 3'},joinSm:{or:'любое из условий',and:'все условия сразу','2oo3':'не менее двух датчиков из трёх'},
+   by:'Байпас',rs:'Сброс',man:'Ручной режим',latch:'запоминается до сброса',eqs:'Аппараты:',show3d:'Показать в 3D',sheet:'Лист',
+   shown:n=>'Показано блокировок: '+n,none:'Ничего не найдено. Измените поиск или фильтр.',verify:'Логику этого узла нужно сверить по чертежу перед использованием.',
+   act:{stop:'остановить',close:'закрыть',open:'открыть',start:'пустить',forbid:'запретить',switch:'переключить',info:'сигнал'},unit:'Отделение',
+   hideLeg:'Скрыть пояснения'},
+ uz:{ph:'Qidiruv: pozitsiya, apparat, so‘z',all:'Barcha bo‘limlar',leg:'Qanday o‘qiladi',
+   intro:'Blokirovka — avtomatik himoya: «agar mana bu sodir bo‘lsa, avtomatika mana buni bajaradi». Chapda sabab, o‘ngda avtomatika amali. Ma’lumotlar «Blokirovkalarning mantiqiy sxemasi» varaqlaridan olingan (rus tilida).',
+   cause:'Agar',effect:'Avtomatika',join:{or:'YOKI',and:'VA','2oo3':'3 tadan 2'},joinSm:{or:'shartlardan istalgani',and:'barcha shartlar birdan','2oo3':'uchta datchikdan kamida ikkitasi'},
+   by:'Baypas',rs:'Tiklash',man:'Qo‘lda rejim',latch:'tiklanmaguncha eslab qoladi',eqs:'Apparatlar:',show3d:'3D da ko‘rsatish',sheet:'Varaq',
+   shown:n=>'Blokirovkalar: '+n,none:'Hech narsa topilmadi.',verify:'Ishlatishdan oldin mantiqni chizma bo‘yicha tekshirish kerak.',
+   act:{stop:'to‘xtatish',close:'yopish',open:'ochish',start:'ishga tushirish',forbid:'taqiqlash',switch:'almashtirish',info:'signal'},unit:'Bo‘lim',
+   hideLeg:'Izohni yashirish'}
+};
+const kc={stop:'var(--k-stop)',trip:'var(--k-trip)',valve:'var(--k-valve)',start:'var(--k-start)',alarm:'var(--k-alarm)',info:'var(--k-info)'};
+const L=()=>T[lang];
+
+function fillStatic(){
+  const t=L();
+  $('q').placeholder=t.ph;$('q').setAttribute('aria-label',t.ph);
+  $('intro').textContent=t.intro;
+  const cur=sheet;
+  $('sh').innerHTML=`<option value="">${esc(t.all)}</option>`+Object.entries(D.sheets).map(([k,s])=>`<option value="${esc(k)}">${esc(t.unit)} ${esc(s.unit)} · ${esc(s.name)}</option>`).join('');
+  $('sh').value=cur;
+  $('kinds').innerHTML=Object.entries(D.kinds).map(([k,v])=>`<button type="button" class="chip" data-k="${k}" aria-pressed="${kindsOn.has(k)}" title="${esc(v[1])}"><i style="background:${kc[k]}"></i>${esc(v[0])}</button>`).join('');
+  $('kinds').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const k=b.dataset.k;kindsOn.has(k)?kindsOn.delete(k):kindsOn.add(k);b.setAttribute('aria-pressed',kindsOn.has(k));render()});
+  $('bLeg').textContent=$('leg').classList.contains('on')?t.hideLeg:t.leg;
+  $('leg').innerHTML='<dl>'+D.legend.map(([a,b])=>`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')+'</dl>';
+}
+function textOf(it){return [it.id,it.t,it.p,it.n||'',(it.eq||[]).join(' '),it.c.map(x=>x.join(' ')).join(' '),it.e.map(x=>x.join(' ')).join(' ')].join(' ').toLowerCase()}
+function tagMatch(it,tag){
+  const tg=tag.toLowerCase();
+  if((it.eq||[]).some(x=>x.toLowerCase()===tg))return true;
+  return false;
+}
+function card(it){
+  const t=L(),K=kc[it.k];
+  const kd=D.kinds[it.k];
+  const sheetInfo=D.sheets[it.sh];
+  const jn=it.c.length>1?t.join[it.j]||'':'';
+  const causes=it.c.map(x=>`<div class="row"><span class="tg">${esc(x[0])}</span><span class="tx">${esc(x[1])}</span><span class="cd">${esc(x[2])}</span></div>`).join('');
+  const effects=it.e.map(x=>`<div class="row"><span class="act">${esc(t.act[x[2]]||x[2])}</span><span class="tg">${esc(x[0])}</span><span class="tx">${esc(x[1])}</span></div>`).join('');
+  const mods=[];
+  if(it.by)mods.push(`<span class="mod">${esc(t.by)}: <b>${esc(it.by)}</b></span>`);
+  if(it.man)mods.push(`<span class="mod">${esc(t.man)}: <b>${esc(it.man)}</b></span>`);
+  if(it.rs)mods.push(`<span class="mod">${esc(t.rs)}: <b>${esc(it.rst||'PB-REST')}</b> (${esc(t.latch)})</span>`);
+  const eqb=(it.eq||[]).map(x=>`<button class="btn" type="button" data-tag="${esc(x)}" title="${esc(t.show3d)}">${esc(x)} ▸ 3D</button>`).join('');
+  return `<div class="card${hlTag&&tagMatch(it,hlTag)?' hl':''}" style="--kc:${K}" data-id="${esc(it.id)}">
+   <div class="ch"><b>${esc(it.t)}</b><span class="kind">${esc(kd[0])}</span><span class="ids">${esc(it.id)} · ${esc(t.sheet)} ${esc(sheetInfo.dwg)}</span></div>
+   <div class="plain">${esc(it.p)}</div>
+   <div class="flow">
+     <div class="col"><h4>${esc(t.cause)}</h4>${causes}</div>
+     <div class="mid">${jn?`<span class="lg">${esc(jn)}</span><span class="sm">${esc(t.joinSm[it.j]||'')}</span>`:''}<span class="ar">→</span></div>
+     <div class="col"><h4>${esc(t.effect)}</h4>${effects}</div>
+   </div>
+   ${mods.length?`<div class="mods">${mods.join('')}</div>`:''}
+   ${it.n?`<div class="note">${esc(it.n)}</div>`:''}
+   ${it.v?`<div class="warn">⚠ ${esc(t.verify)}</div>`:''}
+   ${eqb?`<div class="eqs"><span>${esc(t.eqs)}</span>${eqb}</div>`:''}
+  </div>`;
+}
+function render(){
+  const t=L(),q=query.trim().toLowerCase();
+  let items=D.items.filter(it=>(!sheet||it.sh===sheet)&&(!kindsOn.size||kindsOn.has(it.k))&&(!q||textOf(it).includes(q)));
+  if(hlTag){const m=items.filter(it=>tagMatch(it,hlTag));if(m.length)items=m.concat(items.filter(it=>!m.includes(it)))}
+  $('cnt').textContent=t.shown(items.length);
+  if(!items.length){$('list').innerHTML=`<div class="empty">${esc(t.none)}</div>`;return}
+  let html='',cur='';
+  const order=Object.keys(D.sheets);
+  const groups=hlTag?[['',items]]:order.map(k=>[k,items.filter(i=>i.sh===k)]).filter(g=>g[1].length);
+  for(const [k,arr] of groups){
+    if(k){const s=D.sheets[k];html+=`<h2 class="grp">${esc(t.unit)} ${esc(s.unit)} · ${esc(s.name)} <small>${esc(s.dwg)}</small></h2>`;if(s.vendor)html+=`<div class="vendor">${esc(s.vendor)}</div>`}
+    html+=arr.map(card).join('');
+  }
+  $('list').innerHTML=html;
+  $('list').querySelectorAll('[data-tag]').forEach(b=>b.onclick=()=>{try{window.parent.postMessage({__tmkGoto:{to:'model',tag:b.dataset.tag,from:'interlocks'}},'*')}catch(e){}});
+}
+$('q').addEventListener('input',e=>{query=e.target.value;hlTag='';render()});
+$('sh').addEventListener('change',e=>{sheet=e.target.value;hlTag='';render()});
+$('bLeg').addEventListener('click',()=>{const on=!$('leg').classList.contains('on');$('leg').classList.toggle('on',on);$('bLeg').setAttribute('aria-pressed',on);$('bLeg').textContent=on?L().hideLeg:L().leg});
+// Переход из карточки аппарата (3D / PFD / схема потоков): показать блокировки этого аппарата первыми.
+window.addEventListener('message',ev=>{const d=ev.data;if(!d||!d.__tmkFocus)return;
+  hlTag=d.tag||'';query='';sheet='';kindsOn.clear();$('q').value='';fillStatic();render();
+  const f=$('list').querySelector('.card.hl');$('sc').scrollTo({top:f?Math.max(0,f.offsetTop-70):0,behavior:'smooth'})});
+try{window.parent.postMessage({__tmkReady:'interlocks'},'*')}catch(e){}
+function paint(l){lang=l==='uz'?'uz':'ru';fillStatic();render()}
+TmkLang.initChild(paint);TmkTheme.initChild(function(){});
+paint(TmkLang.getLang());
+})();
+</script>
+</body>
+</html>
