@@ -188,6 +188,13 @@ body.su-mode:not(.fs-mode) .stage{flex:none;min-height:0}
 body.su-mode:not(.fs-mode) .subar{position:static;transform:none;width:auto;max-height:42vh;margin-top:8px;bottom:auto;left:auto;right:auto}
 body.su-mode.fs-mode .subar{left:0;right:0;bottom:0;transform:none;width:auto;border-radius:0;max-height:42vh}
 body.su-mode.fs-mode #view,body.su-mode.fs-mode .labels{bottom:var(--suH,0px)}
+.ilkbar{max-height:min(48vh,380px);overflow:auto}
+.ilkbar select{max-width:100%;min-width:0;flex:1 1 220px}
+.ilk-by{font-size:12.5px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.ilk-out{font-size:13px;line-height:1.4}.ilk-out .st{display:flex;gap:8px;align-items:flex-start;padding:3px 0}
+.ilk-out .st i{font-style:normal;min-width:20px;text-align:center;border-radius:50%;font-weight:700;font-size:11px;line-height:18px;height:18px;background:var(--line);color:var(--ink2)}
+.ilk-out .st.on i{background:#C9302A;color:#fff}.ilk-out .st.ok i{background:#23873A;color:#fff}.ilk-out .st.wa i{background:#C79A00;color:#fff}
+.ilk-out .st.off{opacity:.45}.ilk-out code{font:700 12px ui-monospace,Menlo,Consolas,monospace}
 .su-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
 .su-clock{font:700 14px var(--mono);color:var(--accent);white-space:nowrap}
 .su-now{font-size:12px;color:var(--ink2);width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -257,6 +264,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
   <button class="btn" type="button" id="tabModel" role="tab" aria-selected="true" aria-pressed="true">Модель</button>
   <button class="btn" type="button" id="tabCut" role="tab" aria-selected="false" aria-pressed="false">Разрез</button>
   <button class="btn" type="button" id="tabStart" role="tab" aria-selected="false" aria-pressed="false">Пуск завода</button>
+  <button class="btn" type="button" id="tabIlk" role="tab" aria-selected="false" aria-pressed="false" title="Имитация блокировок: вызвать срабатывание и посмотреть, что остановится">⛨ Блокировки</button>
   <button class="btn" type="button" id="tabBuild" role="tab" aria-selected="false" aria-pressed="false">Строительство</button>
 </div>
 
@@ -326,6 +334,15 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
     </div>
     <span class="su-tot" id="buTot"></span>
     <ol class="su-list" id="buList"></ol>
+  </div>
+  <div class="card subar ilkbar" id="ilkbar" role="tabpanel" aria-label="Имитация блокировок" hidden>
+    <div class="su-top">
+      <select id="ilkSel" aria-label="Блокировка"></select>
+      <label class="ilk-by" title="Ключ-байпас на время ремонта отключает блокировку: сработает только тревога"><input type="checkbox" id="ilkBy"> <span id="ilkByT">Байпас включён</span></label>
+      <button class="btn" type="button" id="ilkGo">⚡ Вызвать срабатывание</button>
+      <button class="btn" type="button" id="ilkRs">⟲ Сброс блокировки</button>
+    </div>
+    <div class="ilk-out" id="ilkOut"></div>
   </div>
   <div class="card subar" id="subar" role="tabpanel" aria-label="Пуск завода" hidden>
     <div class="su-top">
@@ -4070,6 +4087,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
 
  // ---- значки блокировок на оборудовании (данные: interlocks-data.js) ----
  const ILKB={g:new THREE.Group(),on:true,items:[]};
+ const ILKS={on:false,alarm:new Set(),stopped:[],tm:[],run:0};
  if(window.ILK){
   scene.add(ILKB.g);
   const shieldTex=kind=>{const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');
@@ -4293,6 +4311,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function setTab(showCut){
    if(typeof setStart==='function')setStart(false);
    if(typeof setBuild==='function')setBuild(false);
+   if(typeof setIlk==='function')setIlk(false);
    tabModel.setAttribute('aria-pressed',!showCut);tabModel.setAttribute('aria-selected',!showCut);
    tabCut.setAttribute('aria-pressed',showCut);tabCut.setAttribute('aria-selected',showCut);
    cutbarEl.hidden=!showCut;
@@ -4929,6 +4948,51 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    else{SU.on=false;suRestore();suLayout()}
  }
  $('tabStart').onclick=()=>{if(!SU.on){setTab(false);setStart(true)}};
+ // ---- вариант B: имитация блокировок (вкладка «Блокировки»): вызвать срабатывание → что остановится ----
+ function ilkTxt(uz){return uz?{go:'⚡ Ishga tushirish',rs:'⟲ Tiklash',by:'Baypas yoqilgan',pick:'Blokirovkani tanlang va «Ishga tushirish» tugmasini bosing.'}:{go:'⚡ Вызвать срабатывание',rs:'⟲ Сброс блокировки',by:'Байпас включён',pick:'Выберите блокировку и нажмите «Вызвать срабатывание»: увидите, что остановится и что сделает оператор.'}}
+ function ilkItems(){return window.ILK?window.ILK.items.filter(it=>it.ea&&it.ea.length&&it.ea.some(t=>byTag[t]&&byTag[t].length)):[]}
+ function ilkFill(){const sel=$('ilkSel');if(!sel||!window.ILK)return;const cur=sel.value;const by={};
+   ilkItems().forEach(it=>{(by[it.sh]=by[it.sh]||[]).push(it)});
+   sel.innerHTML=Object.keys(window.ILK.sheets).filter(k=>by[k]).map(k=>`<optgroup label="${esc('Отделение '+window.ILK.sheets[k].unit+' · '+window.ILK.sheets[k].name)}">${by[k].map(it=>`<option value="${esc(it.id)}">${esc(it.t)}</option>`).join('')}</optgroup>`).join('');
+   if(cur)sel.value=cur;const t=ilkTxt(currentLang==='uz');$('ilkGo').textContent=t.go;$('ilkRs').textContent=t.rs;$('ilkByT').textContent=t.by;if(!ILKS.run)$('ilkOut').innerHTML=`<div class="note">${esc(t.pick)}</div>`}
+ const ilkStep=(cls,n,html)=>`<div class="st ${cls}"><i>${n}</i><div>${html}</div></div>`;
+ function ilkRestore(){ILKS.tm.forEach(clearTimeout);ILKS.tm=[];ILKS.alarm.clear();
+   ILKS.stopped.forEach(tag=>(byTag[tag]||[]).forEach(o=>setCold(o,false)));ILKS.stopped=[];
+   flowObjs.forEach(f=>{if(f.ilkStop){f.ilkStop=false;if(f.ilkMat){f.tube.material=f.ilkMat;f.ilkMat=null}}});applyFlow();ILKS.run=0}
+ function ilkTrigger(){
+   const it=window.ILK.items.find(x=>x.id===$('ilkSel').value);if(!it)return;
+   if(SU.on)return;ilkRestore();const by=$('ilkBy').checked,run=++ILKS.run;
+   const targets=it.ea.filter(t=>byTag[t]&&byTag[t].length),sensors=(it.eq||[]).filter(t=>!it.ea.includes(t));
+   const out=$('ilkOut');
+   const causes=it.c.slice(0,3).map(c=>`<code>${esc(c[0])}</code> ${esc(c[1])} (${esc(c[2])})`).join('<br>')+(it.c.length>3?'<br>…':'');
+   // камера к первому блокируемому аппарату
+   const bb=new THREE.Box3();(byTag[targets[0]]||[]).forEach(o=>bb.expandByObject(o));
+   if(!bb.isEmpty()){const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3());flyTo(c,Math.max(9,Math.max(sz.x,sz.y,sz.z)*2.4+6))}
+   sensors.forEach(t=>ILKS.alarm.add(t));
+   out.innerHTML=ilkStep('on',1,'<b>Условие выполнено:</b><br>'+causes);
+   const later=(ms,fn)=>ILKS.tm.push(setTimeout(()=>{if(ILKS.run===run)fn()},ms));
+   later(1100,()=>{out.innerHTML+=ilkStep('wa',2,'<b>Тревога оператору (ANN)</b>: на пульте загорается сигнал.')});
+   if(by){later(2200,()=>{ILKS.alarm.clear();out.innerHTML+=ilkStep('ok',3,'<b>Байпас '+esc(it.by||'SS-PASS')+' включён:</b> автоматика не вмешивается, оборудование продолжает работать, оператор получил только сигнал.')});return}
+   later(2200,()=>{
+     ILKS.alarm.clear();targets.forEach(t=>ILKS.alarm.add(t));
+     let nf=0;targets.forEach(tag=>{ILKS.stopped.push(tag);(byTag[tag]||[]).forEach(o=>setCold(o,true));
+       flowObjs.forEach(f=>{const fl=f.tube.userData.flow||{};if(fl.a===tag||fl.b===tag){if(!f.ilkStop)nf++;f.ilkStop=true;f.dots.forEach(d=>d.visible=false);if(!f.ilkMat){f.ilkMat=f.tube.material;f.tube.material=dimMat(f.tube.material)}}})});
+     const eff=it.e.map(e=>`<code>${esc(e[0])}</code> ${esc(e[1])}`).join('<br>');
+     out.innerHTML+=ilkStep('on',3,'<b>Автоматика сработала:</b><br>'+eff+'<br><small>Аппараты серые, остановлено потоков: '+nf+'. Модель показывает только оборудование, которое есть в 3D, клапаны описаны текстом.</small>');
+     if(it.rs)later(500,()=>{out.innerHTML+=ilkStep('',4,'<b>Блокировка запомнена:</b> пока причину не устранят и оператор не нажмёт <code>'+esc(it.rst||'PB-REST')+'</code>, оборудование не запустится. Нажмите «Сброс блокировки».')})})
+ }
+ function setIlk(on){
+   if(on===ILKS.on)return;
+   if(on){if(typeof setTab==='function')setTab(false);ilkFill()}
+   ILKS.on=on;$('ilkbar').hidden=!on;const tb=$('tabIlk');tb.setAttribute('aria-pressed',on);tb.setAttribute('aria-selected',on);
+   if(on){if(!$('ilkbar').nextElementSibling||$('ilkbar').parentNode!==stage.parentNode)stage.after($('ilkbar'));tabModel.setAttribute('aria-pressed',false);tabModel.setAttribute('aria-selected',false)}
+   else{ilkRestore();$('ilkOut').innerHTML=''}
+ }
+ $('tabIlk').onclick=()=>{if(!ILKS.on)setIlk(true)};
+ $('ilkGo').onclick=ilkTrigger;$('ilkRs').onclick=()=>{ilkRestore();$('ilkOut').innerHTML=ilkStep('ok','✓','Блокировка сброшена: оборудование разрешено запускать, потоки восстановлены.')};
+ $('ilkSel').onchange=()=>{ilkRestore();ilkFill();$('ilkOut').innerHTML=''};
+ if(!window.ILK)$('tabIlk').hidden=true;
+
  $('suPlay').onclick=()=>{if(SU.t>=SUP.total){SU.t=0;SU.fc=null;SU.lastFo=null}SU.play=!SU.play;suApply()};
  $('suReset').onclick=()=>{SU.t=0;SU.play=false;SU.fc=null;SU.lastFo=null;suApply()};
  $('suR').oninput=e=>{SU.t=+e.target.value;suApply()};
@@ -5199,7 +5263,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
  const SHOW_KIP_BTN=false;   // кнопка «КИП» скрыта (слой и данные сохранены); true — вернуть
  $('bKip').hidden=!SHOW_KIP_BTN;
  $('tabBuild').hidden=!SHOW_BUILD_TAB;
- $('tabBuild').onclick=()=>{if(!BU.on)setBuild(true)};
+ $('tabBuild').onclick=()=>{if(!BU.on){setIlk(false);setBuild(true)}};
  $('buPlay').onclick=()=>{if(BU.t>=BU_T1)BU.t=BU_T0;BU.play=!BU.play;buApply()};
  $('buReset').onclick=()=>{BU.t=BU_T0;BU.play=false;BU.fk=null;flyTo(HOME.tgt,null,HOME.pos);buApply()};
  $('buToday').onclick=()=>{BU.t=buToday();BU.play=false;buApply()};
@@ -5221,7 +5285,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    Object.entries(STREAMS).forEach(([k,v])=>{const s=chips.querySelector(`[data-k="${k}"] .chiptxt`);if(s)s.textContent=currentLang==='uz'?(v.nu||v.n):v.n});
  }
  function applyFlow(){chips.querySelectorAll('.chip').forEach(c=>{const on=active.has(c.dataset.k);c.setAttribute('aria-pressed',on);c.classList.toggle('dim',active.size>0&&!on)});
-   flowObjs.forEach(f=>{const on=(!active.size||active.has(f.s))&&(!SU.on||f.rev>0)&&(!BU.on||f.bv>0);f.tube.visible=on;const dim=SU.on&&f.tube.material===suDim[f.s];f.dots.forEach(d=>d.visible=on&&anim&&!dim&&!BU.on)})}
+   flowObjs.forEach(f=>{const on=(!active.size||active.has(f.s))&&(!SU.on||f.rev>0)&&(!BU.on||f.bv>0);f.tube.visible=on;const dim=SU.on&&f.tube.material===suDim[f.s];f.dots.forEach(d=>d.visible=on&&anim&&!dim&&!BU.on&&!f.ilkStop)})}
  // toggles
  let anim=!matchMedia('(prefers-reduced-motion: reduce)').matches; $('bAnim').setAttribute('aria-pressed',anim);
  $('bAnim').onclick=()=>{anim=!anim;$('bAnim').setAttribute('aria-pressed',anim);applyFlow()};
@@ -5700,11 +5764,11 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
      const L=o.L[0]+(o.L[1]-o.L[0])*(.5-.5*Math.cos(tt*wh+c.ph));
      c.rope.scale.y=L;c.rope.position.y=c.hookY-L/2;c.hk.position.y=c.hookY-L;
      if(c.hk.userData.jaws){const a=.25+.35*Math.max(0,(L-o.L[0])/(o.L[1]-o.L[0])-.5);c.hk.userData.jaws.forEach((j,i)=>{j.rotation.x=(i?-1:1)*a})}});
-   if(anim){flowObjs.forEach(f=>{if(!f.tube.visible)return;f.off=(f.off+dt*6/f.len)%1;const n=f.dots.length,lim=SU.on?f.rev:1,dim=SU.on&&f.tube.material&&f.tube.material===suDim[f.s];f.dots.forEach((d,i)=>{const u=((i/n)+f.off)%1;if(SU.on)d.visible=!dim&&u<=lim;const q=f.path.getPointAt(Math.min(u,.9995));if(q)d.position.copy(q)})})}
+   if(anim){flowObjs.forEach(f=>{if(!f.tube.visible||f.ilkStop)return;f.off=(f.off+dt*6/f.len)%1;const n=f.dots.length,lim=SU.on?f.rev:1,dim=SU.on&&f.tube.material&&f.tube.material===suDim[f.s];f.dots.forEach((d,i)=>{const u=((i/n)+f.off)%1;if(SU.on)d.visible=!dim&&u<=lim;const q=f.path.getPointAt(Math.min(u,.9995));if(q)d.position.copy(q)})})}
    suTick(dt);buTick(dt);
    suGunAnim();suRainAnim();suShotAnim();const vp=suRender();
    const w=vp.w,h=vp.h;
-   if(ILKB.on)ILKB.items.forEach(i=>{let v=true,q=i.o;while(q&&q!==scene){if(!q.visible){v=false;break}q=q.parent}i.sp.visible=v});
+   if(ILKB.on)ILKB.items.forEach(i=>{let v=true,q=i.o;while(q&&q!==scene){if(!q.visible){v=false;break}q=q.parent}i.sp.visible=v;const al=ILKS.alarm.has(i.sp.userData.ilkTag);i.sp.scale.setScalar(al?.032*(1.35+.35*Math.sin(now/130)):.032)});
    LB.forEach(l=>{tmp.copy(l.p).project(camera);const vis=showL&&tmp.z<1&&Math.abs(tmp.x)<1.1&&Math.abs(tmp.y)<1.1&&(!isolated||l.sec===isolated);l.d.classList.toggle('hide',!vis);if(vis){l.d.style.left=((tmp.x+1)/2*w)+'px';l.d.style.top=((1-tmp.y)/2*h)+'px'}});
  }
  requestAnimationFrame(loop);
@@ -5714,7 +5778,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    $('tEyebrow').textContent=T.eyebrow; $('tH1').textContent=T.h1;
    $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim;$('bKip').textContent=currentLang==='uz'?'KIPiA':'КИП'; $('bLbl').textContent=T.bLbl;$('bIlk').textContent=currentLang==='uz'?'⛨ Blokirovkalar':'⛨ Блокировки';$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
    $('bHelp').title=T.bHelpTitle;
-   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода';$('tabBuild').textContent=lang==='uz'?'Qurilish':'Строительство';if(BU.inited){buBuildPanel();buPaint();buFollowUI();$('buToday').textContent=lang==='uz'?'Bugun':'Сегодня';$('buMore').textContent=(lang==='uz'?'Obyektlar':'Объекты')+(bubar.classList.contains('open')?' ▾':' ▴')} $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
+   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода';$('tabIlk').textContent=lang==='uz'?'⛨ Blokirovkalar':'⛨ Блокировки';if(typeof ilkFill==='function')ilkFill();$('tabBuild').textContent=lang==='uz'?'Qurilish':'Строительство';if(BU.inited){buBuildPanel();buPaint();buFollowUI();$('buToday').textContent=lang==='uz'?'Bugun':'Сегодня';$('buMore').textContent=(lang==='uz'?'Obyektlar':'Объекты')+(bubar.classList.contains('open')?' ▾':' ▴')} $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
    bCutFab.title=T.tabCut; bCutFab.setAttribute('aria-label',T.tabCut);
    $('tCutEyebrow').textContent=T.cutEyebrow; $('tCutOnly').textContent=T.cutOnly;
    $('cutSegOff').textContent=T.cutOff;
