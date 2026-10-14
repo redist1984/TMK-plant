@@ -92,6 +92,16 @@ h2{font-size:15px;margin:28px 0 8px;color:var(--ink)}
 </div>
 <div class="note" id="brightNote" style="display:none"></div>
 
+<h2 id="tH2q">Качество 3D-модели</h2>
+<p class="hint" id="tQHint">Для слабых телефонов: облегчённый режим убирает сглаживание, снижает разрешение и скрывает мелкие детали вдали. Геометрия и функции не меняются. Применяется при следующем открытии модели.</p>
+<div class="card">
+  <div class="seg" id="qSeg">
+    <button type="button" data-q="auto" id="tQauto">Авто</button>
+    <button type="button" data-q="high" id="tQhigh">Высокое</button>
+    <button type="button" data-q="lite" id="tQlite">Облегчённое</button>
+  </div>
+</div>
+
 <div class="appinfo" id="appinfo"></div>
 
 <script src="lang.js"></script>
@@ -109,6 +119,7 @@ const UI = {
     brightAuto:'Как в системе (без настройки приложением)',
     brightNote:'Яркость экрана можно настроить только внутри приложения на телефоне — в этом окне предпросмотра она недоступна.',
     appVersion:'Версия приложения: ',
+    h2q:'Качество 3D-модели', qHint:'Для слабых телефонов: облегчённый режим убирает сглаживание, снижает разрешение и скрывает мелкие детали вдали. Геометрия и функции не меняются. Применяется при следующем открытии модели.', qAuto:'Авто', qHigh:'Высокое', qLite:'Облегчённое',
   },
   uz: {
     eyebrow:'TMK zavodi',
@@ -121,6 +132,7 @@ const UI = {
     brightAuto:'Tizimdagidek (ilova tomonidan sozlanmaydi)',
     brightNote:'Ekran yorqinligini faqat telefondagi ilova ichida sozlash mumkin — ushbu oldindan ko‘rish oynasida bu mavjud emas.',
     appVersion:'Ilova versiyasi: ',
+    h2q:'3D-model sifati', qHint:'Zaif telefonlar uchun: yengil rejim silliqlashni o‘chiradi, ruxsatni pasaytiradi va uzoqdagi mayda detallarni yashiradi. Geometriya va funksiyalar o‘zgarmaydi. Modelni keyingi ochishda qo‘llanadi.', qAuto:'Avto', qHigh:'Yuqori', qLite:'Yengil',
   }
 };
 
@@ -138,6 +150,11 @@ function paintUI(lang){
   document.getElementById('tH2bright').textContent = L.h2bright;
   document.getElementById('tBrightAuto').textContent = L.brightAuto;
   document.getElementById('brightNote').textContent = L.brightNote;
+  document.getElementById('tH2q').textContent = L.h2q;
+  document.getElementById('tQHint').textContent = L.qHint;
+  document.getElementById('tQauto').textContent = L.qAuto;
+  document.getElementById('tQhigh').textContent = L.qHigh;
+  document.getElementById('tQlite').textContent = L.qLite;
   document.querySelector('#langSeg button[data-lang="ru"]').textContent = 'Русский';
   document.querySelector('#langSeg button[data-lang="uz"]').textContent = 'O‘zbek';
   paintLangActive(lang);
@@ -226,6 +243,10 @@ try {
     }
   }
 } catch (e) {}
+
+(function(){const seg=document.getElementById('qSeg');let cur='auto';try{cur=localStorage.getItem('tmk_quality')||'auto'}catch(e){}
+  function paint(){seg.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.q===cur))}
+  seg.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;cur=b.dataset.q;try{localStorage.setItem('tmk_quality',cur)}catch(x){}paint()});paint()})();
 </script>
 </body>
 </html>
