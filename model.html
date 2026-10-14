@@ -194,6 +194,7 @@ body.su-mode.fs-mode #view,body.su-mode.fs-mode .labels{bottom:var(--suH,0px)}
 .ilk-out{font-size:13px;line-height:1.4}.ilk-out .st{display:flex;gap:8px;align-items:flex-start;padding:3px 0}
 .ilk-out .st i{font-style:normal;min-width:20px;text-align:center;border-radius:50%;font-weight:700;font-size:11px;line-height:18px;height:18px;background:var(--line);color:var(--ink2)}
 .ilk-out .st.on i{background:#C9302A;color:#fff}.ilk-out .st.ok i{background:#23873A;color:#fff}.ilk-out .st.wa i{background:#C79A00;color:#fff}
+.ilk-out.rb{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}.ilk-out.rb .st{flex:0 0 min(270px,78%);border:1px solid var(--line);border-radius:10px;padding:7px 9px;background:var(--panel2)}.ilk-out .st[data-f]{cursor:pointer}.ilk-out .st[data-f]:hover{border-color:#C9302A}.ilk-out .note{flex:1 0 100%}
 .ilk-out .st.off{opacity:.45}.ilk-out code{font:700 12px ui-monospace,Menlo,Consolas,monospace}
 .su-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
 .su-clock{font:700 14px var(--mono);color:var(--accent);white-space:nowrap}
@@ -342,7 +343,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
       <button class="btn" type="button" id="ilkGo">⚡ Вызвать срабатывание</button>
       <button class="btn" type="button" id="ilkRs">⟲ Сброс блокировки</button>
     </div>
-    <div class="ilk-out" id="ilkOut"></div>
+    <div class="ilk-out rb" id="ilkOut"></div>
   </div>
   <div class="card subar" id="subar" role="tabpanel" aria-label="Пуск завода" hidden>
     <div class="su-top">
@@ -4087,7 +4088,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
 
  // ---- значки блокировок на оборудовании (данные: interlocks-data.js) ----
  const ILKB={g:new THREE.Group(),on:true,items:[]};
- const ILKS={on:false,alarm:new Set(),stopped:[],tm:[],run:0,flows:new Set(),calls:[]};
+ const ILKS={on:false,alarm:new Set(),stopped:[],tm:[],run:0,flows:new Set(),calls:[],split:[],views:[]};
  if(window.ILK){
   scene.add(ILKB.g);
   const shieldTex=kind=>{const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');
@@ -4833,8 +4834,9 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    L.forEach(([k,v])=>{const a=typeof k==='number'?e.t0+k*e.dur:suArr(id,k);if(a!=null&&t>=a)txt=v});return txt}
  function suSideFill(){const uz=currentLang==='uz';const h=(SU.on?SU.split:[]).map(x=>{let ph=uz?null:suPhase(x.e.id,SU.t);if(ph&&view.clientWidth<700)ph=ph.split(/(?<=[.!?])\s/)[0];const w=ph?ph:uz?(SU_WHY[x.e.id]||'').split(/(?<=[.!?])\s/)[0]:(SU_SIDE[x.e.id]?(view.clientWidth<700?SU_SIDE[x.e.id].split(/(?<=[.!?])\s/)[0]:SU_SIDE[x.e.id]):(SU_WHY[x.e.id]||'').split(/(?<=[.!?])\s/)[0]);
    return `<div class="sc"><b>${esc(uz?x.e.nu:x.e.n)}</b>${esc(w)}</div>`}).join('');if(suSideEl.innerHTML!==h)suSideEl.innerHTML=h;suSideEl.hidden=!h}
- function suPanes(){suSideFill();const uz=currentLang==='uz';suPaneEl.innerHTML=SU.split.map((x,i)=>`<div class="supane" data-i="${i}"><span>${esc(uz?x.e.nu:x.e.n)}</span></div>`).join('');suPaneLayout()}
- function suPaneLayout(){const W=view.clientWidth,H=view.clientHeight,n=SU.split.length;if(!n){suPaneEl.hidden=true;suSideEl.hidden=true;return {x:0,y:0,w:W,h:H,p:[]}}
+ function spl(){return SU.on?SU.split:(ILKS.on?ILKS.split:[])}
+ function suPanes(){suSideFill();const uz=currentLang==='uz';suPaneEl.innerHTML=spl().map((x,i)=>`<div class="supane" data-i="${i}"><span>${esc(uz?x.e.nu:x.e.n)}</span></div>`).join('');suPaneLayout()}
+ function suPaneLayout(){const W=view.clientWidth,H=view.clientHeight,n=spl().length;if(!n){suPaneEl.hidden=true;suSideEl.hidden=true;return {x:0,y:0,w:W,h:H,p:[]}}
    suPaneEl.hidden=false;suSideEl.hidden=!suSideEl.innerHTML;const mob=W<700,p=[];let mw,mh;
    if(mob){mw=W;mh=Math.round(H*.6);const pw=W/n;for(let i=0;i<n;i++)p.push({x:Math.round(i*pw),y:mh,w:Math.round(pw),h:H-mh})}
    else{mw=Math.round(W*.64);mh=H;const ph=H/n;for(let i=0;i<n;i++)p.push({x:mw,y:Math.round(i*ph),w:W-mw,h:Math.round(ph)})}
@@ -4843,10 +4845,10 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    [...suPaneEl.children].forEach((d,i)=>{const q=p[i];if(!q)return;Object.assign(d.style,{left:q.x+'px',top:q.y+'px',width:q.w+'px',height:q.h+'px'})});
    return {x:0,y:0,w:mw,h:mh,p}}
  function suRender(){const W=view.clientWidth,H=view.clientHeight;
-   if(!(SU.on&&SU.split.length)){renderer.setScissorTest(false);renderer.setViewport(0,0,W,H);renderer.render(scene,camera);return {w:W,h:H}}
+   if(!spl().length){renderer.setScissorTest(false);renderer.setViewport(0,0,W,H);renderer.render(scene,camera);return {w:W,h:H}}
    const L=suPaneLayout(),asp=camera.aspect;renderer.setScissorTest(true);
    const draw=(cam,q)=>{cam.aspect=q.w/Math.max(1,q.h);cam.updateProjectionMatrix();renderer.setViewport(q.x,H-q.y-q.h,q.w,q.h);renderer.setScissor(q.x,H-q.y-q.h,q.w,q.h);renderer.render(scene,cam)};
-   draw(camera,L);L.p.forEach((q,i)=>draw(SU.split[i].cam,q));
+   draw(camera,L);L.p.forEach((q,i)=>draw(spl()[i].cam,q));
    renderer.setScissorTest(false);renderer.setViewport(0,0,W,H);camera.aspect=asp;camera.updateProjectionMatrix();return {w:L.w,h:L.h}}
  function suRestore(){
    SU.focus=null;suOcclude();suHL.visible=false;SU.focus=null;SU.fc=null;SU.lastFo=null;
@@ -4955,8 +4957,11 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    ilkItems().forEach(it=>{(by[it.sh]=by[it.sh]||[]).push(it)});
    sel.innerHTML=Object.keys(window.ILK.sheets).filter(k=>by[k]).map(k=>`<optgroup label="${esc('Отделение '+window.ILK.sheets[k].unit+' · '+window.ILK.sheets[k].name)}">${by[k].map(it=>`<option value="${esc(it.id)}">${esc(it.t)}</option>`).join('')}</optgroup>`).join('');
    if(cur)sel.value=cur;const t=ilkTxt(currentLang==='uz');$('ilkGo').textContent=t.go;$('ilkRs').textContent=t.rs;$('ilkByT').textContent=t.by;if(!ILKS.run)$('ilkOut').innerHTML=`<div class="note">${esc(t.pick)}</div>`}
- const ilkStep=(cls,n,html)=>`<div class="st ${cls}"><i>${n}</i><div>${html}</div></div>`;
- function ilkRestore(){ILKS.tm.forEach(clearTimeout);ILKS.tm=[];ILKS.alarm.clear();ILKS.calls.forEach(c=>c.d.remove());ILKS.calls=[];ILKS.flows.clear();
+ const ilkStep=(cls,n,html,f)=>`<div class="st ${cls}"${f!=null?` data-f="${f}" title="Показать на модели"`:''}><i>${n}</i><div>${html}</div></div>`;
+ function ilkBarFit(){const b=$('ilkbar'),n=ILKS.split.length;['left','right','top','bottom','width','transform','maxHeight'].forEach(k=>b.style[k]='');if(!n)return;const r=view.getBoundingClientRect(),L=suPaneLayout();
+   if(innerWidth<=760){Object.assign(b.style,{top:(r.top+6)+'px',bottom:'auto',maxHeight:Math.round(L.h*.55)+'px'})}else Object.assign(b.style,{left:(r.left+12)+'px',transform:'none',width:Math.max(300,L.w-24)+'px'})}
+ function ilkFocus(i){const v=ILKS.views[i];if(!v)return;const c=v.box.getCenter(new THREE.Vector3()),sz=v.box.getSize(new THREE.Vector3());flyTo(c,Math.max(9,Math.max(sz.x,sz.y,sz.z)*2.4+6))}
+ function ilkRestore(){ILKS.tm.forEach(clearTimeout);ILKS.tm=[];ILKS.alarm.clear();ILKS.calls.forEach(c=>c.d.remove());ILKS.calls=[];ILKS.flows.clear();if(ILKS.split.length||ILKS.views.length){ILKS.split=[];ILKS.views=[];suPanes();ilkBarFit()}
    ILKS.stopped.forEach(tag=>(byTag[tag]||[]).forEach(o=>setCold(o,false)));ILKS.stopped=[];
    flowObjs.forEach(f=>{if(f.ilkStop){f.ilkStop=false;if(f.ilkMat){f.tube.material=f.ilkMat;f.ilkMat=null}}});applyFlow();ILKS.run=0}
  function ilkTrigger(){
@@ -4965,11 +4970,18 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    const targets=it.ea.filter(t=>byTag[t]&&byTag[t].length),sensors=(it.eq||[]).filter(t=>!it.ea.includes(t));
    const out=$('ilkOut');
    const causes=it.c.slice(0,3).map(c=>`<code>${esc(c[0])}</code> ${esc(c[1])} (${esc(c[2])})`).join('<br>')+(it.c.length>3?'<br>…':'');
-   // камера к первому блокируемому аппарату
-   const bb=new THREE.Box3();targets.forEach(t=>(byTag[t]||[]).forEach(o=>bb.expandByObject(o)));
-   if(!bb.isEmpty()){const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3());flyTo(c,Math.max(9,Math.max(sz.x,sz.y,sz.z)*2.4+6))}
+   // области кадра: причина (датчики) и аппараты; далёкие друг от друга показываем в отдельных окнах
+   const boxOf=ts=>{const b=new THREE.Box3();ts.forEach(t=>(byTag[t]||[]).forEach(o=>b.expandByObject(o)));return b};
+   const items=[...sensors.map(t=>({t,k:'c'})),...it.c.map(c=>({t:c[0],k:'c'})),...targets.map(t=>({t,k:'t'}))].filter((x,i,a)=>a.findIndex(y=>y.t===x.t)===i);
+   const cl=[];items.forEach(x=>{const b=boxOf([x.t]);if(b.isEmpty())return;const c=b.getCenter(new THREE.Vector3());const g=cl.find(g=>g.c.distanceTo(c)<35);
+     if(g){g.box.union(b);g.c=g.box.getCenter(new THREE.Vector3());g.tags.push(x.t);if(x.k==='t')g.t=1}else cl.push({box:b.clone(),c,tags:[x.t],t:x.k==='t'?1:0})});
+   while(cl.length>3){const g=cl.pop(),l=cl[cl.length-1];l.box.union(g.box);l.tags.push(...g.tags);l.t=l.t||g.t}
+   ILKS.views=cl;ILKS.split=cl.slice(1).map((g,i)=>{const sz=g.box.getSize(new THREE.Vector3()),d=Math.min(70,Math.max(14,sz.length()*1.5)),cam=suCams[i];
+     cam.position.copy(g.c).add(new THREE.Vector3(.62,.5,.62).normalize().multiplyScalar(d));cam.lookAt(g.c);
+     const nm=g.tags.filter(t=>targets.includes(t)).join(', ')||g.tags.slice(0,3).join(', ');return{e:{n:(g.t?'⛔ ':'')+nm,nu:(g.t?'⛔ ':'')+nm},c:g.c,cam}});
+   suPanes();ilkBarFit();ilkFocus(0);
    sensors.forEach(t=>ILKS.alarm.add(t));
-   out.innerHTML=ilkStep('on',1,'<b>Условие выполнено:</b><br>'+causes);
+   out.innerHTML=ilkStep('on',1,'<b>Условие выполнено:</b><br>'+causes,0);
    const later=(ms,fn)=>ILKS.tm.push(setTimeout(()=>{if(ILKS.run===run)fn()},ms));
    later(1100,()=>{out.innerHTML+=ilkStep('wa',2,'<b>Тревога оператору (ANN)</b>: на пульте загорается сигнал.')});
    if(by){later(2200,()=>{ILKS.alarm.clear();out.innerHTML+=ilkStep('ok',3,'<b>Байпас '+esc(it.by||'SS-PASS')+' включён:</b> автоматика не вмешивается, оборудование продолжает работать, оператор получил только сигнал.')});return}
@@ -4979,7 +4991,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
      let nf=0;targets.forEach(tag=>{ILKS.stopped.push(tag);(byTag[tag]||[]).forEach(o=>setCold(o,true));
        flowObjs.forEach(f=>{const fl=f.tube.userData.flow||{};if(fl.a===tag||fl.b===tag){if(!f.ilkStop)nf++;f.ilkStop=true;ILKS.flows.add(f)}})});
      const eff=it.e.map(e=>`<code>${esc(e[0])}</code> ${esc(e[1])}`).join('<br>');
-     out.innerHTML+=ilkStep('on',3,'<b>Автоматика сработала:</b><br>'+eff+'<br><small>Аппараты серые, красные метки показывают, что заблокировано. Потоки, связанные с ними, остались на экране, движение точек остановлено (их '+nf+'). Модель показывает только оборудование, которое есть в 3D, клапаны описаны текстом.</small>');
+     out.innerHTML+=ilkStep('on',3,'<b>Автоматика сработала:</b><br>'+eff+'<br><small>Аппараты серые, красные метки показывают, что заблокировано. Потоки, связанные с ними, остались на экране, движение точек остановлено (их '+nf+'). Модель показывает только оборудование, которое есть в 3D, клапаны описаны текстом.</small>',Math.max(0,ILKS.views.findIndex(v=>v.t)));
      if(it.rs)later(500,()=>{out.innerHTML+=ilkStep('',4,'<b>Блокировка запомнена:</b> пока причину не устранят и оператор не нажмёт <code>'+esc(it.rst||'PB-REST')+'</code>, оборудование не запустится. Нажмите «Сброс блокировки».')})})
  }
  function setIlk(on){
@@ -4990,6 +5002,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    else{ilkRestore();$('ilkOut').innerHTML=''}
  }
  $('tabIlk').onclick=()=>{if(!ILKS.on)setIlk(true)};
+ $('ilkOut').onclick=e=>{const st=e.target.closest('.st[data-f]');if(st)ilkFocus(+st.dataset.f)};
  $('ilkGo').onclick=ilkTrigger;$('ilkRs').onclick=()=>{ilkRestore();$('ilkOut').innerHTML=ilkStep('ok','✓','Блокировка сброшена: оборудование разрешено запускать, потоки восстановлены.')};
  $('ilkSel').onchange=()=>{ilkRestore();ilkFill();$('ilkOut').innerHTML=''};
  if(!window.ILK)$('tabIlk').hidden=true;
@@ -5770,7 +5783,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    suGunAnim();suRainAnim();suShotAnim();const vp=suRender();
    const w=vp.w,h=vp.h;
    if(ILKB.on)ILKB.items.forEach(i=>{let v=true,q=i.o;while(q&&q!==scene){if(!q.visible){v=false;break}q=q.parent}i.sp.visible=v;const al=ILKS.alarm.has(i.sp.userData.ilkTag);i.sp.scale.setScalar(al?.032*(1.35+.35*Math.sin(now/130)):.032)});
-   ILKS.calls.forEach(l=>{tmp.copy(l.p).project(camera);const v=tmp.z<1&&Math.abs(tmp.x)<1.1&&Math.abs(tmp.y)<1.1;l.d.classList.toggle('hide',!v);if(v){l.d.style.left=((tmp.x+1)/2*w)+'px';l.d.style.top=((1-tmp.y)/2*h)+'px'}});
+   ILKS.calls.forEach(l=>{tmp.copy(l.p).project(camera);const v=tmp.z<1&&Math.abs(tmp.x)<1.1&&Math.abs(tmp.y)<1.1;const px=(tmp.x+1)/2*w,pw=ILKS.split.length?suPaneLayout().w:w;l.d.classList.toggle('hide',!v||px>pw-30);if(v){l.d.style.left=((tmp.x+1)/2*w)+'px';l.d.style.top=((1-tmp.y)/2*h)+'px'}});
    LB.forEach(l=>{tmp.copy(l.p).project(camera);const vis=showL&&tmp.z<1&&Math.abs(tmp.x)<1.1&&Math.abs(tmp.y)<1.1&&(!isolated||l.sec===isolated);l.d.classList.toggle('hide',!vis);if(vis){l.d.style.left=((tmp.x+1)/2*w)+'px';l.d.style.top=((1-tmp.y)/2*h)+'px'}});
  }
  requestAnimationFrame(loop);
