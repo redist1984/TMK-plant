@@ -318,6 +318,7 @@ body.fs-mode aside.detail{top:calc(env(safe-area-inset-top,0px) + 62px)}
 </div>
 
 <script src="lang.js"></script>
+<script src="eq-uz.js"></script>
 <script src="theme.js"></script>
 <script src="interlocks-data.js"></script>
 <script src="ilk-card.js"></script>
@@ -1054,7 +1055,7 @@ function showEq(tag,bed){
      <span class="pill ${e.m?'ok':'no'}">${e.m?esc(L.has3dBadge):esc(L.no3dBadge)}</span>
      <button class="btn" type="button" id="cp">${esc(L.copyPos)}</button><span id="cpd" class="copied" hidden>${esc(L.copied)}</span></div>
    <dl class="kv"><dt>${esc(L.thQty)}</dt><dd>${esc(e.q||'—')}</dd><dt>${esc(L.thMass)}</dt><dd>${fmtW(e.w)}</dd></dl>
-   ${e.d.length?`<ul class="specs">${e.d.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:`<p class="sec-note">${esc(L.noSpecs)}</p>`}
+   ${e.d.length?`<ul class="specs">${e.d.map(x=>`<li>${esc(currentLang==='uz'&&window.eqDescU?window.eqDescU(x):x)}</li>`).join('')}</ul>`:`<p class="sec-note">${esc(L.noSpecs)}</p>`}
    ${flowsBlock(e.t,bed)}
    ${regBlock(bed?regFor(e.t).filter(r=>new RegExp(bed.replace('Слой ','')+'-(й|го) сло').test(r.n)):regFor(e.t))}
    ${(IMGS[e.t]||[]).length?`<div class="eyebrow" style="margin-top:12px">${currentLang==='uz'?'Apparat chizmalari':'Чертежи аппарата'}</div><div class="gal">${IMGS[e.t].map(([f,c],i)=>`<button type="button" data-i="${i}" title="${esc(c)}"><img src="sec_img/${esc(f)}" alt="${esc(c)}" loading="lazy"></button>`).join('')}</div>`:''}
