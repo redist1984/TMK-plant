@@ -48,6 +48,7 @@ h1{font-size:20px;margin:6px 0 4px}
   <span><i>◧</i><b id="tdModel">3D-модель</b></span>
   <span><i>⌁</i><b id="tdFlow">Схема потоков</b></span>
   <span><i>▦</i><b id="tdPfd">PFD</b></span>
+  <span><i>⛨</i><b id="tdIlk">Блокировки</b></span>
   <span><i>▤</i><b id="tdDocs">Документы</b></span>
   <span><i>⚙</i><b id="tdSettings">Настройки</b></span>
   <span><i>?</i><b id="tdHelp">Помощь</b></span>
@@ -83,6 +84,16 @@ h1{font-size:20px;margin:6px 0 4px}
   <div class="body" id="hPfdBody"></div>
 </details>
 
+<details class="sec" id="secStart">
+  <summary><span class="ic">▶</span><span id="hStartT">Пуск завода</span><span class="car">▾</span></summary>
+  <div class="body" id="hStartBody"></div>
+</details>
+
+<details class="sec" id="secIlk">
+  <summary><span class="ic">⛨</span><span id="hIlkT">Блокировки</span><span class="car">▾</span></summary>
+  <div class="body" id="hIlkBody"></div>
+</details>
+
 <details class="sec" id="secDocs">
   <summary><span class="ic">▤</span><span id="hDocsT">Документы и архив чертежей</span><span class="car">▾</span></summary>
   <div class="body" id="hDocsBody"></div>
@@ -102,9 +113,29 @@ const UI = {
 ru: {
   eyebrow:'Завод TMK', h1:'Помощь по приложению',
   sub:'Как пользоваться приложением: куда нажимать и что это даёт. Разделы ниже можно раскрывать по очереди.',
-  tdModel:'3D-модель', tdFlow:'Схема потоков', tdPfd:'PFD', tdDocs:'Документы', tdSettings:'Настройки', tdHelp:'Помощь',
+  tdModel:'3D-модель', tdFlow:'Схема потоков', tdPfd:'PFD', tdIlk:'Блокировки', tdDocs:'Документы', tdSettings:'Настройки', tdHelp:'Помощь',
+  hStartT:'Пуск завода', hIlkT:'Блокировки',
+  hStartBody: [
+    row('▶','Вкладка «Пуск завода» (над 3D-сценой)','Имитация пуска по схеме BFD «Логическая последовательность ввода объектов»: 137 → 136 → вода → 135 → 114.1/114 → 121-111-122-112-113-123/124 → 115. Потоки постепенно появляются на трубах, ещё не пущенное оборудование серое.'),
+    row('⏯','Кнопки ▶/⏸ и ⟲, скорость, ползунок времени Т+','▶/⏸ запускает и ставит на паузу, ⟲ возвращает в начало, ползунок перематывает по времени от начала пуска.'),
+    row('🎯','Кнопка «Следить»','Камера сама летит к объекту, который сейчас пускается. Выключите, чтобы смотреть куда хотите.'),
+    row('☰','Список «Этапы»','Нажатие на этап переносит к его началу и открывает расчёт времени; кнопка «Расчёт» открывает всю таблицу (≈ 58 ч до полной нагрузки).'),
+    row('◫','Разделение экрана','Когда одновременно идут несколько процессов, экран делится на окна — каждый процесс виден отдельно, внутри нужных аппаратов видны уровни (оболочка становится прозрачной).'),
+  ].join(''),
+  hIlkBody: [
+    row('⛨','Что такое блокировка','Автоматическая защита: «если произошло вот это — автоматика сделает вот что». Данные взяты с листов «Логическая схема блокировок» (на русском языке).'),
+    row('⛨','Значки-щиты на аппаратах','В 3D-модели, на схеме потоков и PFD: красный щит — аппарат блокируется (получает команду остановить, пустить или закрыть), синий контурный щит — на аппарате датчик или условие блокировки. В 3D значки включает кнопка «⛨ Блокировки» вверху.'),
+    row('🔍','Вкладка «Блокировки» (в нижнем меню)','Список карточек: слева «Если» (причина с позициями датчиков), справа «То автоматика» (действие). Поиск по позиции, аппарату или слову; список отделений; цветные фильтры по виду блокировки; кнопка «Как читать» раскрывает пояснения к обозначениям.'),
+    row('▸','Кнопки аппаратов в карточке блокировки','«Аппарат ▸ 3D» ведёт в 3D-модель к нужному аппарату; значок щита на кнопке — аппарат блокируется. Пометки: «Байпас» (ключ на время ремонта), «Сброс» (кнопка сброса, блокировка запоминается), «Ручной режим».'),
+    row('⚡','Вкладка «⛨ Блокировки» над 3D-сценой — имитация','Выберите блокировку в списке и нажмите «Вызвать срабатывание»: аппараты, которые остановятся, станут серыми, на них появятся красные метки «заблокирован», движение по связанным потокам остановится (сами потоки остаются на экране).'),
+    row('☑','«Байпас включён»','Имитирует ключ-байпас: автоматика не вмешивается, оборудование работает, оператор получает только тревогу.'),
+    row('⟲','«Сброс блокировки»','Возвращает всё как было: оборудование разрешено запускать, потоки и здания восстановлены.'),
+    row('◫','Разделение экрана','Если причина срабатывания и заблокированные аппараты далеко друг от друга, сцена делится на окна, чтобы было видно и причину, и следствие.'),
+    row('📜','Лента событий внизу','Шаги по порядку: условие выполнено → тревога оператору → автоматика сработала → блокировка запомнена. Нажмите на шаг — камера покажет нужное место.'),
+    row('▢','Прозрачность зданий','При срабатывании здания автоматически становятся прозрачными, чтобы было видно оборудование внутри; после сброса или выхода из вкладки возвращается прежний режим.'),
+  ].join(''),
   h3dT:'3D-модель завода', hCardT:'Карточка оборудования и здания', hImgT:'Чертежи и фото: увеличение',
-  hCutT:'Разрез оборудования', hFlowT:'Схема потоков', hPfdT:'PFD — схема материальных потоков', hPfdBody:'<p>Три листа чертежа WZ-POT-262: дымогазовая, кислотная и паровая системы. Колесо мыши или щипок — масштаб, перетаскивание — сдвиг.</p><ul><li>Нажмите на аппарат (пунктирная зона) — откроется карточка с параметрами из модели, кнопки «Показать в 3D» и «Показать в схеме потоков».</li><li>Нажмите на ромб с номером потока — подсветится линия потока и откроются его параметры из таблицы чертежа (температура, давление, расход, состав).</li><li>Поток 104 на листе 3 показан водой до паровых линий: это вода на впрысковые пароохладители XX-11401 и XX-11402 (чертёж 3147-5R114-03); по таблице PFD её расход 0 т/ч.</li><li>Потоки 108 (выход EX-11205) и 106 (выход EX-11207) сливаются в одну линию питательной воды, которая идёт в EX-11201: при выборе любого из них подсвечивается вся линия до котла-утилизатора.</li><li>Внизу появляется панель «Входы и выходы»: для каждого аппарата на концах потока (или для выбранного аппарата) — таблица входящих и выходящих потоков с расходом, температурой и давлением, суммы входа и выхода и баланс. Если баланс не сходится по таблице чертежа, показано расхождение (данные не правятся). Нажмите строку — поток подсветится на схеме; «Свернуть» убирает панель вниз.</li><li>В карточках 3D-модели и схемы потоков есть кнопка «Показать на PFD».</li><li>Кнопка в левом верхнем углу схемы включает полный экран: верхняя панель вкладок скрывается, а листы, поиск, выбор среды, «Зоны», «Скан», «Наложение» и масштаб собраны в меню ☰ справа сверху, как в схеме потоков.</li><li>Схема перерисована в векторе в стиле схемы потоков: аппараты (колонны с насадкой, теплообменники, котёл, печь, насосы, ёмкости) нарисованы схемными символами, цвета труб по среде, выбор среды (кнопки над схемой) оставляет на схеме только её линии, стрелки, ромбы, выводы, арматуру и КИП, остальное скрыто, аппараты без этой среды приглушены; «Все среды» возвращает всю схему. Кнопка «Скан» показывает исходный чертёж (схема и таблицы потоков, без примечаний и штампа), «Наложение» — скан поверх схемы для сверки.</li><li>Линии и стрелки получены автоматически по скану и могут слегка отличаться от чертежа. Стрелки направления потоков есть на всех линиях: те, что были на чертеже, и дорисованные по направлениям потоков (откуда и куда идёт поток); при расхождении ориентируйтесь на стрелки самого чертежа.</li></ul>', hDocsT:'Документы и архив чертежей', hSetT:'Настройки',
+  hCutT:'Разрез оборудования', hFlowT:'Схема потоков', hPfdT:'PFD — схема материальных потоков', hPfdBody:'<p>Три листа чертежа WZ-POT-262: дымогазовая, кислотная и паровая системы. Колесо мыши или щипок — масштаб, перетаскивание — сдвиг.</p><ul><li>Нажмите на аппарат (пунктирная зона) — откроется карточка с параметрами из модели, кнопки «Показать в 3D» и «Показать в схеме потоков».</li><li>Нажмите на ромб с номером потока — подсветится линия потока и откроются его параметры из таблицы чертежа (температура, давление, расход, состав).</li><li>Поток 104 на листе 3 показан водой до паровых линий: это вода на впрысковые пароохладители XX-11401 и XX-11402 (чертёж 3147-5R114-03); по таблице PFD её расход 0 т/ч.</li><li>Потоки 108 (выход EX-11205) и 106 (выход EX-11207) сливаются в одну линию питательной воды, которая идёт в EX-11201: при выборе любого из них подсвечивается вся линия до котла-утилизатора.</li><li>Внизу появляется панель «Входы и выходы»: для каждого аппарата на концах потока (или для выбранного аппарата) — таблица входящих и выходящих потоков с расходом, температурой и давлением, суммы входа и выхода и баланс. Если баланс не сходится по таблице чертежа, показано расхождение (данные не правятся). Нажмите строку — поток подсветится на схеме; «Свернуть» убирает панель вниз.</li><li>В карточках 3D-модели и схемы потоков есть кнопка «Показать на PFD».</li><li>Кнопка в левом верхнем углу схемы включает полный экран: верхняя панель вкладок скрывается, а листы, поиск, выбор среды, «Зоны», «Скан», «Наложение» и масштаб собраны в меню ☰ справа сверху, как в схеме потоков.</li><li>Схема перерисована в векторе в стиле схемы потоков: аппараты (колонны с насадкой, теплообменники, котёл, печь, насосы, ёмкости) нарисованы схемными символами, цвета труб по среде, выбор среды (кнопки над схемой) оставляет на схеме только её линии, стрелки, ромбы, выводы, арматуру и КИП, остальное скрыто, аппараты без этой среды приглушены; «Все среды» возвращает всю схему. Кнопка «Скан» показывает исходный чертёж (схема и таблицы потоков, без примечаний и штампа), «Наложение» — скан поверх схемы для сверки.</li><li>Линии и стрелки получены автоматически по скану и могут слегка отличаться от чертежа. Стрелки направления потоков есть на всех линиях: те, что были на чертеже, и дорисованные по направлениям потоков (откуда и куда идёт поток); при расхождении ориентируйтесь на стрелки самого чертежа.</li><li>Кнопки управления схемой: «+» и «−» меняют масштаб, «Весь лист» показывает лист целиком, «Зоны» показывает и скрывает пунктирные зоны аппаратов.</li><li>Значки блокировок: красный щит — аппарат блокируется, синий контурный щит — на нём датчик или условие блокировки; нажмите на аппарат, чтобы увидеть условия, а вкладка «Блокировки» покажет логику целиком.</li></ul>', hDocsT:'Документы и архив чертежей', hSetT:'Настройки',
   h3dBody: [
     row('👆','Один палец — провести по экрану','По умолчанию палец сдвигает (двигает) камеру в сторону — «панорамирование». Если нужно именно вращать сцену одним пальцем, включите режим вращения кнопкой ⟳ внизу экрана.'),
     row('⟳','Кнопка со стрелкой по кругу (внизу экрана)','Переключает, что делает один палец: вращать сцену вокруг объекта или сдвигать камеру в сторону. Нажатая (подсвеченная) кнопка — включено вращение.'),
@@ -118,6 +149,10 @@ ru: {
     row('▢','Кнопка «Здания прозрачные»','Включает/выключает прозрачность стен зданий, чтобы видеть оборудование внутри.'),
     row('➤','Кнопка «Движение потоков»','Включает/выключает анимацию движения по трубопроводам (точки, бегущие по линиям).'),
     row('Aa','Кнопка «Подписи»','Показывает/скрывает текстовые подписи оборудования над сценой.'),
+    row('⛨','Кнопка «⛨ Блокировки» (вверху)','Включает и выключает значки блокировок на аппаратах: красный щит — аппарат блокируется (получает команду остановить, пустить или закрыть), синий контурный щит — на аппарате датчик или условие блокировки. Нажмите на аппарат — в карточке будет написано, по какому условию.'),
+    row('🚶','Кнопка «От первого лица»','Прогулка по заводу: W/A/S/D или стрелки — идти, мышь (перетаскивание) — смотреть, Q/E — вниз/вверх, Shift — быстрее, Esc — выход. На телефоне внизу появляется крестовина с кнопками ▲ ▼ ◀ ▶ и ⤒ ⤓ (вверх/вниз).'),
+    row('▤','Вкладки над сценой: «Модель», «Разрез», «Пуск завода», «⛨ Блокировки»','Переключают режим просмотра: обычная модель, разрез оборудования, имитация пуска завода или имитация блокировок. Каждый режим описан в своём разделе справки.'),
+    row('☰','Кнопка меню ☰ в полноэкранном режиме','Открывает и прячет панель управления поверх сцены (отделение, фильтры потоков, прозрачность зданий, подписи и др.), чтобы она не закрывала модель.'),
     row('🎨','Цветные «таблетки» потоков (вверху)','Нажмите на цвет потока, чтобы показать на схеме только его (можно выбрать несколько). Кнопка «Все потоки» снимает все фильтры и возвращает показ всех линий.'),
     row('?','Кнопка «?» (подсказка)','Короткая версия этой же справки прямо на экране модели.'),
   ].join(''),
@@ -126,8 +161,9 @@ ru: {
     row('📐','Нормы технологического режима','Таблица показателей (температура, давление, расход и т.п.), если они заданы для отделения или конкретного аппарата.'),
     row('🖼','Галерея чертежей и фото','Миниатюры внизу карточки — нажмите на любую, чтобы открыть её на весь экран (см. раздел «Чертежи и фото: увеличение» ниже).'),
     row('✂','Кнопка «Разрез аппарата в 3D» / «Всё отделение →»','Переключает 3D-сцену в режим разреза именно этого объекта или показывает всё отделение целиком.'),
-    row('⛨','Блок «Блокировки»','Если у аппарата есть автоматическая защита, в карточке появляется блок «Блокировки»: раскройте строку, чтобы увидеть простыми словами, при каком условии аппарат остановится или включится. Кнопка «Все блокировки аппарата» открывает вкладку «Блокировки». На модели, схеме потоков и PFD такие аппараты отмечены щитом: красный «!» — аппарат блокируется, синий «i» — на нём датчик или условие блокировки (кнопка «⛨ Блокировки» вверху включает и выключает значки). Вкладка «⛨ Блокировки» под сценой в 3D — имитация: выберите блокировку и нажмите «Вызвать срабатывание», аппараты станут серыми, потоки через них остановятся, внизу пошагово написано, что произошло; «Байпас включён» показывает, что тогда сработает только тревога; «Сброс блокировки» возвращает всё как было.'),
-    row('⚡','Вкладка «Блокировки» на модели','Выберите блокировку и нажмите «Вызвать срабатывание»: заблокированное оборудование получает красную метку, связанные потоки остаются на экране. Если причина и аппараты далеко друг от друга, справа открываются отдельные окна. Шаги внизу — лента событий, нажмите на шаг, чтобы камера показала нужное место.'),
+    row('⛨','Блок «Блокировки»','Если у аппарата есть автоматическая защита, в карточке появляется блок «Блокировки»: раскройте строку, чтобы увидеть простыми словами, при каком условии аппарат остановится или включится. Кнопка «Все блокировки аппарата» открывает вкладку «Блокировки». Подробнее — в разделе «Блокировки» ниже.'),
+    row('⇄','Таблица «Входящие и выходящие потоки» (схема потоков)','В карточке аппарата на схеме потоков: какие потоки входят и выходят, откуда приходят и куда идут. Нажмите объект в строке — откроется его карточка.'),
+    row('↗','Кнопка «Показать на PFD»','В карточках 3D-модели и схемы потоков переносит на лист PFD, где этот аппарат подсвечен. Из карточки PFD обратно ведут «Показать в 3D» и «Показать в схеме потоков».'),
   ].join(''),
   hImgBody: [
     row('👆','Нажмите на миниатюру чертежа или фото в карточке','Изображение откроется на весь экран, в отдельном окне просмотра с перелистыванием.'),
@@ -144,7 +180,6 @@ ru: {
     row('▤','Переключатель «С–Ю / З–В / План»','Выбирает направление секущей плоскости.'),
     row('⇄','Слайдер и кнопка «⇄ сторона»','Слайдер двигает плоскость разреза, кнопка меняет, какая половина объекта показывается.'),
     row('☑','Флажок «только объект»','Показывает в разрезе только выбранный аппарат/здание, без остального завода вокруг.'),
-    row('▶','Вкладка «Пуск завода» (над 3D-сценой)','Имитация пуска по схеме BFD «Логическая последовательность ввода объектов»: 137 → 136 → вода → 135 → 114.1/114 → 121-111-122-112-113-123/124 → 115. Потоки постепенно появляются на трубах, ещё не пущенное оборудование серое. Кнопки ▶/⏸ и ⟲, скорость, ползунок времени Т+; нажатие на этап переносит к его началу и открывает расчёт времени, кнопка «Расчёт» — вся таблица (≈ 58 ч до полной нагрузки).'),
   ].join(''),
   hFlowBody: [
     row('✋','Провести пальцем по схеме','Прокручивает (панорамирует) схему потоков в любую сторону.'),
@@ -157,6 +192,8 @@ ru: {
     row('✨','Наведите курсор на аппарат или нажмите на него','Подсвечивает все линии, входящие в аппарат и выходящие из него, остальные приглушаются. Закрытие карточки (×) или клавиша Esc снимает подсветку.'),
     row('🎨','Цветные «таблетки» потоков вверху схемы','Показывают на схеме только нажатые потоки; «Показать все» снимает фильтр.'),
     row('📊','Кнопка «Нормы режима на схеме»','Подписывает прямо на схеме значения технологического режима рядом с точками контроля.'),
+    row('⛨','Значки блокировок на аппаратах','Красный щит с «!» — аппарат блокируется, синий контурный щит с «i» — на нём датчик или условие блокировки. Нажмите на аппарат: условия — в блоке «Блокировки» его карточки, полная логика — во вкладке «Блокировки».'),
+    row('?','Кнопка «?» в углу схемы','Короткая подсказка по управлению схемой и ссылка «Подробная справка по приложению →».'),
     row('🔍','Поиск и фильтры над таблицей внизу','Находят позицию по коду/названию, отделению или наличию в 3D-модели; нажатие на строку таблицы открывает ту же карточку и прокручивает к схеме.'),
     row('⛶','Кнопка «Во весь экран»','Скрывает фильтры и таблицу, оставляя только схему потоков.'),
     row('☰','В полноэкранном режиме — кнопка меню в правом верхнем углу','Открывает и прячет панель управления поверх схемы: фильтр потоков, «Показать все», «Нормы режима на схеме», выбор отделения и оборудования (откроется его карточка, аппарат подсветится на схеме). На телефоне панель по умолчанию свёрнута.'),
@@ -167,6 +204,7 @@ ru: {
   hSetBody: [
     row('🌐','Язык интерфейса','Переключает приложение между русским и узбекским языком.'),
     row('🎨','Тема оформления','Системная, светлая или тёмная — меняет цвета всего приложения.'),
+    row('⟳','Кнопка «⟳» в шапке приложения','В Android-приложении проверяет, есть ли обновление, и подгружает свежую версию.'),
     row('☀','Яркость экрана','Ползунок меняет яркость экрана телефона прямо из приложения; флажок «как в системе» возвращает управление яркостью самому телефону.'),
   ].join(''),
   appHint:'Это же краткое объяснение управления 3D-сценой доступно прямо на экране модели по кнопке «?».',
@@ -174,9 +212,29 @@ ru: {
 uz: {
   eyebrow:'TMK zavodi', h1:'Ilova bo‘yicha yordam',
   sub:'Ilovadan qanday foydalanish: qayerga bosish va bu nimaga olib kelishi. Quyidagi bo‘limlarni birma-bir ochish mumkin.',
-  tdModel:'3D-model', tdFlow:'Oqim sxemasi', tdPfd:'PFD', tdDocs:'Hujjatlar', tdSettings:'Sozlamalar', tdHelp:'Yordam',
+  tdModel:'3D-model', tdFlow:'Oqim sxemasi', tdPfd:'PFD', tdIlk:'Blokirovkalar', tdDocs:'Hujjatlar', tdSettings:'Sozlamalar', tdHelp:'Yordam',
+  hStartT:'Zavodni ishga tushirish', hIlkT:'Blokirovkalar',
+  hStartBody: [
+    row('▶','«Zavodni ishga tushirish» yorlig‘i (3D-sahna ustida)','BFD «Obyektlarni ishga tushirishning mantiqiy ketma-ketligi» sxemasi bo‘yicha ishga tushirish imitatsiyasi: 137 → 136 → suv → 135 → 114.1/114 → 121-111-122-112-113-123/124 → 115. Oqimlar quvurlarda asta-sekin paydo bo‘ladi, hali ishga tushmagan jihoz kulrang.'),
+    row('⏯','▶/⏸ va ⟲ tugmalari, tezlik, T+ vaqt slayderi','▶/⏸ ishga tushiradi va to‘xtatadi, ⟲ boshiga qaytaradi, slayder vaqt bo‘yicha suradi.'),
+    row('🎯','«Kuzatish» tugmasi','Kamera hozir ishga tushayotgan obyekt tomon o‘zi uchadi. Xohlagan joyingizni ko‘rish uchun o‘chiring.'),
+    row('☰','«Bosqichlar» ro‘yxati','Bosqichni bosish uning boshiga o‘tkazadi va vaqt hisobini ochadi; «Hisob» tugmasi butun jadvalni ochadi (to‘liq yuklamagacha ≈ 58 soat).'),
+    row('◫','Ekranni bo‘lish','Bir vaqtning o‘zida bir nechta jarayon ketsa, ekran oynalarga bo‘linadi — har bir jarayon alohida ko‘rinadi.'),
+  ].join(''),
+  hIlkBody: [
+    row('⛨','Blokirovka nima','Avtomatik himoya: «agar mana bu sodir bo‘lsa — avtomatika mana buni bajaradi». Ma’lumotlar «Blokirovkalarning mantiqiy sxemasi» varaqlaridan olingan (rus tilida).'),
+    row('⛨','Apparatlardagi qalqon belgilari','3D-modelda, oqim sxemasida va PFD da: qizil qalqon — apparat bloklanadi (to‘xtatish, ishga tushirish yoki yopish buyrug‘ini oladi), ko‘k konturli qalqon — apparatda datchik yoki blokirovka sharti bor. 3D da belgilarni yuqoridagi «⛨ Blokirovkalar» tugmasi yoqadi.'),
+    row('🔍','«Blokirovkalar» yorlig‘i (pastki menyuda)','Kartochkalar ro‘yxati: chapda «Agar» (datchik pozitsiyalari bilan sabab), o‘ngda «Avtomatika» (amal). Pozitsiya, apparat yoki so‘z bo‘yicha qidiruv; bo‘limlar ro‘yxati; blokirovka turi bo‘yicha rangli filtrlar; «Qanday o‘qiladi» belgilar izohini ochadi.'),
+    row('▸','Blokirovka kartochkasidagi apparat tugmalari','«Apparat ▸ 3D» kerakli apparatga 3D-modelda olib boradi; tugmadagi qalqon — apparat bloklanadi. Belgilar: «Baypas» (ta’mir vaqtidagi kalit), «Tiklash» (blokirovka eslab qolinadi), «Qo‘lda rejim».'),
+    row('⚡','3D-sahna ustidagi «⛨ Blokirovkalar» yorlig‘i — imitatsiya','Ro‘yxatdan blokirovkani tanlang va «Ishga tushirish» ni bosing: to‘xtaydigan apparatlar kulrang bo‘ladi, ularda qizil «bloklangan» belgisi chiqadi, bog‘liq oqimlar harakati to‘xtaydi (oqimlar ekranda qoladi).'),
+    row('☑','«Baypas yoqilgan»','Baypas kalitini imitatsiya qiladi: avtomatika aralashmaydi, jihoz ishlaydi, operator faqat signal oladi.'),
+    row('⟲','«Tiklash»','Hammasini avvalgidek qaytaradi: jihozni ishga tushirish mumkin, oqimlar va binolar tiklanadi.'),
+    row('◫','Ekranni bo‘lish','Sabab va bloklangan apparatlar bir-biridan uzoq bo‘lsa, sahna oynalarga bo‘linadi — sabab ham, oqibat ham ko‘rinadi.'),
+    row('📜','Pastdagi voqealar lentasi','Qadamlar ketma-ket: shart bajarildi → operatorga signal → avtomatika ishladi → blokirovka eslab qolindi. Qadamni bossangiz, kamera kerakli joyni ko‘rsatadi.'),
+    row('▢','Binolar shaffofligi','Ishga tushganda binolar avtomatik shaffof bo‘ladi (ichidagi jihoz ko‘rinadi); tiklangandan keyin avvalgi rejim qaytadi.'),
+  ].join(''),
   h3dT:'Zavodning 3D-modeli', hCardT:'Jihoz va bino kartochkasi', hImgT:'Chizmalar va fotolar: kattalashtirish',
-  hCutT:'Jihoz kesimi', hFlowT:'Oqim sxemasi', hPfdT:'PFD — moddiy oqimlar sxemasi', hPfdBody:'<p>WZ-POT-262 chizmasining uchta varag‘i: tutun-gaz, kislota va bug‘ tizimlari. G‘ildirak yoki chimchilash — masshtab, sudrash — siljitish.</p><ul><li>Apparat ustiga (punktir zona) bosing — modeldagi parametrlar kartochkasi, «3D da ko‘rsatish» va «Oqim sxemasida ko‘rsatish» tugmalari ochiladi.</li><li>Oqim raqamli rombga bosing — oqim chizig‘i ajratiladi va chizma jadvalidagi parametrlari (harorat, bosim, sarf, tarkib) ochiladi.</li><li>3-varaqdagi 104-oqim bug‘ liniyalarigacha suv sifatida ko‘rsatilgan: bu XX-11401 va XX-11402 purkash bug‘ sovutgichlariga suv (3147-5R114-03 chizmasi); PFD jadvali bo‘yicha sarfi 0 t/soat.</li><li>108 (EX-11205 chiqishi) va 106 (EX-11207 chiqishi) oqimlari bitta oziqlantiruvchi suv liniyasiga qo‘shiladi va EX-11201 ga boradi: ulardan birini tanlasangiz, utilizator qozongacha butun liniya ajratiladi.</li><li>Pastda «Kirish va chiqishlar» paneli chiqadi: oqim uchlaridagi har bir apparat (yoki tanlangan apparat) uchun kiruvchi va chiquvchi oqimlar jadvali — sarf, harorat, bosim, kirish va chiqish yig‘indilari va balans. Chizma jadvali bo‘yicha balans mos kelmasa, farq ko‘rsatiladi (ma’lumotlar tuzatilmaydi). Qatorni bossangiz, oqim sxemada ajratiladi; «Yig‘ish» paneli pastga yig‘adi.</li><li>3D-model va oqim sxemasi kartochkalarida «PFD da ko‘rsatish» tugmasi bor.</li><li>Sxemaning yuqori chap burchagidagi tugma to‘liq ekranni yoqadi: yuqori vkladkalar paneli yashirinadi, varaqlar, qidiruv, muhit tanlash, «Zonalar», «Skan», «Ustma-ust» va masshtab o‘ng yuqoridagi ☰ menyusiga yig‘iladi, oqim sxemasidagi kabi.</li><li>Sxema vektorda, oqim sxemasi uslubida qayta chizilgan: apparatlar (nasadkali kolonnalar, issiqlik almashtirgichlar, qozon, pech, nasoslar, idishlar) sxematik belgilar bilan chizilgan, quvur ranglari muhit bo‘yicha, muhit tanlansa, sxemada faqat uning chiziqlari, strelkalari, rombalari, chiqishlari, armaturasi va KIP qoladi, qolganlari yashiriladi, bu muhit ishtirok etmaydigan apparatlar xira bo‘ladi; «Barcha muhitlar» butun sxemani qaytaradi. «Skan» tugmasi asl chizmani ko‘rsatadi (sxema va oqimlar jadvallari, izohlar va shtampsiz), «Ustma-ust» — tekshirish uchun skanni sxema ustiga qo‘yadi.</li><li>Chiziqlar va strelkalar skandan avtomatik olingan, chizmadan biroz farq qilishi mumkin. Oqim yo‘nalishi strelkalari barcha chiziqlarda bor: chizmadagilari va oqim yo‘nalishi (qayerdan va qayerga) bo‘yicha qo‘shilganlari; farq bo‘lsa, chizma strelkalariga tayaning.</li></ul>', hDocsT:'Hujjatlar va chizmalar arxivi', hSetT:'Sozlamalar',
+  hCutT:'Jihoz kesimi', hFlowT:'Oqim sxemasi', hPfdT:'PFD — moddiy oqimlar sxemasi', hPfdBody:'<p>WZ-POT-262 chizmasining uchta varag‘i: tutun-gaz, kislota va bug‘ tizimlari. G‘ildirak yoki chimchilash — masshtab, sudrash — siljitish.</p><ul><li>Apparat ustiga (punktir zona) bosing — modeldagi parametrlar kartochkasi, «3D da ko‘rsatish» va «Oqim sxemasida ko‘rsatish» tugmalari ochiladi.</li><li>Oqim raqamli rombga bosing — oqim chizig‘i ajratiladi va chizma jadvalidagi parametrlari (harorat, bosim, sarf, tarkib) ochiladi.</li><li>3-varaqdagi 104-oqim bug‘ liniyalarigacha suv sifatida ko‘rsatilgan: bu XX-11401 va XX-11402 purkash bug‘ sovutgichlariga suv (3147-5R114-03 chizmasi); PFD jadvali bo‘yicha sarfi 0 t/soat.</li><li>108 (EX-11205 chiqishi) va 106 (EX-11207 chiqishi) oqimlari bitta oziqlantiruvchi suv liniyasiga qo‘shiladi va EX-11201 ga boradi: ulardan birini tanlasangiz, utilizator qozongacha butun liniya ajratiladi.</li><li>Pastda «Kirish va chiqishlar» paneli chiqadi: oqim uchlaridagi har bir apparat (yoki tanlangan apparat) uchun kiruvchi va chiquvchi oqimlar jadvali — sarf, harorat, bosim, kirish va chiqish yig‘indilari va balans. Chizma jadvali bo‘yicha balans mos kelmasa, farq ko‘rsatiladi (ma’lumotlar tuzatilmaydi). Qatorni bossangiz, oqim sxemada ajratiladi; «Yig‘ish» paneli pastga yig‘adi.</li><li>3D-model va oqim sxemasi kartochkalarida «PFD da ko‘rsatish» tugmasi bor.</li><li>Sxemaning yuqori chap burchagidagi tugma to‘liq ekranni yoqadi: yuqori vkladkalar paneli yashirinadi, varaqlar, qidiruv, muhit tanlash, «Zonalar», «Skan», «Ustma-ust» va masshtab o‘ng yuqoridagi ☰ menyusiga yig‘iladi, oqim sxemasidagi kabi.</li><li>Sxema vektorda, oqim sxemasi uslubida qayta chizilgan: apparatlar (nasadkali kolonnalar, issiqlik almashtirgichlar, qozon, pech, nasoslar, idishlar) sxematik belgilar bilan chizilgan, quvur ranglari muhit bo‘yicha, muhit tanlansa, sxemada faqat uning chiziqlari, strelkalari, rombalari, chiqishlari, armaturasi va KIP qoladi, qolganlari yashiriladi, bu muhit ishtirok etmaydigan apparatlar xira bo‘ladi; «Barcha muhitlar» butun sxemani qaytaradi. «Skan» tugmasi asl chizmani ko‘rsatadi (sxema va oqimlar jadvallari, izohlar va shtampsiz), «Ustma-ust» — tekshirish uchun skanni sxema ustiga qo‘yadi.</li><li>Chiziqlar va strelkalar skandan avtomatik olingan, chizmadan biroz farq qilishi mumkin. Oqim yo‘nalishi strelkalari barcha chiziqlarda bor: chizmadagilari va oqim yo‘nalishi (qayerdan va qayerga) bo‘yicha qo‘shilganlari; farq bo‘lsa, chizma strelkalariga tayaning.</li><li>Sxemani boshqarish tugmalari: «+» va «−» masshtabni o‘zgartiradi, «Butun varaq» varaqni to‘liq ko‘rsatadi, «Zonalar» apparatlarning punktir zonalarini ko‘rsatadi va yashiradi.</li><li>Blokirovka belgilari: qizil qalqon — apparat bloklanadi, ko‘k konturli qalqon — unda datchik yoki shart bor; apparatni bossangiz shartlar ko‘rinadi, to‘liq mantiq «Blokirovkalar» yorlig‘ida.</li></ul>', hDocsT:'Hujjatlar va chizmalar arxivi', hSetT:'Sozlamalar',
   h3dBody: [
     row('👆','Bitta barmoq — ekranda yurgizish','Odatda barmoq kamerani yon tomonga siljitadi («panoramalash»). Agar bitta barmoq bilan aylantirish kerak bo‘lsa, ekran pastidagi ⟳ tugmasi bilan aylantirish rejimini yoqing.'),
     row('⟳','Doira shaklidagi strelka tugmasi (ekran pastida)','Bitta barmoq nima qilishini almashtiradi: obyekt atrofida aylantirish yoki kamerani yon tomonga siljitish. Yoqilgan (yorqin) tugma — aylantirish rejimi faol.'),
@@ -190,6 +248,10 @@ uz: {
     row('▢','«Binolar shaffof» tugmasi','Binolar devorlarining shaffofligini yoqadi/o‘chiradi — ichidagi jihozlarni ko‘rish uchun.'),
     row('➤','«Oqimlar harakati» tugmasi','Quvurlar bo‘ylab harakat animatsiyasini (chiziqlar bo‘ylab yuguruvchi nuqtalar) yoqadi/o‘chiradi.'),
     row('Aa','«Yozuvlar» tugmasi','Sahna ustidagi jihoz nomlarini ko‘rsatadi/yashiradi.'),
+    row('⛨','«⛨ Blokirovkalar» tugmasi (tepada)','Apparatlardagi blokirovka belgilarini yoqadi va o‘chiradi: qizil qalqon — apparat bloklanadi, ko‘k konturli qalqon — apparatda datchik yoki shart bor. Apparatni bossangiz, kartochkada qaysi shart bo‘yicha ekani yoziladi.'),
+    row('🚶','«Birinchi shaxs» tugmasi','Zavod bo‘ylab sayr: W/A/S/D yoki strelkalar — yurish, sichqoncha (sudrash) — qarash, Q/E — pastga/tepaga, Shift — tezroq, Esc — chiqish. Telefonda pastda ▲ ▼ ◀ ▶ va ⤒ ⤓ tugmali panel chiqadi.'),
+    row('▤','Sahna ustidagi yorliqlar: «Model», «Kesim», «Zavodni ishga tushirish», «⛨ Blokirovkalar»','Ko‘rish rejimini almashtiradi: oddiy model, jihoz kesimi, zavodni ishga tushirish yoki blokirovkalar imitatsiyasi. Har bir rejim yordamning o‘z bo‘limida tasvirlangan.'),
+    row('☰','To‘liq ekran rejimidagi ☰ menyu tugmasi','Sahna ustidagi boshqaruv panelini ochadi va yashiradi, shunda u modelni to‘smaydi.'),
     row('🎨','Yuqoridagi rangli oqim «tabletkalari»','Oqim rangini bosing — sxemada faqat shu oqim ko‘rinadi (bir nechtasini tanlash mumkin). «Barcha oqimlar» tugmasi barcha filtrlarni olib tashlaydi.'),
     row('?','«?» yordam tugmasi','Model ekranida ushbu ma’lumotnomaning qisqa varianti.'),
   ].join(''),
@@ -198,7 +260,9 @@ uz: {
     row('📐','Texnologik rejim normalari','Agar bo‘lim yoki aniq jihoz uchun berilgan bo‘lsa — harorat, bosim, sarf va h.k. jadvali.'),
     row('🖼','Chizmalar va fotolar galereyasi','Kartochka pastidagi kichik rasmlar — istalganini bosing, u butun ekranga ochiladi (pastdagi «Chizmalar va fotolar: kattalashtirish» bo‘limiga qarang).'),
     row('✂','«Jihoz kesimi 3D-da» / «Butun bo‘lim →» tugmasi','3D-sahnani shu obyektning kesimi rejimiga o‘tkazadi yoki butun bo‘limni ko‘rsatadi.'),
-    row('⛨','«Блокировки» bloki','Apparatda avtomatik himoya bo‘lsa, kartochkada «Блокировки» bloki chiqadi: qatorni oching, apparat qanday shartda to‘xtashi yoki yoqilishi sodda tilda ko‘rsatiladi. «Apparatning barcha blokirovkalari» tugmasi «Блокировки» yorlig‘ini ochadi (ma’lumotlar rus tilida). Model, oqim sxemasi va PFD da bunday apparatlar qalqon bilan belgilangan: qizil «!» — apparat bloklanadi, ko‘k «i» — unda datchik yoki shart bor.'),
+    row('⛨','«Блокировки» bloki','Apparatda avtomatik himoya bo‘lsa, kartochkada «Блокировки» bloki chiqadi: qatorni oching, apparat qanday shartda to‘xtashi yoki yoqilishi sodda tilda ko‘rsatiladi. «Apparatning barcha blokirovkalari» tugmasi «Blokirovkalar» yorlig‘ini ochadi (ma’lumotlar rus tilida). Batafsil — pastdagi «Blokirovkalar» bo‘limida.'),
+    row('⇄','«Kiruvchi va chiquvchi oqimlar» jadvali (oqim sxemasi)','Oqim sxemasidagi apparat kartochkasida: qaysi oqimlar kiradi va chiqadi, qayerdan keladi va qayerga ketadi. Qatordagi obyektni bossangiz, uning kartochkasi ochiladi.'),
+    row('↗','«PFD da ko‘rsatish» tugmasi','3D-model va oqim sxemasi kartochkalarida apparat ajratib ko‘rsatilgan PFD varag‘iga o‘tkazadi. PFD kartochkasidan «3D da ko‘rsatish» va «Oqim sxemasida ko‘rsatish» orqali qaytish mumkin.'),
   ].join(''),
   hImgBody: [
     row('👆','Kartochkadagi chizma yoki foto rasmchasini bosing','Rasm butun ekranga, varaqlab ko‘rish mumkin bo‘lgan alohida oynada ochiladi.'),
@@ -227,6 +291,8 @@ uz: {
     row('👆','Sxemada jihoz yoki bo‘lim nomini bosish','O‘ngda uning tavsiflari, rejim normalari va chizmalari bilan kartochkani ochadi (3D-modeldagidek) va pastdagi jadvalda qatorni ajratadi.'),
     row('🎨','Sxema tepasidagi rangli oqim «tabletkalari»','Sxemada faqat bosilgan oqimlarni ko‘rsatadi; «Hammasini ko‘rsatish» filtrni olib tashlaydi.'),
     row('📊','«Sxemada rejim normalari» tugmasi','Nazorat nuqtalari yonida texnologik rejim qiymatlarini sxemaning o‘ziga yozib qo‘yadi.'),
+    row('⛨','Apparatlardagi blokirovka belgilari','Qizil qalqon «!» — apparat bloklanadi, ko‘k konturli qalqon «i» — unda datchik yoki shart bor. Apparatni bosing: shartlar kartochkadagi «Блокировки» blokida, to‘liq mantiq — «Blokirovkalar» yorlig‘ida.'),
+    row('?','Sxema burchagidagi «?» tugmasi','Sxemani boshqarish bo‘yicha qisqa yordam va «Ilova bo‘yicha batafsil yordam →» havolasi.'),
     row('🔍','Pastdagi jadval ustidagi qidiruv va filtrlar','Pozitsiyani kod/nomi, bo‘limi yoki 3D-modelda borligi bo‘yicha topadi; jadval qatorini bosish xuddi shu kartochkani ochadi va sxemaga aylantiradi.'),
     row('⛶','«To‘liq ekran» tugmasi','Filtrlar va jadvalni yashirib, faqat oqim sxemasini qoldiradi.'),
     row('☰','To‘liq ekran rejimida — o‘ng yuqori burchakdagi menyu tugmasi','Sxema ustidagi boshqaruv panelini ochadi va yopadi: oqimlar filtri, «Hammasini ko‘rsatish», «Sxemada rejim normalari», bo‘lim va jihozni tanlash (uning kartochkasi ochiladi, apparat sxemada ajratiladi). Telefonda panel odatda yig‘ilgan.'),
@@ -237,6 +303,7 @@ uz: {
   hSetBody: [
     row('🌐','Interfeys tili','Ilovani rus va o‘zbek tili orasida almashtiradi.'),
     row('🎨','Ko‘rinish mavzusi','Tizim kabi, yorug‘ yoki tungi — butun ilova ranglarini o‘zgartiradi.'),
+    row('⟳','Ilova sarlavhasidagi «⟳» tugmasi','Android-ilovada yangilanish borligini tekshiradi va yangi versiyani yuklaydi.'),
     row('☀','Ekran yorqinligi','Slayder telefon ekrani yorqinligini to‘g‘ridan-to‘g‘ri ilovadan o‘zgartiradi; «tizimdagidek» katakchasi yorqinlikni telefonning o‘ziga qaytaradi.'),
   ].join(''),
   appHint:'3D-sahnani boshqarish bo‘yicha xuddi shu qisqacha tushuntirish model ekranida «?» tugmasi orqali ham mavjud.',
@@ -269,6 +336,11 @@ function paintUI(lang){
   document.getElementById('hCutBody').innerHTML = L.hCutBody;
   document.getElementById('hFlowBody').innerHTML = L.hFlowBody;
   document.getElementById('hDocsBody').innerHTML = L.hDocsBody;
+  document.getElementById('tdIlk').textContent = L.tdIlk;
+  document.getElementById('hStartT').textContent = L.hStartT;
+  document.getElementById('hStartBody').innerHTML = L.hStartBody;
+  document.getElementById('hIlkT').textContent = L.hIlkT;
+  document.getElementById('hIlkBody').innerHTML = L.hIlkBody;
   document.getElementById('hSetBody').innerHTML = L.hSetBody;
 }
 const tmkLang = TmkLang.initChild(paintUI);
