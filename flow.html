@@ -104,6 +104,8 @@ aside.detail.closed{transform:translateX(calc(100% + 24px));opacity:0;pointer-ev
 .frame{cursor:pointer}
 .frame:hover rect{stroke:var(--accent)}
 .node{cursor:pointer;transition:opacity .15s}
+.ilkbadge path{stroke-width:1.4}.ilkbadge.ea path{fill:#C9302A;stroke:#fff}.ilkbadge.ec path{fill:#EAF2FF;stroke:#2362C0}
+.ilkbadge text{font:700 10px system-ui,sans-serif}.ilkbadge.ea text{fill:#fff}.ilkbadge.ec text{fill:#2362C0}
 .eg{transition:opacity .15s}
 .node rect.box{fill:var(--node);stroke:var(--node-line);stroke-width:1.2}
 .node .t{font:700 11.5px var(--mono);fill:var(--ink)}
@@ -934,6 +936,11 @@ NODES.forEach(([id,tag,x,y,w,h,lab,kind])=>{
   g.addEventListener('mouseenter',()=>{clearTimeout(hT);hT=setTimeout(()=>{if(!hlNode&&!active.size)hlEdges(id)},140)});
   g.addEventListener('mouseleave',()=>{clearTimeout(hT);hT=setTimeout(()=>{if(!hlNode)applyFilter()},140)});
   nodeEls[id]={g,tag,x,y,w,h,kind,lab};
+  // значок блокировки: красный щит — аппарат блокируется, синий контурный — на нём датчик или условие блокировки
+  const ro=(window.ILK&&tag)?window.ILK.role(tag):'';
+  if(ro){const b=el('g',{class:'ilkbadge '+ro,transform:`translate(${x+w-3},${y+3})`},g);
+    const ti=el('title',{},b);ti.textContent=ro==='ea'?'Блокировка: аппарат блокируется':'На аппарате датчик или условие блокировки';
+    el('path',{d:'M0,-9 L7,-6 L7,1 Q7,7 0,10 Q-7,7 -7,1 L-7,-6 Z'},b);const t=el('text',{x:0,y:4,'text-anchor':'middle'},b);t.textContent=ro==='ea'?'!':'i'}
 });
 const REGB={
   'TK-11102':'135–145 °C · 35–85 %','TK-11105':'135–145 °C · 25–85 %','VE-12201':'135–145 °C · 25–85 %',

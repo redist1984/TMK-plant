@@ -3,9 +3,9 @@
 (function(g){
   var T={
     ru:{title:'Блокировки',cause:'Если',effect:'То',by:'Обход (байпас)',rs:'Сброс',all:'Все блокировки аппарата ▸',verify:'Логику уточнить по чертежу.',sheet:'Лист',
-        hint:'Автоматическая защита этого аппарата: при каком условии он остановится, включится или повлияет на другое оборудование.'},
+        hint:'Автоматическая защита этого аппарата: при каком условии он остановится, включится или повлияет на другое оборудование.',ea:'Этот аппарат БЛОКИРУЕТСЯ: автоматика остановит, пустит или закроет его при условии ниже.',ec:'На этом аппарате стоит датчик или условие блокировки. Сам аппарат не блокируется, блокируется другое оборудование.'},
     uz:{title:'Blokirovkalar',cause:'Agar',effect:'Unda',by:'Aylanib o‘tish (baypas)',rs:'Tiklash',all:'Apparatning barcha blokirovkalari ▸',verify:'Mantiq chizma bo‘yicha aniqlanadi.',sheet:'Varaq',
-        hint:'Bu apparatni avtomatik himoya qilish: qanday shartda to‘xtaydi, yoqiladi yoki boshqa jihozga ta’sir qiladi.'}
+        hint:'Bu apparatni avtomatik himoya qilish: qanday shartda to‘xtaydi, yoqiladi yoki boshqa jihozga ta’sir qiladi.',ea:'Bu apparat BLOKLANADI: quyidagi shartda avtomatika uni to‘xtatadi, ishga tushiradi yoki yopadi.',ec:'Bu apparatda blokirovka datchigi yoki sharti turibdi. Apparatning o‘zi bloklanmaydi, boshqa jihoz bloklanadi.'}
   };
   var COL={stop:'#C9302A',trip:'#A3191B',valve:'#2362C0',start:'#23873A',alarm:'#C79A00',info:'#72827D'};
   var css=false;
@@ -26,7 +26,7 @@
   // HTML-блок для карточки аппарата tag
   g.ilkBlock=function(tag,lang){
     var a=items(tag);if(!a.length)return '';
-    style();var t=T[lang==='uz'?'uz':'ru'];
+    style();var t=T[lang==='uz'?'uz':'ru'],role=g.ILK.role(tag);
     return '<div class="ilkb"><div class="eyebrow">'+esc(t.title)+'</div><div style="font-size:12px;color:var(--ink3);margin:2px 0 4px">'+esc(t.hint)+'</div>'+
       a.map(function(it){
         var causes=it.c.slice(0,4).map(function(x){return '<code>'+esc(x[0])+'</code> '+esc(x[1])+(x[2]?' ('+esc(x[2])+')':'')}).join('<br>')+(it.c.length>4?'<br>…':'');

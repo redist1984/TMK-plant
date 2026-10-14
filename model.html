@@ -246,6 +246,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
     <button class="btn" id="bBld" type="button" aria-pressed="false">Здания прозрачные</button>
     <button class="btn" id="bAnim" type="button" aria-pressed="true">Движение потоков</button>
     <button class="btn" id="bKip" type="button" aria-pressed="false" title="Слой КИП: датчики, регулирующие и отсечные клапаны (пробный участок — отделение 111)">КИП</button>
+    <button class="btn" id="bIlk" type="button" aria-pressed="true" title="Значки блокировок: красный щит — аппарат блокируется (получает команду останова, пуска или закрытия), синий контурный щит — на аппарате датчик или условие блокировки. Нажмите на аппарат, чтобы увидеть, по какому условию он блокируется.">⛨ Блокировки</button>
     <button class="btn" id="bLbl" type="button" aria-pressed="true">Подписи</button>
     <button class="btn" id="bWalk" type="button" aria-pressed="false" title="Прогулка от первого лица: W/A/S/D или стрелки — движение, мышь (перетаскивание) — обзор, Q/E — вверх/вниз, Shift — быстрее, Esc — выход">🚶 От первого лица</button>
     <button class="btn" id="bHelp" type="button" title="Вращение — левая кнопка мыши, сдвиг — правая, масштаб — колесо. Нажмите на аппарат или здание, чтобы открыть карточку. Внизу — разрезы: плоскость двигается ползунком, внутреннее устройство аппаратов видно на срезе. «От первого лица» — прогулка по заводу: W/A/S/D или стрелки, мышь — обзор, Q/E — высота, Shift — быстрее, Esc — выход." aria-label="Подсказка по управлению">?</button>
@@ -4067,6 +4068,24 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
   KIP.set=setKip;
  }
 
+ // ---- значки блокировок на оборудовании (данные: interlocks-data.js) ----
+ const ILKB={g:new THREE.Group(),on:true,items:[]};
+ if(window.ILK){
+  scene.add(ILKB.g);
+  const shieldTex=kind=>{const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');
+   const ea=kind==='ea';x.beginPath();x.moveTo(48,6);x.lineTo(86,18);x.lineTo(86,48);x.quadraticCurveTo(86,76,48,92);x.quadraticCurveTo(10,76,10,48);x.lineTo(10,18);x.closePath();
+   x.fillStyle=ea?'#C9302A':'#EAF2FF';x.fill();x.lineWidth=7;x.strokeStyle=ea?'#FFFFFF':'#2362C0';x.stroke();
+   x.fillStyle=ea?'#FFFFFF':'#2362C0';x.font='bold 46px system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(ea?'!':'i',48,52);
+   const t=new THREE.CanvasTexture(c);t.anisotropy=4;return t};
+  const TEX={ea:shieldTex('ea'),ec:shieldTex('ec')};
+  const roles=window.ILK.tags();
+  Object.keys(roles).forEach(tag=>{(byTag[tag]||[]).forEach(o=>{
+    const bb=new THREE.Box3().setFromObject(o);if(bb.isEmpty())return;const c=bb.getCenter(new THREE.Vector3());
+    const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:TEX[roles[tag]],depthTest:false,transparent:true,sizeAttenuation:false}));
+    sp.scale.set(.032,.032,1);sp.position.set(c.x,bb.max.y+.7,c.z);sp.renderOrder=997;sp.userData.ilkTag=tag;ILKB.g.add(sp);ILKB.items.push({sp,o})})});
+  $('bIlk').onclick=()=>{ILKB.on=!ILKB.on;ILKB.g.visible=ILKB.on;$('bIlk').setAttribute('aria-pressed',ILKB.on)};
+ }else{$('bIlk').hidden=true}
+
  // labels
  const lblBox=$('labels'); const LB=[];
  SLBL.forEach(([sec,code,name,X,Y,h])=>{const d=document.createElement('div');d.className='lbl';d.innerHTML=`<b>${esc(code)}</b>${esc(name)}`;d.onclick=()=>focusSec(sec);lblBox.appendChild(d);LB.push({d,p:P(X,Y,h),sec})});
@@ -5685,6 +5704,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    suTick(dt);buTick(dt);
    suGunAnim();suRainAnim();suShotAnim();const vp=suRender();
    const w=vp.w,h=vp.h;
+   if(ILKB.on)ILKB.items.forEach(i=>{let v=true,q=i.o;while(q&&q!==scene){if(!q.visible){v=false;break}q=q.parent}i.sp.visible=v});
    LB.forEach(l=>{tmp.copy(l.p).project(camera);const vis=showL&&tmp.z<1&&Math.abs(tmp.x)<1.1&&Math.abs(tmp.y)<1.1&&(!isolated||l.sec===isolated);l.d.classList.toggle('hide',!vis);if(vis){l.d.style.left=((tmp.x+1)/2*w)+'px';l.d.style.top=((1-tmp.y)/2*h)+'px'}});
  }
  requestAnimationFrame(loop);
@@ -5692,7 +5712,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
  function paintModelUI(lang){
    currentLang=lang; const T=L();
    $('tEyebrow').textContent=T.eyebrow; $('tH1').textContent=T.h1;
-   $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim;$('bKip').textContent=currentLang==='uz'?'KIPiA':'КИП'; $('bLbl').textContent=T.bLbl;$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
+   $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim;$('bKip').textContent=currentLang==='uz'?'KIPiA':'КИП'; $('bLbl').textContent=T.bLbl;$('bIlk').textContent=currentLang==='uz'?'⛨ Blokirovkalar':'⛨ Блокировки';$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
    $('bHelp').title=T.bHelpTitle;
    tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода';$('tabBuild').textContent=lang==='uz'?'Qurilish':'Строительство';if(BU.inited){buBuildPanel();buPaint();buFollowUI();$('buToday').textContent=lang==='uz'?'Bugun':'Сегодня';$('buMore').textContent=(lang==='uz'?'Obyektlar':'Объекты')+(bubar.classList.contains('open')?' ▾':' ▴')} $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
    bCutFab.title=T.tabCut; bCutFab.setAttribute('aria-label',T.tabCut);

@@ -83,6 +83,10 @@ h2.grp small{font:12px var(--mono);color:var(--ink3);font-weight:500}
 .mod b{font-family:var(--mono);color:var(--ink)}
 .eqs{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px;align-items:center}
 .eqs span{font-size:12px;color:var(--ink3)}
+.btn.blk{border-color:var(--k-stop);color:var(--k-stop)}
+.mk{display:inline-flex;gap:14px;flex-wrap:wrap;margin:0 0 10px;font-size:12.5px;color:var(--ink2)}
+.mk b{display:inline-block;min-width:18px;text-align:center;border-radius:4px;padding:0 4px;font-weight:700}
+.mk .r{background:var(--k-stop);color:#fff}.mk .b{border:1.5px solid #2362C0;color:#2362C0}
 .note{margin:0 12px 10px;font-size:12.5px;color:var(--ink2);padding:6px 9px;border-left:3px solid var(--k-alarm);background:var(--panel2);border-radius:4px}
 .warn{margin:0 12px 10px;font-size:12px;color:var(--ink3)}
 .empty{padding:30px 10px;text-align:center;color:var(--ink3)}
@@ -103,6 +107,7 @@ h2.grp small{font:12px var(--mono);color:var(--ink3);font-weight:500}
 </div>
 <div class="scroll" id="sc"><div class="wrap">
   <p class="intro" id="intro"></p>
+  <div class="mk" id="mk"></div>
   <div class="legend" id="leg"></div>
   <p class="count" id="cnt"></p>
   <div id="list"></div>
@@ -125,14 +130,14 @@ const T={
    by:'Байпас',rs:'Сброс',man:'Ручной режим',latch:'запоминается до сброса',eqs:'Аппараты:',show3d:'Показать в 3D',sheet:'Лист',
    shown:n=>'Показано блокировок: '+n,none:'Ничего не найдено. Измените поиск или фильтр.',verify:'Логику этого узла нужно сверить по чертежу перед использованием.',
    act:{stop:'остановить',close:'закрыть',open:'открыть',start:'пустить',forbid:'запретить',switch:'переключить',info:'сигнал'},unit:'Отделение',
-   hideLeg:'Скрыть пояснения'},
+   hideLeg:'Скрыть пояснения',mkA:'аппарат блокируется (получает команду)',mkC:'на аппарате датчик или условие блокировки',mkS:'кнопка аппарата выделена, если он блокируется'},
  uz:{ph:'Qidiruv: pozitsiya, apparat, so‘z',all:'Barcha bo‘limlar',leg:'Qanday o‘qiladi',
    intro:'Blokirovka — avtomatik himoya: «agar mana bu sodir bo‘lsa, avtomatika mana buni bajaradi». Chapda sabab, o‘ngda avtomatika amali. Ma’lumotlar «Blokirovkalarning mantiqiy sxemasi» varaqlaridan olingan (rus tilida).',
    cause:'Agar',effect:'Avtomatika',join:{or:'YOKI',and:'VA','2oo3':'3 tadan 2'},joinSm:{or:'shartlardan istalgani',and:'barcha shartlar birdan','2oo3':'uchta datchikdan kamida ikkitasi'},
    by:'Baypas',rs:'Tiklash',man:'Qo‘lda rejim',latch:'tiklanmaguncha eslab qoladi',eqs:'Apparatlar:',show3d:'3D da ko‘rsatish',sheet:'Varaq',
    shown:n=>'Blokirovkalar: '+n,none:'Hech narsa topilmadi.',verify:'Ishlatishdan oldin mantiqni chizma bo‘yicha tekshirish kerak.',
    act:{stop:'to‘xtatish',close:'yopish',open:'ochish',start:'ishga tushirish',forbid:'taqiqlash',switch:'almashtirish',info:'signal'},unit:'Bo‘lim',
-   hideLeg:'Izohni yashirish'}
+   hideLeg:'Izohni yashirish',mkA:'apparat bloklanadi (buyruq oladi)',mkC:'apparatda blokirovka datchigi yoki sharti bor',mkS:'apparat tugmasi ajratilgan bo‘lsa, u bloklanadi'}
 };
 const kc={stop:'var(--k-stop)',trip:'var(--k-trip)',valve:'var(--k-valve)',start:'var(--k-start)',alarm:'var(--k-alarm)',info:'var(--k-info)'};
 const L=()=>T[lang];
@@ -141,6 +146,7 @@ function fillStatic(){
   const t=L();
   $('q').placeholder=t.ph;$('q').setAttribute('aria-label',t.ph);
   $('intro').textContent=t.intro;
+  $('mk').innerHTML=`<span><b class="r">!</b> ${esc(t.mkA)}</span><span><b class="b">i</b> ${esc(t.mkC)}</span><span>⛨ ${esc(t.mkS)}</span>`;
   const cur=sheet;
   $('sh').innerHTML=`<option value="">${esc(t.all)}</option>`+Object.entries(D.sheets).map(([k,s])=>`<option value="${esc(k)}">${esc(t.unit)} ${esc(s.unit)} · ${esc(s.name)}</option>`).join('');
   $('sh').value=cur;
@@ -166,7 +172,7 @@ function card(it){
   if(it.by)mods.push(`<span class="mod">${esc(t.by)}: <b>${esc(it.by)}</b></span>`);
   if(it.man)mods.push(`<span class="mod">${esc(t.man)}: <b>${esc(it.man)}</b></span>`);
   if(it.rs)mods.push(`<span class="mod">${esc(t.rs)}: <b>${esc(it.rst||'PB-REST')}</b> (${esc(t.latch)})</span>`);
-  const eqb=(it.eq||[]).map(x=>`<button class="btn" type="button" data-tag="${esc(x)}" title="${esc(t.show3d)}">${esc(x)} ▸ 3D</button>`).join('');
+  const eqb=(it.eq||[]).map(x=>{const b=(it.ea||[]).indexOf(x)>=0;return `<button class="btn${b?' blk':''}" type="button" data-tag="${esc(x)}" title="${esc(t.show3d)}">${b?'⛨ ':''}${esc(x)} ▸ 3D</button>`}).join('');
   return `<div class="card${hlTag&&tagMatch(it,hlTag)?' hl':''}" style="--kc:${K}" data-id="${esc(it.id)}">
    <div class="ch"><b>${esc(it.t)}</b><span class="kind">${esc(kd[0])}</span><span class="ids">${esc(it.id)} · ${esc(t.sheet)} ${esc(sheetInfo.dwg)}</span></div>
    <div class="plain">${esc(it.p)}</div>
