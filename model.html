@@ -1321,9 +1321,9 @@ function start(){
  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
  view.appendChild(renderer.domElement);
  const scene=new THREE.Scene();
- const camera=new THREE.PerspectiveCamera(40,1,1,3000);
+ const camera=new THREE.PerspectiveCamera(40,1,.1,3000);   // near .1: with near=1 the walls/roofs got cut away at close zoom and the insides showed through (log depth buffer keeps precision)
  const controls=new THREE.OrbitControls(camera,renderer.domElement);
- controls.enableDamping=true; controls.maxPolarAngle=Math.PI*0.49; controls.minDistance=.5; controls.maxDistance=900;   // wheel zoom is handled below (zoom to cursor, never stalls)
+ controls.enableDamping=true; controls.maxPolarAngle=Math.PI*0.49; controls.minDistance=.3; controls.maxDistance=900;   // wheel zoom is handled below (zoom to cursor, never stalls)
  // One-finger drag pans the camera by default (easier for scanning across
  // the plant than the rotate gesture); the button below switches the SAME
  // one-finger drag to rotate instead, until pressed again. Two-finger
@@ -1918,7 +1918,7 @@ function start(){
    else if(o.k==='mtank'){const lq=cyl(5.8,5.8,3.6,M.liqS,40);lq.position.y=2.9;add(lq)}
    else if(o.k==='cbox'){const lq=new THREE.Mesh(new THREE.BoxGeometry(4.3,1.8,4.3),M.liqS);lq.position.y=1.65;add(lq)}
    else if(o.k==='vcyl'&&o.t==='VE-11302'){const lq=cyl(o.d-.3,o.d-.3,o.h*.7,M.liqAcid,40);lq.position.y=o.h*.35+.02;add(lq)}
-   else if(o.k==='pit111'&&o.t==='VE-11101'){const lq=new THREE.Mesh(new THREE.BoxGeometry(o.sx-.3,o.h*.6,o.sz-.3),M.liqW);lq.position.y=o.h*.3+.1;add(lq)}
+   else if(o.k==='pit111'&&o.t==='VE-11101'){const lq=new THREE.Mesh(new THREE.BoxGeometry(o.sx-.3,o.h*.6,o.sz-.3),M.liqW);lq.position.y=(o.y0||0)+o.h*.3+.1;add(lq)}
    else if(o.k==='box'&&o.t==='VE-11303'){const lq=new THREE.Mesh(new THREE.BoxGeometry(o.sx-.3,o.h*.6,o.sz-.3),M.liqAcid);lq.position.y=o.h*.3+.1;add(lq)}
  }
  const FANS=[]; const CRANES=[]; const LARMS=[];
@@ -5597,7 +5597,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
      camera.position.set(t.x-d.x*8,WALK.eye,t.z-d.z*8);WALK.yaw=Math.atan2(-d.x,-d.z);WALK.pitch=0;
      if(controls.target.distanceTo(HOME.tgt)<2){camera.position.copy(P(5290,2594,WALK.eye));WALK.yaw=Math.PI/2}   // from the overview: start at the main gate (east, by the ABK), facing the plant
      camera.near=.1;camera.updateProjectionMatrix();
-   }else{camera.near=1;camera.updateProjectionMatrix();
+   }else{camera.near=.1;camera.updateProjectionMatrix();
      const f=new THREE.Vector3(-Math.sin(WALK.yaw),0,-Math.cos(WALK.yaw));
      controls.target.copy(camera.position).addScaledVector(f,10);controls.target.y=Math.max(0,camera.position.y-1.5);
      camera.position.addScaledVector(f,-6).add(new THREE.Vector3(0,4,0));controls.enabled=true;controls.update();WALK.keys={}}
@@ -5648,6 +5648,20 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    }
    if(camera.position.y<.3){const k=.3-camera.position.y;camera.position.y+=k;controls.target.y+=k}
    controls.update()},{passive:false,capture:true});}
+
+ // ───── Touch and mouse drag: pan/pinch speed follows the distance to the surface under the screen centre. OrbitControls scales both
+ // by the distance to the orbit target, which after a few gestures sits on the ground far from (or inside) the model:
+ // the view then flew off or hardly moved and the pinch stalled at minDistance. At the start of a gesture (and every
+ // 250 ms during it) the target is slid along the centre ray onto the first surface hit, so the view itself stays put.
+ {const rc=new THREE.Raycaster(),gp=new THREE.Plane(new THREE.Vector3(0,1,0),0),c0=new THREE.Vector2(0,0),pp=new THREE.Vector3();let tp=new Set(),tl=0;
+  const refit=()=>{if(WALK.on||lockedTag||tw)return;rc.setFromCamera(c0,camera);
+   const hit=rc.intersectObjects(pickables,true).find(h=>h.object.isMesh&&h.object.visible&&h.distance>.2&&(cut.m==='off'||cutPlane.distanceToPoint(h.point)>=0));
+   let d=hit?hit.distance:(rc.ray.intersectPlane(gp,pp)?pp.distanceTo(camera.position):controls.target.distanceTo(camera.position));
+   d=Math.max(1,Math.min(400,d));controls.target.copy(camera.position).addScaledVector(rc.ray.direction,d)};
+  const el=renderer.domElement;
+  el.addEventListener('pointerdown',e=>{tp.add(e.pointerId);tl=0;refit()},true);
+  el.addEventListener('pointermove',e=>{if(!tp.has(e.pointerId))return;const n=performance.now();if(n-tl>250){tl=n;refit()}},true);
+  ['pointerup','pointercancel'].forEach(ev=>el.addEventListener(ev,e=>tp.delete(e.pointerId),true))}
  function loop(now){requestAnimationFrame(loop);const dt=Math.min(.05,(now-last)/1000);last=now;
    if(WALK.on){tw=null;walkStep(dt)}else{
    if(tw){const k=Math.min(1,(now-tw.t0)/tw.d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;camera.position.lerpVectors(tw.from.p,tw.to.p,e);controls.target.lerpVectors(tw.from.t,tw.to.t,e);if(k>=1)tw=null}
