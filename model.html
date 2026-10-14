@@ -4088,7 +4088,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
 
  // ---- значки блокировок на оборудовании (данные: interlocks-data.js) ----
  const ILKB={g:new THREE.Group(),on:true,items:[]};
- const ILKS={on:false,alarm:new Set(),stopped:[],tm:[],run:0,flows:new Set(),calls:[],split:[],views:[]};
+ const ILKS={on:false,alarm:new Set(),stopped:[],tm:[],run:0,flows:new Set(),calls:[],split:[],views:[],bld0:null};
  if(window.ILK){
   scene.add(ILKB.g);
   const shieldTex=kind=>{const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');
@@ -4961,7 +4961,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function ilkBarFit(){const b=$('ilkbar'),n=ILKS.split.length;['left','right','top','bottom','width','transform','maxHeight'].forEach(k=>b.style[k]='');if(!n)return;const r=view.getBoundingClientRect(),L=suPaneLayout();
    if(innerWidth<=760){Object.assign(b.style,{top:(r.top+6)+'px',bottom:'auto',maxHeight:Math.round(L.h*.55)+'px'})}else Object.assign(b.style,{left:(r.left+12)+'px',transform:'none',width:Math.max(300,L.w-24)+'px'})}
  function ilkFocus(i){const v=ILKS.views[i];if(!v)return;const c=v.box.getCenter(new THREE.Vector3()),sz=v.box.getSize(new THREE.Vector3());flyTo(c,Math.max(9,Math.max(sz.x,sz.y,sz.z)*2.4+6))}
- function ilkRestore(){ILKS.tm.forEach(clearTimeout);ILKS.tm=[];ILKS.alarm.clear();ILKS.calls.forEach(c=>c.d.remove());ILKS.calls=[];ILKS.flows.clear();if(ILKS.split.length||ILKS.views.length){ILKS.split=[];ILKS.views=[];suPanes();ilkBarFit()}
+ function ilkRestore(){ILKS.tm.forEach(clearTimeout);ILKS.tm=[];ILKS.alarm.clear();ILKS.calls.forEach(c=>c.d.remove());ILKS.calls=[];ILKS.flows.clear();if(ILKS.bld0!==null){const b=ILKS.bld0;ILKS.bld0=null;if(typeof setBldMode==='function')setBldMode(b)}if(ILKS.split.length||ILKS.views.length){ILKS.split=[];ILKS.views=[];suPanes();ilkBarFit()}
    ILKS.stopped.forEach(tag=>(byTag[tag]||[]).forEach(o=>setCold(o,false)));ILKS.stopped=[];
    flowObjs.forEach(f=>{if(f.ilkStop){f.ilkStop=false;if(f.ilkMat){f.tube.material=f.ilkMat;f.ilkMat=null}}});applyFlow();ILKS.run=0}
  function ilkTrigger(){
@@ -4979,6 +4979,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    ILKS.views=cl;ILKS.split=cl.slice(1).map((g,i)=>{const sz=g.box.getSize(new THREE.Vector3()),d=Math.min(70,Math.max(14,sz.length()*1.5)),cam=suCams[i];
      cam.position.copy(g.c).add(new THREE.Vector3(.62,.5,.62).normalize().multiplyScalar(d));cam.lookAt(g.c);
      const nm=g.tags.filter(t=>targets.includes(t)).join(', ')||g.tags.slice(0,3).join(', ');return{e:{n:(g.t?'⛔ ':'')+nm,nu:(g.t?'⛔ ':'')+nm},c:g.c,cam}});
+   if(ILKS.bld0===null){ILKS.bld0=$('bBld').getAttribute('aria-pressed')==='true';if(typeof setBldMode==='function')setBldMode(true)}
    suPanes();ilkBarFit();ilkFocus(0);
    sensors.forEach(t=>ILKS.alarm.add(t));
    out.innerHTML=ilkStep('on',1,'<b>Условие выполнено:</b><br>'+causes,0);
