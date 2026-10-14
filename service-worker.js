@@ -73,6 +73,7 @@ const ASSETS = [
   "ilk-card.js",
   "manifest.json",
   "model.html",
+  "eq-uz.js",
   "settings.html",
   "sec_img/b101_1.jpg",
   "sec_img/b102_1.jpg",

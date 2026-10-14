@@ -368,6 +368,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
 <script src="vendor/three.min.js"></script>
 <script src="vendor/OrbitControls.js"></script>
 <script src="lang.js"></script>
+<script src="eq-uz.js"></script>
 <script src="theme.js"></script>
 <script src="interlocks-data.js"></script>
 <script src="ilk-card.js"></script>
@@ -4227,7 +4228,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    openD(`<div class="eyebrow">${esc(secName(e?e.s:''))}</div><h3>${esc(eName)}</h3>
    <div class="tagline"><span class="tag">${esc(tag)}</span>${o&&o.plan?`<span class="pill ok">${esc(T.byPlan)}${esc(o.plan)}</span>`:''}${o&&o.nso?`<span class="pill ok">${esc(T.byNso)}${esc(o.nso)}</span>`:o&&o.arch?`<span class="pill ok">${esc(T.byArchSection)}</span>`:o&&o.vend?`<span class="pill ok">${esc(T.byVendor)}${esc(o.vend)}</span>${o.approx?`<span class="pill warn">${esc(T.placeApprox)}</span>`:''}`:o&&o.approx?`<span class="pill warn">${esc(T.shapeApprox)}</span>`:`<span class="pill ok">${esc(T.byList)}</span>`}</div>
    <dl class="kv"><dt>${esc(T.inScene)}</dt><dd>${dims}</dd><dt>${esc(T.qtyLabel)}</dt><dd>${esc(e&&e.q||'—')}</dd><dt>${esc(T.massLabel)}</dt><dd>${fmtW(e&&e.w)}</dd></dl>
-   ${e&&e.d.length?`<ul class="specs">${e.d.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+   ${e&&e.d.length?`<ul class="specs">${e.d.map(x=>`<li>${esc(currentLang==='uz'&&window.eqDescU?window.eqDescU(x):x)}</li>`).join('')}</ul>`:''}
    ${(IMGS[tag]||[]).length?`<div class="eyebrow" style="margin-top:12px">${esc(T.eqDrawingsTitle)}</div><div class="gal">${IMGS[tag].map(([f,c],i)=>`<button type="button" data-i="${i}" title="${esc(c)}"><img src="sec_img/${esc(f)}" alt="${esc(c)}" loading="lazy"></button>`).join('')}</div>`:''}
    ${regBlock(regFor(tag))}
    ${window.ilkBlock?window.ilkBlock(tag,currentLang):''}
