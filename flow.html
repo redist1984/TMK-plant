@@ -311,6 +311,14 @@ body.fs-mode aside.detail{top:calc(env(safe-area-inset-top,0px) + 62px)}
     <tbody id="rbody"></tbody></table></div>
 </section>
 
+<section class="table" id="ilkSec" hidden>
+  <div class="thead"><div><h3 id="tH3c">Блокировки оборудования</h3><div class="count" id="ilkcount"></div></div>
+    <div class="filters"><input id="iq" type="search" placeholder="Поиск по блокировкам" aria-label="Поиск по блокировкам"><select id="isec" aria-label="Отделение"></select></div></div>
+  <div class="tbl"><table class="ilktbl">
+    <thead><tr><th id="thIs">Отделение</th><th id="thIn">Блокировка</th><th id="thIc">Причина (условие)</th><th id="thIa">Действие автоматики</th><th id="thIe">Оборудование</th><th id="thIk">Тип</th></tr></thead>
+    <tbody id="ibody"></tbody></table></div>
+</section>
+
 <div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Чертёж"><img id="lbImg" alt=""><div class="hint" id="lbHint"></div><div class="cap" id="lbCap"></div><div class="row"><button type="button" id="lbPrev">←</button><button type="button" id="lbX">Закрыть</button><button type="button" id="lbNext">→</button></div></div>
 <footer id="tFooter">
   Источники: технологические схемы 3147-5G111-03…05, 3147-5G112-03 (листы 1–2), 3147-5G113-03, 3147-5Hg121-02; перечни оборудования 5G111, 5G112, 5G113, 5G122, 5G123, 5G136, 5R114, 5R114.1, 5R115, 5R135; пояснительная записка 3147-5R114-01. Наличие в 3D проверено по модели «Модель всего предприятия 26.6.10.nwd». Массы — по перечням (общая масса позиции). Схема упрощена: показаны основные потоки, без арматуры, КИП и обвязки насосов. Водоочистная станция 131 и деминерализация 132 — по документации поставщика Sichuan Shengjiuyuan (SJY-GY-01…14; Rev.A 2026.5.29); оборотная вода — по регламенту §4.2.10–4.2.12. Потоки сверены с временным технологическим регламентом (раздел 4) и P&ID 3147-5G111/5G112/5G113.
@@ -1183,6 +1191,20 @@ function renderReg(){
   rbody.querySelectorAll('a').forEach(a=>a.onclick=ev=>{ev.preventDefault();selectNode(Object.keys(nodeEls).find(i=>nodeEls[i].tag===a.dataset.t)||a.dataset.t)})}
 rsec.addEventListener('input',renderReg);
 
+
+const isec=document.getElementById('isec'),ibody=document.getElementById('ibody'),iq=document.getElementById('iq');
+function renderIlk(){
+  const D=window.ILK;if(!D)return;const uz=currentLang==='uz';
+  document.getElementById('ilkSec').hidden=false;
+  const cur=isec.value;isec.innerHTML=`<option value="">${uz?'Barcha bo‘limlar':'Все отделения'}</option>`+Object.keys(D.sheets).map(k=>`<option value="${esc(k)}">${esc(D.sheets[k].unit+' · '+D.sheets[k].name)}</option>`).join('');isec.value=cur;
+  const qq=(iq.value||'').trim().toLowerCase();
+  const rows=D.items.filter(it=>(!isec.value||it.sh===isec.value)&&(!qq||JSON.stringify([it.id,it.t,it.p,it.c,it.e,it.eq]).toLowerCase().includes(qq)));
+  const has=t=>Object.keys(nodeEls).some(i=>nodeEls[i].tag===t),tag=t=>has(t)?`<a href="#" data-t="${esc(t)}">${esc(t)}</a>`:`<b>${esc(t)}</b>`;
+  ibody.innerHTML=rows.map(it=>`<tr><td class="mono">${esc(it.sh)}</td><td><b>${esc(it.t)}</b><div style="color:var(--ink2);margin-top:3px">${esc(it.p||'')}</div>${it.v?'<div style="color:#B7791F;margin-top:3px">⚠ Логику сверить по чертежу</div>':''}</td><td>${(it.c||[]).map(c=>`<div>${tag(c[0])} ${esc(c[1])} <span style="color:var(--ink2)">(${esc(c[2])})</span></div>`).join('')||'—'}</td><td>${(it.e||[]).map(e=>`<div>${tag(e[0])} ${esc(e[1])}</div>`).join('')||'—'}</td><td class="mono">${(it.ea||[]).map(tag).join(', ')||'—'}</td><td>${esc((D.kinds[it.k]||[it.k])[0])}</td></tr>`).join('');
+  document.getElementById('ilkcount').textContent=(uz?'Blokirovkalar: ':'Блокировок: ')+rows.length+(uz?' (ma’lumotlar rus tilida)':' · листы «Логическая схема блокировок»');
+  document.getElementById('tH3c').textContent=uz?'Uskunalar blokirovkalari':'Блокировки оборудования';
+  ibody.querySelectorAll('a').forEach(a=>a.onclick=ev=>{ev.preventDefault();selectNode(Object.keys(nodeEls).find(i=>nodeEls[i].tag===a.dataset.t)||a.dataset.t)})}
+isec.onchange=renderIlk;iq.oninput=renderIlk;
 function paintFlowUI(lang){
   currentLang = lang;
   const L = UI[lang] || UI.ru;
@@ -1199,6 +1221,7 @@ function paintFlowUI(lang){
   document.getElementById('tGost').textContent = L.gost;
   document.getElementById('tH3a').textContent = L.h3a;
   document.getElementById('tH3b').textContent = L.h3b;
+  renderIlk();
   q.placeholder = L.searchPh;
   m3d.querySelector('option[value=""]').textContent = L.allPos;
   m3d.querySelector('option[value="1"]').textContent = L.has3d;
