@@ -1183,6 +1183,7 @@ function renderReg(){
   rbody.querySelectorAll('a').forEach(a=>a.onclick=ev=>{ev.preventDefault();selectNode(Object.keys(nodeEls).find(i=>nodeEls[i].tag===a.dataset.t)||a.dataset.t)})}
 rsec.addEventListener('input',renderReg);
 
+
 function paintFlowUI(lang){
   currentLang = lang;
   const L = UI[lang] || UI.ru;
