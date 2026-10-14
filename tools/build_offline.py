@@ -4,7 +4,7 @@
 Запуск:  python3 tools/build_offline.py [--out DIR] [--no-recompress] [--with-pdf --name TMK-plant-offline-pdf.html]
 Результат: DIR/TMK-plant-offline.html (+ DIR/docs_pdf/ — PDF-чертежи, открываются ссылками рядом с html).
 
-Что делает: вкладки (model/flow/pfd/docs/settings/help) вкладываются в index как srcdoc-iframe,
+Что делает: вкладки (model/flow/pfd/interlocks/docs/settings/help) вкладываются в index как srcdoc-iframe,
 скрипты/шрифты/логотип встроены, картинки (sec_img, pfd/scan) лежат base64 в text/plain-блоках
 и превращаются в blob-URL по требованию; service worker и manifest убраны.
 """
@@ -76,7 +76,7 @@ SHIM = '<script>window.A=function(p){try{return parent.__tmkAsset(p)}catch(e){re
 PDF_CLICK = '''<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^="docs_pdf/"]');
 if(!a)return;var u=parent.__tmkAsset(decodeURI(a.getAttribute('href')));if(u&&u.indexOf('blob:')===0){e.preventDefault();window.open(u,'_blank')}});</script>'''
 pages = {}
-for name in ('model', 'flow', 'pfd', 'docs', 'settings', 'help'):
+for name in ('model', 'flow', 'pfd', 'interlocks', 'docs', 'settings', 'help'):
     h = common(inline_scripts(rd(name + '.html')))
     h = h.replace('src="sec_img/${esc(f)}"', 'src="${A(\'sec_img/\'+f)}"')
     h = h.replace("src='sec_img/'+f", "src=A('sec_img/'+f)")
@@ -110,7 +110,7 @@ function page(n){
   for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
   return new TextDecoder('utf-8').decode(u);
 }
-var ids={model:'f-model',flow:'f-flow',pfd:'f-pfd',docs:'f-docs',settings:'f-settings',help:'f-help'};
+var ids={model:'f-model',flow:'f-flow',pfd:'f-pfd',interlocks:'f-ilk',docs:'f-docs',settings:'f-settings',help:'f-help'};
 for(var n in ids)document.getElementById(ids[n]).srcdoc=page(n);
 })();
 </script>'''

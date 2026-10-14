@@ -64,6 +64,7 @@
   <iframe id="f-model" class="on" src="model.html" title="3D-модель"></iframe>
   <iframe id="f-flow" src="flow.html" title="Схема потоков"></iframe>
   <iframe id="f-pfd" src="pfd.html" title="PFD"></iframe>
+  <iframe id="f-ilk" src="interlocks.html" title="Блокировки"></iframe>
   <iframe id="f-docs" src="docs.html" title="Документы"></iframe>
   <iframe id="f-settings" src="settings.html" title="Настройки"></iframe>
   <iframe id="f-help" src="help.html" title="Помощь"></iframe>
@@ -75,6 +76,7 @@
   <button data-t="model" role="tab" aria-selected="true"><span class="ic">◧</span><span class="lbl">3D-модель</span></button>
   <button data-t="flow" role="tab" aria-selected="false"><span class="ic">⌁</span><span class="lbl">Схема потоков</span></button>
   <button data-t="pfd" role="tab" aria-selected="false"><span class="ic">▦</span><span class="lbl">PFD</span></button>
+  <button data-t="interlocks" role="tab" aria-selected="false"><span class="ic">⛨</span><span class="lbl">Блокировки</span></button>
   <button data-t="docs" role="tab" aria-selected="false"><span class="ic">▤</span><span class="lbl">Документы</span></button>
   <button data-t="settings" role="tab" aria-selected="false"><span class="ic">⚙</span><span class="lbl">Настройки</span></button>
   <button data-t="help" role="tab" aria-selected="false"><span class="ic">?</span><span class="lbl">Помощь</span></button>
@@ -84,7 +86,7 @@
 <script src="theme.js"></script>
 <script>
 const btns = document.querySelectorAll('nav.tabs button');
-const frames = { model: document.getElementById('f-model'), flow: document.getElementById('f-flow'), pfd: document.getElementById('f-pfd'), docs: document.getElementById('f-docs'), settings: document.getElementById('f-settings'), help: document.getElementById('f-help') };
+const frames = { model: document.getElementById('f-model'), flow: document.getElementById('f-flow'), pfd: document.getElementById('f-pfd'), interlocks: document.getElementById('f-ilk'), docs: document.getElementById('f-docs'), settings: document.getElementById('f-settings'), help: document.getElementById('f-help') };
 function showTab(t){
   btns.forEach(x=>x.setAttribute('aria-selected', x.dataset.t===t ? 'true':'false'));
   Object.entries(frames).forEach(([k,f])=>f.classList.toggle('on', k===t));
@@ -103,7 +105,7 @@ const UI = {
     sync: 'Проверить обновления',
     offline: 'Автономный режим — часть данных может не загрузиться',
     tabs: 'Разделы приложения',
-    model: '3D-модель', flow: 'Схема потоков', pfd: 'PFD', docs: 'Документы', settings: 'Настройки', help: 'Помощь',
+    model: '3D-модель', flow: 'Схема потоков', pfd: 'PFD', ilk: 'Блокировки', docs: 'Документы', settings: 'Настройки', help: 'Помощь',
     helpTitle: 'Помощь',
   },
   uz: {
@@ -111,7 +113,7 @@ const UI = {
     sync: 'Yangilanishlarni tekshirish',
     offline: 'Oflayn rejim — ba’zi ma’lumotlar yuklanmasligi mumkin',
     tabs: 'Ilova bo‘limlari',
-    model: '3D-model', flow: 'Oqim sxemasi', pfd: 'PFD', docs: 'Hujjatlar', settings: 'Sozlamalar', help: 'Yordam',
+    model: '3D-model', flow: 'Oqim sxemasi', pfd: 'PFD', ilk: 'Blokirovkalar', docs: 'Hujjatlar', settings: 'Sozlamalar', help: 'Yordam',
     helpTitle: 'Yordam',
   }
 };
@@ -124,6 +126,8 @@ function paintUI(lang){
   document.querySelector('[data-t="model"] .lbl').textContent = L.model;
   document.querySelector('[data-t="flow"] .lbl').textContent = L.flow;
   document.querySelector('[data-t="pfd"] .lbl').textContent = L.pfd;
+  document.querySelector('[data-t="interlocks"] .lbl').textContent = L.ilk;
+  document.getElementById('f-ilk').title = L.ilk;
   document.querySelector('[data-t="docs"] .lbl').textContent = L.docs;
   document.querySelector('[data-t="settings"] .lbl').textContent = L.settings;
   document.querySelector('[data-t="help"] .lbl').textContent = L.help;
