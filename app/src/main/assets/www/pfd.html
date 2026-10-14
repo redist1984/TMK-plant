@@ -107,6 +107,8 @@ body.scan:not(.scanwait) #art{visibility:hidden}
 .leg button[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
 .leg i{width:10px;height:10px;border-radius:50%;background:var(--c)}
 #ov{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ilkb{pointer-events:none}.ilkb .ib path{stroke-width:3;vector-effect:non-scaling-stroke}.ilkb .ib.ea path{fill:#C9302A;stroke:#fff}.ilkb .ib.ec path{fill:#EAF2FF;stroke:#2362C0}
+.ilkb .ib text{font:700 22px system-ui,sans-serif}.ilkb .ib.ea text{fill:#fff}.ilkb .ib.ec text{fill:#2362C0}
 .eqz{fill:transparent;stroke:var(--accent);stroke-width:2;stroke-dasharray:10 7;stroke-opacity:.0;vector-effect:non-scaling-stroke;cursor:pointer}
 body.zones .eqz{stroke-opacity:.5}
 .eqz:hover{fill:var(--accent);fill-opacity:.12;stroke-opacity:1}
@@ -246,6 +248,8 @@ body.fs-mode #io{max-height:34%}
 <section id="io" hidden aria-label="Входы и выходы"><div class="ioh"><b id="ioT"></b><span id="ioS"></span><button type="button" id="ioMin"></button><button type="button" id="ioX" aria-label="×">×</button></div><div class="iob" id="iob"></div></section>
 <script src="lang.js"></script>
 <script src="theme.js"></script>
+<script src="interlocks-data.js"></script>
+<script src="ilk-card.js"></script>
 <script src="pfd/pfd-data.js"></script>
 <script src="pfd/symbols.js"></script>
 <script>
@@ -458,6 +462,12 @@ function showSheet(n,keepView){
     const r=mk('rect',{x:e.box[0],y:e.box[1],width:e.box[2]-e.box[0],height:e.box[3]-e.box[1],rx:8,class:'eqz','data-k':'eq','data-tag':e.tag,'data-app':e.app},gz);
   });
   s.st.forEach(x=>{mk('circle',{cx:x.c[0],cy:x.c[1],r:34,class:'stz','data-k':'st','data-id':x.id},gz)});
+  // значки блокировок: красный щит — аппарат блокируется, синий контурный — на нём датчик или условие блокировки
+  if(window.ILK){const gi=mk('g',{class:'ilkb'},ov);s.eq.forEach(e=>{const ro=window.ILK.role(e.app);if(!ro)return;
+    const cx=e.box[2]-4,cy=e.box[1]+4,g=mk('g',{class:'ib '+ro,transform:`translate(${cx},${cy})`},gi);
+    const ti=mk('title',{},g);ti.textContent=ro==='ea'?(lang==='uz'?'Blokirovka: apparat bloklanadi':'Блокировка: аппарат блокируется'):(lang==='uz'?'Blokirovka datchigi yoki sharti shu apparatda':'На аппарате датчик или условие блокировки');
+    mk('path',{d:'M0,-20 L16,-14 L16,2 Q16,16 0,23 Q-16,16 -16,2 L-16,-14 Z'},g);
+    const t=mk('text',{x:0,y:7,'text-anchor':'middle'},g);t.textContent=ro==='ea'?'!':'i'})}
   mk('g',{class:'hl',id:'hl'},ov);
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',String(+b.dataset.n===n)));
   if(!keepView)fit(false);
@@ -621,11 +631,13 @@ function openEqCard(e,shn){
      ${regRows?`<div class="eyebrow">${esc(T.reg)}</div><table class="regmini"><thead><tr><th>${esc(T.regP)}</th><th>${esc(T.regV)}</th></tr></thead><tbody>${regRows}</tbody></table>`:''}`:`<p class="note">${esc(T.noCard)}</p>`}
    ${e.streams.length?`<div class="eyebrow">${esc(T.streams)}</div><div class="chips">${e.streams.map(id=>`<button type="button" data-st="${id}">${id}</button>`).join('')}</div>`:''}
    ${others.length?`<div class="eyebrow">${esc(T.also)}</div><div class="chips">${others.map(x=>`<button type="button" data-sh="${x.sheet}" data-tag="${esc(x.eq.tag)}">${esc(T.sheet)} ${x.sheet}</button>`).join('')}</div>`:''}
+   ${window.ilkBlock?window.ilkBlock(e.app,lang):''}
    <div class="acts"><button class="btn pri" type="button" id="b3d">${esc(T.to3d)}</button><button class="btn" type="button" id="bFlow">${esc(T.toFlow)}</button></div>
    ${e.tag==='TW-11304'?`<p class="note">${esc(T.tailNote)}</p>`:''}
    <p class="note">${esc(T.src)}${esc(D.meta.code)}, ${esc(nm(D.meta.sheets[shn-1],'name'))}</p>`);
   card.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>selectStream(+b.dataset.st,{zoom:true}));
   card.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>selectEq(b.dataset.tag,{sheet:+b.dataset.sh}));
+  if(window.ilkBind)window.ilkBind(card,e.app,'pfd');
   $('b3d').onclick=()=>goto('model',e.app); $('bFlow').onclick=()=>goto('flow',e.app);
 }
 function openStCard(id){

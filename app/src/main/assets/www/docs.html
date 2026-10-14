@@ -49,10 +49,15 @@ body{position:relative}
 <h2 id="tH2c"></h2>
 <p class="sub" id="pKip"></p>
 
+<h2 id="tH2i"></h2>
+<p class="sub" id="pIlk"></p>
+<table id="ilktbl"><thead><tr><th id="thIc"></th><th id="thIs"></th><th id="thId"></th></tr></thead><tbody></tbody></table>
+
 <footer id="tFooter">Массу и характеристики оборудования, нормы технологического режима и полный перечень позиций см. во вкладке «Схема потоков». Источник данных — технологические схемы 3147-5G111…5R115, перечни оборудования и временный технологический регламент проекта. Часть исходных PDF (например, чертежи в архивах .rar) в это приложение не вошла — см. пояснение в чате.</footer>
 
 <script src="lang.js"></script>
 <script src="theme.js"></script>
+<script src="interlocks-data.js"></script>
 <script>
 // Known documents get a readable title + drawing number. Any file present
 // in docs_pdf/ that ISN'T in this list (e.g. dropped into the Google Drive
@@ -313,7 +318,21 @@ function paintUI(lang){
     `<tr><td class="mono">${c}</td><td>${lang==='uz'?nu:n}</td><td>${d}</td></tr>`
   ).join('');
   renderPdfList(lang, currentPaths);
+  paintIlk(lang);
   paintAppInfo(lang);
+}
+// Листы «Логическая схема блокировок»: данные — interlocks-data.js, показ — вкладка «Блокировки».
+function paintIlk(lang){
+  const uz = lang==='uz', D = window.ILK; if(!D) return;
+  document.getElementById('tH2i').textContent = uz ? 'Blokirovkalarning mantiqiy sxemalari' : 'Логические схемы блокировок оборудования';
+  document.getElementById('pIlk').textContent = uz
+    ? 'Har bir bo‘lim uchun «Блокировки» yorlig‘ida sabab → oqibat shaklida ko‘rsatilgan (ma’lumotlar rus tilida). Apparat kartochkasida ham «Блокировки» bloki bor.'
+    : 'Блокировки по листам «Логическая схема блокировок» показаны на вкладке «Блокировки» (причина → действие автоматики, простыми словами) и в блоке «Блокировки» карточки аппарата. Чертежи в формате DWG.';
+  document.getElementById('thIc').textContent = uz ? 'Bo‘lim' : 'Отделение';
+  document.getElementById('thIs').textContent = uz ? 'Blokirovkalar soni' : 'Блокировок';
+  document.getElementById('thId').textContent = uz ? 'Chizma' : 'Чертёж';
+  document.querySelector('#ilktbl tbody').innerHTML = Object.entries(D.sheets).map(([k,sh])=>
+    `<tr><td class="mono">${sh.unit}</td><td>${D.items.filter(i=>i.sh===k).length}</td><td>${sh.name} · ${sh.dwg}</td></tr>`).join('');
 }
 
 // Show the app's own version and when the on-device data was last actually
