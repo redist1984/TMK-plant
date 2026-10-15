@@ -1442,7 +1442,7 @@ function start(){
  mk('liqAcid',{color:0xDD6A12,transparent:true,opacity:.75}); mk('liqS',{color:0xB8862D,transparent:true,opacity:.8}); mk('liqW',{color:0x3F8FC9,transparent:true,opacity:.7}); mk('candle',{color:0xEDEDE6,roughness:.9});
  const edgeMat=new THREE.LineBasicMaterial({transparent:true,opacity:.55});
  const undergroundMat=new THREE.LineDashedMaterial({transparent:true,opacity:.85,dashSize:.6,gapSize:.4});
- const SM={}; Object.keys(STREAMS).forEach(k=>{SM[k]={tube:new THREE.MeshStandardMaterial({transparent:true,opacity:.55,roughness:.6}),dot:new THREE.MeshBasicMaterial()}});
+ const SM={}; Object.keys(STREAMS).forEach(k=>{SM[k]={tube:new THREE.MeshStandardMaterial({roughness:.6}),dot:new THREE.MeshBasicMaterial()}});
  const selMat=new THREE.MeshStandardMaterial({roughness:.5,metalness:.2,emissiveIntensity:.35,side:THREE.DoubleSide});
  function applyTheme(){
    scene.background=new THREE.Color(css('--sky'));
@@ -4509,7 +4509,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    $('siWhy').textContent=e?((!uz&&suPhase(e.id,t))||SU_WHY[e.id]||''):'Идёт выдержка по времени: заполняются ёмкости и прогревается оборудование.';
    suSideFill();const fe=$('siFill');if(fe){const tx=[suKpiText(t),suFillList(t)].filter(Boolean).join('\n');fe.textContent=tx;fe.hidden=!tx;fe.style.whiteSpace='pre-line'}}
  // the flows that are starting right now glow, so it is clear what has just been switched on
- const suDim={};function suDimMat(s){if(!suDim[s]){const m=SM[s].tube.clone();m.opacity=.1;m.depthWrite=false;suDim[s]=m}return suDim[s]}
+ const suDim={};function suDimMat(s){if(!suDim[s]){const m=SM[s].tube.clone();m.transparent=true;m.opacity=.1;m.depthWrite=false;suDim[s]=m}return suDim[s]}
  const suGlow={};function glowMat(s){if(!suGlow[s]){const m=SM[s].tube.clone();m.opacity=1;m.emissive=SM[s].tube.color.clone();m.emissiveIntensity=.45;suGlow[s]=m}else{suGlow[s].color.copy(SM[s].tube.color);suGlow[s].emissive.copy(SM[s].tube.color)}return suGlow[s]}
  const SU={on:false,t:0,play:false,spd:'auto',inited:false,ext:[],cold:new Set(),follow:true,focus:null};
  function suInit(){
