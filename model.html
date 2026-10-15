@@ -4175,9 +4175,11 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
 
  // detail drawer
  const detail=$('detail');
- function openD(html){detail.innerHTML=`<button class="close" type="button" id="xd" aria-label="${esc(L().lbClose)}">×</button>`+html;detail.classList.remove('closed');$('xd').onclick=closeD}
+ function openD(html){detail.innerHTML=`<button class="close" type="button" id="xd" aria-label="${esc(L().lbClose)}">×</button>`+html;detail.classList.remove('closed');$('xd').onclick=closeD2}
+ // ✕ / Esc: besides the card, end the department focus (dimmed neighbours and see-through buildings stay on a phone otherwise)
+ function closeD2(){closeD();if(isolated&&!SU.on&&!ILKS.on)unIso(true)}
  function closeD(){detail.classList.add('closed');clearSel();lockedTag=null;unlockCamera()}
- document.addEventListener('keydown',e=>{if(e.key==='Escape')closeD()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeD2()});
  function showEq(tag,o){
    const T=L();
    const e=EQ[tag]; o=o||E.find(x=>x.t===tag);
@@ -4278,7 +4280,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    lockedTag=null;unlockCamera();
    secSel.value=k;
    isolated=k; const objs=bySec[k]||[];
-   if(BLD.some(b=>b.sec===k))setBldMode(true);
+   if(BLD.some(b=>b.sec===k)){if(bld0===null)bld0=$('bBld').getAttribute('aria-pressed')==='true';setBldMode(true)}
    cutObjSearch.value='';fillCutObj();
    allObj.forEach(o=>{const on=o.userData&&o.userData.sec?o.userData.sec===k:objs.includes(o);setDim(o,!on)});
    const box=new THREE.Box3(); objs.forEach(o=>box.expandByObject(o));
@@ -4298,7 +4300,8 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  const dimCache=new Map();
  function dimMat(m){if(dimCache.has(m))return dimCache.get(m);const d=m.clone();d.transparent=true;d.opacity=Math.min(m.opacity??1,.12);d.depthWrite=false;dimCache.set(m,d);return d}
  function setDim(o,dim){o.traverse(c=>{if(c.isMesh){if(!c.userData.base)c.userData.base=c.material;c.userData.dimmed=dim;if(c.material===selMat)return;c.material=dim?dimMat(c.userData.base):(c.userData.cold?coldMat(c.userData.base):c.userData.base)}else if(c.isLine){c.visible=!dim}});o.userData.dim=dim}
- function unIso(){isolated=null;secSel.value='';allObj.forEach(o=>setDim(o,false));flyTo(HOME.tgt,null,HOME.pos);lockedTag=null;unlockCamera();cutObjSearch.value='';fillCutObj()}
+ let bld0=null; // building mode before the focus on a department: restored when the focus is closed (✕ / Esc / whole plant)
+ function unIso(noFly){isolated=null;if(bld0!==null){const b=bld0;bld0=null;if(!SU.on&&!ILKS.on)setBldMode(b)}secSel.value='';allObj.forEach(o=>setDim(o,false));if(noFly!==true)flyTo(HOME.tgt,null,HOME.pos);lockedTag=null;unlockCamera();cutObjSearch.value='';fillCutObj()}
  // camera tween
  let tw=null;
  function flyTo(target,dist,pos){const from={p:camera.position.clone(),t:controls.target.clone()};
