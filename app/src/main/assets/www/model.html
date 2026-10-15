@@ -1442,7 +1442,7 @@ function start(){
  mk('liqAcid',{color:0xDD6A12,transparent:true,opacity:.75}); mk('liqS',{color:0xB8862D,transparent:true,opacity:.8}); mk('liqW',{color:0x3F8FC9,transparent:true,opacity:.7}); mk('candle',{color:0xEDEDE6,roughness:.9});
  const edgeMat=new THREE.LineBasicMaterial({transparent:true,opacity:.55});
  const undergroundMat=new THREE.LineDashedMaterial({transparent:true,opacity:.85,dashSize:.6,gapSize:.4});
- const SM={}; Object.keys(STREAMS).forEach(k=>{SM[k]={tube:new THREE.MeshStandardMaterial({roughness:.6}),dot:new THREE.MeshBasicMaterial()}});
+ const SM={}; Object.keys(STREAMS).forEach(k=>{SM[k]={tube:new THREE.MeshStandardMaterial({transparent:true,opacity:.55,roughness:.6}),dot:new THREE.MeshBasicMaterial()}});
  const selMat=new THREE.MeshStandardMaterial({roughness:.5,metalness:.2,emissiveIntensity:.35,side:THREE.DoubleSide});
  function applyTheme(){
    scene.background=new THREE.Color(css('--sky'));
@@ -5512,9 +5512,10 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
  const tmp=new THREE.Vector3(); let last=performance.now();
  // LITE: отсечение по размеру на экране. Мелкие детали и контуры (LineSegments) скрываются через layers.mask=0
  // (не трогает .visible, поэтому разрезы, изоляция, блокировки и пуск работают как раньше). Обход порциями.
+ // InstancedMesh не отсекаем: boundingSphere у него от одного экземпляра, а не от всего набора, и опоры/окна пропадали бы целиком по расстоянию до нуля координат.
  const LC={list:null,i:0,v:new THREE.Vector3(),off:false};
  function liteCull(){
-   if(!LC.list){LC.list=[];scene.traverse(o=>{if((o.isMesh||o.isLine)&&o.geometry&&!o.userData.kipOwner&&o.parent!==scene)LC.list.push(o)});LC.list.forEach(o=>{if(!o.geometry.boundingSphere)o.geometry.computeBoundingSphere()})}
+   if(!LC.list){LC.list=[];scene.traverse(o=>{if((o.isMesh||o.isLine)&&!o.isInstancedMesh&&o.geometry&&!o.userData.kipOwner&&o.parent!==scene)LC.list.push(o)});LC.list.forEach(o=>{if(!o.geometry.boundingSphere)o.geometry.computeBoundingSphere()})}
    const all=LC.list,full=spl().length>0;
    if(full){if(!LC.off){LC.off=true;all.forEach(o=>{o.layers.mask=1})}return}
    LC.off=false;
