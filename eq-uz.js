@@ -345,6 +345,7 @@ window.EQ_UZ={
 "93–98,5 % H₂SO₄": "93–98,5 % H₂SO₄",
 "Прямоугольный, V = 13,2 м³": "To‘g‘ri to‘rtburchak, V = 13,2 m³",
 "▸ По 5G123-04: бетонный, 3,0 × 2,0 × H 2,2 м (строительные чертежи не найдены)": "▸ 5G123-04 bo‘yicha: beton, 3,0 × 2,0 × H 2,2 m (qurilish chizmalari topilmadi)",
+"▸ По 5G123-05 (VE-030603): в юго-западном углу обвалования отделения 123, внутри стены, ось 1,7 м от западной стены; чертёж 3147-5G123-05": "▸ 5G123-05 (VE-030603) bo‘yicha: 123-bo‘lim to‘siq devori ichida, janubi-g‘arbiy burchakda, o‘qi g‘arbiy devordan 1,7 m; chizma 3147-5G123-05",
 "Горизонтальный, Q = 50 м³/ч, H = 20 м": "Gorizontal, Q = 50 m³/soat, H = 20 m",
 "98,5 % H₂SO₄": "98,5 % H₂SO₄",
 "▸ Поставщик: Kunming Jiahe, JHA80-2250 (API 610), 11 кВт": "▸ Yetkazib beruvchi: Kunming Jiahe, JHA80-2250 (API 610), 11 kVt",
