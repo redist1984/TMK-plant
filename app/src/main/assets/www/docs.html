@@ -53,11 +53,16 @@ body{position:relative}
 <p class="sub" id="pIlk"></p>
 <table id="ilktbl"><thead><tr><th id="thIc"></th><th id="thIs"></th><th id="thId"></th></tr></thead><tbody></tbody></table>
 
+<h2 id="tH2a2"></h2>
+<p class="sub" id="pAnl"></p>
+<table id="anltbl"><thead><tr><th id="thAs"></th><th id="thAp"></th><th id="thAq"></th></tr></thead><tbody></tbody></table>
+
 <footer id="tFooter">Массу и характеристики оборудования, нормы технологического режима и полный перечень позиций см. во вкладке «Схема потоков». Источник данных — технологические схемы 3147-5G111…5R115, перечни оборудования и временный технологический регламент проекта. Часть исходных PDF (например, чертежи в архивах .rar) в это приложение не вошла — см. пояснение в чате.</footer>
 
 <script src="lang.js"></script>
 <script src="theme.js"></script>
 <script src="interlocks-data.js"></script>
+<script src="analyses-data.js"></script>
 <script>
 // Known documents get a readable title + drawing number. Any file present
 // in docs_pdf/ that ISN'T in this list (e.g. dropped into the Google Drive
@@ -65,6 +70,7 @@ body{position:relative}
 // just with its filename as the title — see renderPdfList() below.
 // title: [ru, uz]; doc (drawing number) doesn't need translating.
 const KNOWN = {
+ "docs_pdf/REG-analytical-control-9.3.pdf": {title:["Временный технологический регламент · п. 9.3 «Аналитический контроль» (таблица 9.3.1, стр. 127–131) — точки отбора проб на вкладке «Анализы»","Vaqtinchalik texnologik reglament · 9.3-band «Analitik nazorat» (9.3.1-jadval, 127–131-betlar) — namuna olish nuqtalari «Tahlillar» yorlig‘ida"],doc:"ООО «TMK Chemicals», производство серной кислоты 500 000 т/год"},
  "docs_pdf/PFD-WZ-POT-262.pdf": {title:["PFD · Технологическая схема материальных потоков (3 листа: дымогазовая, кислотная, паровая системы; пар разделён на ВД — потоки 109–111, и НД — потоки 113, 115, 116) — открыта во вкладке «PFD»","PFD · Moddiy oqimlarning texnologik sxemasi (3 varaq: tutun-gaz, kislota, bug‘ tizimlari; bug‘ YuB 109–111 va PB 113, 115, 116 oqimlariga bo‘lingan) — «PFD» yorlig‘ida ochiladi"],doc:"WZ-POT-262, Rev.A 2025.5 (Yunnan Chemical Design Institute)"},
  "docs_pdf/Construction-schedule-2026.pdf": {title:["График строительно-монтажных работ (по нему — вкладка «Строительство» в 3D-модели)","Qurilish-montaj ishlari jadvali (3D-modeldagi «Qurilish» yorlig‘i shu bo‘yicha)"],doc:"График для работы, MS Project, 2026"},
  "docs_pdf/GP-plant-render.pdf": {title:["Генплан завода — визуализация с экспликацией зданий","Zavod bosh rejasi — binolar eksplikatsiyasi bilan vizualizatsiya"],doc:"рендер генплана"},
@@ -320,6 +326,7 @@ function paintUI(lang){
   ).join('');
   renderPdfList(lang, currentPaths);
   paintIlk(lang);
+  paintAnl(lang);
   paintAppInfo(lang);
 }
 // Листы «Логическая схема блокировок»: данные — interlocks-data.js, показ — вкладка «Блокировки».
@@ -334,6 +341,21 @@ function paintIlk(lang){
   document.getElementById('thId').textContent = uz ? 'Chizma' : 'Чертёж';
   document.querySelector('#ilktbl tbody').innerHTML = Object.entries(D.sheets).map(([k,sh])=>
     `<tr><td class="mono">${sh.unit}</td><td>${D.items.filter(i=>i.sh===k).length}</td><td>${sh.name} · ${sh.dwg}</td></tr>`).join('');
+}
+
+// Аналитический контроль: данные — analyses-data.js (временный технологический регламент, п. 9.3), показ — вкладка «Анализы».
+function paintAnl(lang){
+  const uz = lang==='uz', D = window.ANL; if(!D) return;
+  document.getElementById('tH2a2').textContent = uz ? 'Analitik nazorat (namuna olish nuqtalari)' : 'Аналитический контроль (точки отбора проб)';
+  document.getElementById('pAnl').textContent = uz
+    ? 'Vaqtinchalik texnologik reglamentning 9.3-bandi (9.3.1-jadval, 127–131-betlar). Nuqtalar «Tahlillar» yorlig‘ida, 3D-modelda va oqim sxemasida kolba belgisi bilan ko‘rsatilgan; apparat kartochkasida ham «Tahlillar» bloki bor.'
+    : 'Временный технологический регламент, п. 9.3 (таблица 9.3.1, стр. 127–131). Точки показаны на вкладке «Анализы», в 3D-модели и на схеме потоков значком-колбой; в карточке аппарата есть блок «Анализы».';
+  document.getElementById('thAs').textContent = uz ? 'Bosqich (bo‘lim)' : 'Стадия (отделение)';
+  document.getElementById('thAp').textContent = uz ? 'Nuqtalar soni' : 'Точек отбора';
+  document.getElementById('thAq').textContent = uz ? 'Pozitsiyalar' : 'Позиции по регламенту';
+  document.querySelector('#anltbl tbody').innerHTML = Object.entries(D.sections).map(([k,sh])=>{
+    const pts = D.points.filter(x=>x.s===k);
+    return `<tr><td>${sh.unit} · ${sh.name}</td><td>${pts.length}</td><td class="mono">${[...new Set(pts.map(x=>x.pos))].join(', ')}</td></tr>`}).join('');
 }
 
 // Show the app's own version and when the on-device data was last actually
