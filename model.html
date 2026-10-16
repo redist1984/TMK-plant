@@ -4133,6 +4133,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    sp.scale.set(.038,.038,1);sp.position.set(c.x+1.2,bb.max.y+2.4,c.z);sp.renderOrder=996;sp.userData.anlTag=tag;ANLB.g.add(sp);ANLB.items.push({sp,objs,tag})});
   $('bAnl').onclick=()=>{ANLB.on=!ANLB.on;ANLB.g.visible=ANLB.on;$('bAnl').setAttribute('aria-pressed',ANLB.on)};
   // «Показать в 3D» с вкладки «Анализы»: включить слой, подсветить значок, подлететь к аппарату (tag) или показать весь завод
+  window.anlInfo=()=>ANLB.items.map(i=>({tag:i.tag,n:i.objs.length,p:i.sp.position.toArray()}));
   window.anlFocus=(tag,all)=>{ANLB.on=true;ANLB.g.visible=true;$('bAnl').setAttribute('aria-pressed','true');ANLB.pulse={tag:all?'*':tag,t:performance.now()};
    if(all){if(typeof isolated!=='undefined'&&isolated)unIso();flyTo(HOME.tgt,null,HOME.pos)}};
  }else{$('bAnl').hidden=true}

@@ -946,8 +946,8 @@ NODES.forEach(([id,tag,x,y,w,h,lab,kind])=>{
     const ti=el('title',{},b);ti.textContent=ro==='ea'?'Блокировка: аппарат блокируется':'На аппарате датчик или условие блокировки';
     el('path',{d:'M0,-9 L7,-6 L7,1 Q7,7 0,10 Q-7,7 -7,1 L-7,-6 Z'},b);const t=el('text',{x:0,y:4,'text-anchor':'middle'},b);t.textContent=ro==='ea'?'!':'i'}
   // значок точки отбора проб (регламент п. 9.3): зелёная колба, число — сколько точек на аппарате; слева сверху, чтобы не закрывать щит блокировки
-  const an=(window.ANL&&tag)?window.ANL.byEq(tag):[];
-  if(an.length){const b=el('g',{class:'anlbadge',transform:`translate(${x+3},${y+3})`},g);
+  const an=(window.ANL&&tag&&!document.querySelector('.anlbadge[data-tag="'+tag+'"]'))?window.ANL.byEq(tag):[]; // у RE-11201 четыре узла-слоя: значок только на первом
+  if(an.length){const b=el('g',{class:'anlbadge','data-tag':tag,transform:`translate(${x+3},${y+3})`},g);
     const ti=el('title',{},b);ti.textContent=(currentLang==='uz'?'Namuna olish nuqtalari: ':'Точки отбора проб: ')+an.length;
     el('circle',{r:9},b);el('path',{d:'M-2.5,-6 L2.5,-6 L2.5,-1 L6,5 Q6.5,6.5 5,6.5 L-5,6.5 Q-6.5,6.5 -6,5 L-2.5,-1 Z'},b);const t=el('text',{x:0,y:5.2,'text-anchor':'middle'},b);t.textContent=an.length}
 });
