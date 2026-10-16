@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<link rel="icon" href="icon-192.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Анализы — точки отбора проб</title>
+<script>try{var __t=localStorage.getItem('tmk_theme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
+  --line:#CBD5D2; --accent:#0B6E66; --accent-ink:#FFFFFF;
+  --k-stop:#C9302A; --k-trip:#A3191B; --k-valve:#2362C0; --k-start:#23873A; --k-alarm:#C79A00; --k-info:#72827D;
+  --shadow:0 10px 30px rgba(20,32,29,.16);
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
+    --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C;
+    --k-stop:#FF6B5E; --k-trip:#FF4D4D; --k-valve:#5B9BFF; --k-start:#4CC265; --k-alarm:#F2C230; --k-info:#7F908B;
+    --shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
+  --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C;
+  --k-stop:#FF6B5E; --k-trip:#FF4D4D; --k-valve:#5B9BFF; --k-start:#4CC265; --k-alarm:#F2C230; --k-info:#7F908B;
+  --shadow:0 10px 30px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans);display:flex;flex-direction:column;overflow:hidden}
+button,input,select{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--panel);flex:0 0 auto}
+.btn{white-space:nowrap;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 11px;font-weight:500;font-size:12.5px;cursor:pointer}
+.btn:active{background:var(--panel2)}
+.btn[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent)}
+#q{flex:1 1 180px;min-width:130px;max-width:300px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:6px 10px;font-size:13px}
+#sh{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:6px 8px;font-size:12.5px;max-width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:4px 10px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.chip[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);font-weight:600}
+.scroll{flex:1 1 auto;min-height:0;overflow:auto;padding:12px 10px 28px}
+.wrap{max-width:1100px;margin:0 auto}
+.intro{font-size:13px;color:var(--ink2);margin:0 0 12px}
+.count{font-size:12px;color:var(--ink3);margin:0 0 8px}
+.legend{display:none;margin:0 0 12px;padding:10px 12px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.legend.on{display:block}
+.legend dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 12px;margin:0}
+.legend dt{font:700 12px var(--mono);color:var(--accent)}
+.legend dd{margin:0;font-size:13px}
+.vendor{margin:0 0 10px;padding:8px 10px;border:1px solid var(--line);border-left:4px solid var(--k-alarm);border-radius:8px;background:var(--panel);font-size:12.5px;color:var(--ink2)}
+h2.grp{font-size:14px;margin:16px 0 8px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+h2.grp small{font:12px var(--mono);color:var(--ink3);font-weight:500}
+.card{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:10px;margin:0 0 10px}
+.card.hl{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
+.ch{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;padding:9px 12px 4px}
+.ch b{font-size:14px}
+.ids{font:11.5px var(--mono);color:var(--ink3);margin-left:auto}
+.pt{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;border-radius:11px;background:var(--accent);color:var(--accent-ink);font:700 11px var(--mono);padding:0 7px}
+.plain{padding:0 12px 6px;color:var(--ink2);font-size:13px}
+.tw{overflow-x:auto;padding:0 12px 8px}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:520px}
+th{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3);text-align:left;font-weight:600;padding:4px 8px 4px 0;border-bottom:1px solid var(--line)}
+td{padding:5px 8px 5px 0;border-top:1px dashed var(--line);vertical-align:top}
+td.nm{font-weight:600}td.nr{font:700 12.5px var(--mono);white-space:nowrap;color:var(--accent)}
+.eqs{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px;align-items:center}
+.eqs span{font-size:12px;color:var(--ink3)}
+.note{margin:0 12px 10px;font-size:12.5px;color:var(--ink2);padding:6px 9px;border-left:3px solid var(--k-alarm);background:var(--panel2);border-radius:4px}
+.warn{margin:0 12px 10px;font-size:12px;color:var(--ink3)}
+.empty{padding:30px 10px;text-align:center;color:var(--ink3)}
+@media (max-width:720px){.ids{margin-left:0}table{min-width:0}thead{display:none}tr{display:block;border-top:1px dashed var(--line);padding:6px 0}td{display:block;border:0;padding:1px 0}td.nm{font-size:13px}td:nth-child(2),td:nth-child(3),td:nth-child(4){display:inline-block;margin-right:12px;color:var(--ink2)}td:nth-child(4){display:block}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <input id="q" type="search" autocomplete="off">
+  <select id="sh"></select>
+  <button class="btn" id="bAll3d" type="button"></button>
+</div>
+<div class="scroll" id="sc"><div class="wrap">
+  <p class="intro" id="intro"></p>
+  <p class="count" id="cnt"></p>
+  <div id="list"></div>
+</div></div>
+
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script src="analyses-data.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const D=window.ANL;
+let lang='ru',sec='',query='',hlTag='';
+// Интерфейс на двух языках; данные точек (из регламента) на русском.
+const T={
+ ru:{ph:'Поиск: позиция, аппарат, параметр',all:'Все стадии',unit:'Отделение',
+  intro:'Точки отбора проб для лабораторного анализа: где берут пробу, что в ней определяют, как часто, какая норма и каким методом. Данные из временного технологического регламента, п. 9.3 (таблица 9.3.1). В 3D-модели точки отмечены зелёными значками с колбой: кнопка «Анализы» на панели модели.',
+  shown:n=>'Точек отбора: '+n,none:'Ничего не найдено. Измените поиск или стадию.',
+  th:['Параметр','Частота','Норма','Метод'],pos:'Позиция по регламенту',who:'Кто контролирует',show3d:'Показать в 3D',eq:'Место на модели:',verify:'Привязку к аппарату нужно сверить по схеме.',
+  all3d:'Все точки в 3D',src:'Источник: '},
+ uz:{ph:'Qidiruv: pozitsiya, apparat, parametr',all:'Barcha bosqichlar',unit:'Bo‘lim',
+  intro:'Laboratoriya tahlili uchun namuna olish nuqtalari: namuna qayerdan olinadi, nima aniqlanadi, qanchalik tez-tez, me’yori va usuli. Ma’lumotlar vaqtinchalik texnologik reglamentning 9.3-bandidan (9.3.1-jadval, rus tilida). 3D-modelda nuqtalar kolbali yashil belgilar bilan ko‘rsatilgan: model panelidagi «Tahlillar» tugmasi.',
+  shown:n=>'Namuna olish nuqtalari: '+n,none:'Hech narsa topilmadi. Qidiruv yoki bosqichni o‘zgartiring.',
+  th:['Parametr','Chastota','Me’yor','Usul'],pos:'Reglament bo‘yicha pozitsiya',who:'Kim nazorat qiladi',show3d:'3D da ko‘rsatish',eq:'Modeldagi joyi:',verify:'Apparatga bog‘lanishni sxema bo‘yicha tekshirish kerak.',
+  all3d:'Barcha nuqtalar 3D da',src:'Manba: '}
+};
+const L=()=>T[lang];
+function fillStatic(){
+  const t=L();
+  $('q').placeholder=t.ph;$('q').setAttribute('aria-label',t.ph);$('intro').textContent=t.intro;
+  $('sh').innerHTML=`<option value="">${esc(t.all)}</option>`+Object.entries(D.sections).map(([k,s])=>`<option value="${esc(k)}">${esc(t.unit)} ${esc(s.unit)} · ${esc(s.name)}</option>`).join('');
+  $('sh').value=sec;$('bAll3d').textContent='⚗ '+t.all3d;
+}
+const textOf=x=>[x.id,x.pos,x.eq,x.n,x.note||'',x.p.map(r=>r.join(' ')).join(' ')].join(' ').toLowerCase();
+function card(x){
+  const t=L();
+  return `<div class="card${hlTag&&x.eq===hlTag?' hl':''}" data-id="${esc(x.id)}">
+   <div class="ch"><span class="pt">${esc(x.id.replace('AN-',''))}</span><b>${esc(x.n)}</b><span class="ids">${esc(t.pos)}: ${esc(x.pos)}</span></div>
+   <div class="plain">${esc(t.unit)} ${esc(D.sections[x.s].unit)} · ${esc(D.sections[x.s].name)} · ${esc(t.who)}: ${esc(x.who)}</div>
+   <div class="tw"><table><thead><tr>${t.th.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${x.p.map(r=>`<tr><td class="nm">${esc(r[0])}</td><td>${esc(r[1])}</td><td class="nr">${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}</tbody></table></div>
+   ${x.note?`<div class="note">${esc(x.note)}</div>`:''}
+   ${x.v?`<div class="warn">⚠ ${esc(t.verify)}</div>`:''}
+   <div class="eqs"><span>${esc(t.eq)}</span><button class="btn" type="button" data-tag="${esc(x.eq)}" data-id="${esc(x.id)}" title="${esc(t.show3d)}">⚗ ${esc(x.eq)} ▸ 3D</button></div>
+  </div>`;
+}
+function render(){
+  const t=L(),q=query.trim().toLowerCase();
+  let items=D.points.filter(x=>(!sec||x.s===sec)&&(!q||textOf(x).includes(q)));
+  if(hlTag){const m=items.filter(x=>x.eq===hlTag);items=m.concat(items.filter(x=>!m.includes(x)))}
+  $('cnt').textContent=t.shown(items.length)+' · '+t.src+D.src;
+  if(!items.length){$('list').innerHTML=`<div class="empty">${esc(t.none)}</div>`;return}
+  let html='';
+  const groups=hlTag?[['',items]]:Object.keys(D.sections).map(k=>[k,items.filter(i=>i.s===k)]).filter(g=>g[1].length);
+  for(const [k,arr] of groups){
+    if(k){const s=D.sections[k];html+=`<h2 class="grp">${esc(t.unit)} ${esc(s.unit)} · ${esc(s.name)}</h2>`}
+    html+=arr.map(card).join('');
+  }
+  $('list').innerHTML=html;
+  $('list').querySelectorAll('[data-tag]').forEach(b=>b.onclick=()=>{try{window.parent.postMessage({__tmkGoto:{to:'model',tag:b.dataset.tag,from:'analyses',anl:b.dataset.id}},'*')}catch(e){}});
+}
+$('q').addEventListener('input',e=>{query=e.target.value;hlTag='';render()});
+$('sh').addEventListener('change',e=>{sec=e.target.value;hlTag='';render()});
+$('bAll3d').addEventListener('click',()=>{try{window.parent.postMessage({__tmkGoto:{to:'model',tag:'',from:'analyses',anlAll:1}},'*')}catch(e){}});
+// Переход из карточки аппарата: показать точки этого аппарата первыми.
+window.addEventListener('message',ev=>{const d=ev.data;if(!d||!d.__tmkFocus)return;
+  hlTag=d.tag||'';query='';sec='';$('q').value='';fillStatic();render();
+  const f=$('list').querySelector('.card.hl');$('sc').scrollTo({top:f?Math.max(0,f.offsetTop-70):0,behavior:'smooth'})});
+try{window.parent.postMessage({__tmkReady:'analyses'},'*')}catch(e){}
+function paint(l){lang=l==='uz'?'uz':'ru';fillStatic();render()}
+TmkLang.initChild(paint);TmkTheme.initChild(function(){});
+paint(TmkLang.getLang());
+})();
+</script>
+</body>
+</html>
