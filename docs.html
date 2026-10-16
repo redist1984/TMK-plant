@@ -70,6 +70,7 @@ body{position:relative}
 // just with its filename as the title — see renderPdfList() below.
 // title: [ru, uz]; doc (drawing number) doesn't need translating.
 const KNOWN = {
+ "docs_pdf/REG-analytical-lab-doc.pdf": {title:["Аналитическая лабораторная проектная документация · таблица 3-1 (перечень анализов, частота) и 4-2 (приборы) — вкладка «Анализы»","Analitik laboratoriya loyiha hujjati · 3-1-jadval (tahlillar ro‘yxati, chastota) va 4-2-jadval (asboblar) — «Tahlillar» yorlig‘i"],doc:"Цех серной кислоты, аналитическая лаборатория (проект)"},
  "docs_pdf/REG-analytical-control-9.3.pdf": {title:["Временный технологический регламент · п. 9.3 «Аналитический контроль» (таблица 9.3.1, стр. 127–131) — точки отбора проб на вкладке «Анализы»","Vaqtinchalik texnologik reglament · 9.3-band «Analitik nazorat» (9.3.1-jadval, 127–131-betlar) — namuna olish nuqtalari «Tahlillar» yorlig‘ida"],doc:"ООО «TMK Chemicals», производство серной кислоты 500 000 т/год"},
  "docs_pdf/PFD-WZ-POT-262.pdf": {title:["PFD · Технологическая схема материальных потоков (3 листа: дымогазовая, кислотная, паровая системы; пар разделён на ВД — потоки 109–111, и НД — потоки 113, 115, 116) — открыта во вкладке «PFD»","PFD · Moddiy oqimlarning texnologik sxemasi (3 varaq: tutun-gaz, kislota, bug‘ tizimlari; bug‘ YuB 109–111 va PB 113, 115, 116 oqimlariga bo‘lingan) — «PFD» yorlig‘ida ochiladi"],doc:"WZ-POT-262, Rev.A 2025.5 (Yunnan Chemical Design Institute)"},
  "docs_pdf/Construction-schedule-2026.pdf": {title:["График строительно-монтажных работ (по нему — вкладка «Строительство» в 3D-модели)","Qurilish-montaj ishlari jadvali (3D-modeldagi «Qurilish» yorlig‘i shu bo‘yicha)"],doc:"График для работы, MS Project, 2026"},
@@ -348,8 +349,8 @@ function paintAnl(lang){
   const uz = lang==='uz', D = window.ANL; if(!D) return;
   document.getElementById('tH2a2').textContent = uz ? 'Analitik nazorat (namuna olish nuqtalari)' : 'Аналитический контроль (точки отбора проб)';
   document.getElementById('pAnl').textContent = uz
-    ? 'Vaqtinchalik texnologik reglamentning 9.3-bandi (9.3.1-jadval, 127–131-betlar). Nuqtalar «Tahlillar» yorlig‘ida, 3D-modelda va oqim sxemasida kolba belgisi bilan ko‘rsatilgan; apparat kartochkasida ham «Tahlillar» bloki bor.'
-    : 'Временный технологический регламент, п. 9.3 (таблица 9.3.1, стр. 127–131). Точки показаны на вкладке «Анализы», в 3D-модели и на схеме потоков значком-колбой; в карточке аппарата есть блок «Анализы».';
+    ? 'Vaqtinchalik texnologik reglamentning 9.3-bandi (9.3.1-jadval, 127–131-betlar) va analitik laboratoriya hujjati (3-1 va 4-2-jadvallar). Nuqtalar «Tahlillar» yorlig‘ida, 3D-modelda va oqim sxemasida kolba belgisi bilan ko‘rsatilgan; apparat kartochkasida ham «Tahlillar» bloki bor.'
+    : 'Временный технологический регламент, п. 9.3 (таблица 9.3.1, стр. 127–131) и документ аналитической лаборатории (таблицы 3-1 и 4-2). Точки показаны на вкладке «Анализы», в 3D-модели и на схеме потоков значком-колбой; в карточке аппарата есть блок «Анализы».';
   document.getElementById('thAs').textContent = uz ? 'Bosqich (bo‘lim)' : 'Стадия (отделение)';
   document.getElementById('thAp').textContent = uz ? 'Nuqtalar soni' : 'Точек отбора';
   document.getElementById('thAq').textContent = uz ? 'Pozitsiyalar' : 'Позиции по регламенту';

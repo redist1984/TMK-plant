@@ -73,6 +73,8 @@ td.nm{font-weight:600}td.nr{font:700 12.5px var(--mono);white-space:nowrap;color
 .eqs{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 10px;align-items:center}
 .eqs span{font-size:12px;color:var(--ink3)}
 .note{margin:0 12px 10px;font-size:12.5px;color:var(--ink2);padding:6px 9px;border-left:3px solid var(--k-alarm);background:var(--panel2);border-radius:4px}
+.srcp{font:600 11px var(--sans);border:1px solid var(--line);border-radius:999px;padding:1px 8px;color:var(--ink2);white-space:nowrap}.srcp.lab{border-color:var(--accent);color:var(--accent)}
+.lab2{margin:18px 0 0;padding:10px 12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;font-size:13px}.lab2 h3{margin:0 0 6px;font-size:13.5px}.lab2 table{min-width:0}.lab2 td{padding:3px 8px 3px 0}
 .warn{margin:0 12px 10px;font-size:12px;color:var(--ink3)}
 .empty{padding:30px 10px;text-align:center;color:var(--ink3)}
 @media (max-width:720px){.ids{margin-left:0}table{min-width:0}thead{display:none}tr{display:block;border-top:1px dashed var(--line);padding:6px 0}td{display:block;border:0;padding:1px 0}td.nm{font-size:13px}td:nth-child(2),td:nth-child(3),td:nth-child(4){display:inline-block;margin-right:12px;color:var(--ink2)}td:nth-child(4){display:block}}
@@ -102,14 +104,14 @@ let lang='ru',sec='',query='',hlTag='';
 // Интерфейс на двух языках; данные точек (из регламента) на русском.
 const T={
  ru:{ph:'Поиск: позиция, аппарат, параметр',all:'Все стадии',unit:'Отделение',
-  intro:'Точки отбора проб для лабораторного анализа: где берут пробу, что в ней определяют, как часто, какая норма и каким методом. Данные из временного технологического регламента, п. 9.3 (таблица 9.3.1). В 3D-модели точки отмечены зелёными значками с колбой: кнопка «Анализы» на панели модели.',
+  intro:'Точки отбора проб для лабораторного анализа: где берут пробу, что в ней определяют, как часто, какая норма и каким методом. Данные из временного технологического регламента, п. 9.3 (таблица 9.3.1) и из документа аналитической лаборатории (таблица 3-1): в документе лаборатории нормы не указаны, только частота. В 3D-модели точки отмечены зелёными значками с колбой: кнопка «Анализы» на панели модели.',
   shown:n=>'Точек отбора: '+n,none:'Ничего не найдено. Измените поиск или стадию.',
-  th:['Параметр','Частота','Норма','Метод'],pos:'Позиция по регламенту',who:'Кто контролирует',show3d:'Показать в 3D',eq:'Место на модели:',verify:'Привязку к аппарату нужно сверить по схеме.',
+  th:['Параметр','Частота','Норма','Метод'],std:'Стандарты анализа',eqp:'Приборы лаборатории',qty:'шт.',pos:'Позиция по регламенту',who:'Кто контролирует',show3d:'Показать в 3D',eq:'Место на модели:',verify:'Привязку к аппарату нужно сверить по схеме.',
   all3d:'Все точки в 3D',src:'Источник: '},
  uz:{ph:'Qidiruv: pozitsiya, apparat, parametr',all:'Barcha bosqichlar',unit:'Bo‘lim',
-  intro:'Laboratoriya tahlili uchun namuna olish nuqtalari: namuna qayerdan olinadi, nima aniqlanadi, qanchalik tez-tez, me’yori va usuli. Ma’lumotlar vaqtinchalik texnologik reglamentning 9.3-bandidan (9.3.1-jadval, rus tilida). 3D-modelda nuqtalar kolbali yashil belgilar bilan ko‘rsatilgan: model panelidagi «Tahlillar» tugmasi.',
+  intro:'Laboratoriya tahlili uchun namuna olish nuqtalari: namuna qayerdan olinadi, nima aniqlanadi, qanchalik tez-tez, me’yori va usuli. Ma’lumotlar vaqtinchalik texnologik reglamentning 9.3-bandidan (9.3.1-jadval) va analitik laboratoriya hujjatidan (3-1-jadval, me’yorlar yo‘q, faqat chastota; rus tilida). 3D-modelda nuqtalar kolbali yashil belgilar bilan ko‘rsatilgan: model panelidagi «Tahlillar» tugmasi.',
   shown:n=>'Namuna olish nuqtalari: '+n,none:'Hech narsa topilmadi. Qidiruv yoki bosqichni o‘zgartiring.',
-  th:['Parametr','Chastota','Me’yor','Usul'],pos:'Reglament bo‘yicha pozitsiya',who:'Kim nazorat qiladi',show3d:'3D da ko‘rsatish',eq:'Modeldagi joyi:',verify:'Apparatga bog‘lanishni sxema bo‘yicha tekshirish kerak.',
+  th:['Parametr','Chastota','Me’yor','Usul'],std:'Tahlil standartlari',eqp:'Laboratoriya asboblari',qty:'dona',pos:'Reglament bo‘yicha pozitsiya',who:'Kim nazorat qiladi',show3d:'3D da ko‘rsatish',eq:'Modeldagi joyi:',verify:'Apparatga bog‘lanishni sxema bo‘yicha tekshirish kerak.',
   all3d:'Barcha nuqtalar 3D da',src:'Manba: '}
 };
 const L=()=>T[lang];
@@ -119,11 +121,11 @@ function fillStatic(){
   $('sh').innerHTML=`<option value="">${esc(t.all)}</option>`+Object.entries(D.sections).map(([k,s])=>`<option value="${esc(k)}">${esc(t.unit)} ${esc(s.unit)} · ${esc(s.name)}</option>`).join('');
   $('sh').value=sec;$('bAll3d').textContent='⚗ '+t.all3d;
 }
-const textOf=x=>[x.id,x.pos,x.eq,x.n,x.note||'',x.p.map(r=>r.join(' ')).join(' ')].join(' ').toLowerCase();
+const textOf=x=>[x.id,D.srcs[x.src],x.pos,x.eq,x.n,x.note||'',x.p.map(r=>r.join(' ')).join(' ')].join(' ').toLowerCase();
 function card(x){
   const t=L();
   return `<div class="card${hlTag&&x.eq===hlTag?' hl':''}" data-id="${esc(x.id)}">
-   <div class="ch"><span class="pt">${esc(x.id.replace('AN-',''))}</span><b>${esc(x.n)}</b><span class="ids">${esc(t.pos)}: ${esc(x.pos)}</span></div>
+   <div class="ch"><span class="pt">${esc(x.id.replace('AN-',''))}</span><b>${esc(x.n)}</b><span class="srcp ${x.src}">${esc(D.srcs[x.src])}</span><span class="ids">${esc(t.pos)}: ${esc(x.pos)}</span></div>
    <div class="plain">${esc(t.unit)} ${esc(D.sections[x.s].unit)} · ${esc(D.sections[x.s].name)} · ${esc(t.who)}: ${esc(x.who)}</div>
    <div class="tw"><table><thead><tr>${t.th.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${x.p.map(r=>`<tr><td class="nm">${esc(r[0])}</td><td>${esc(r[1])}</td><td class="nr">${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')}</tbody></table></div>
    ${x.note?`<div class="note">${esc(x.note)}</div>`:''}
@@ -143,6 +145,7 @@ function render(){
     if(k){const s=D.sections[k];html+=`<h2 class="grp">${esc(t.unit)} ${esc(s.unit)} · ${esc(s.name)}</h2>`}
     html+=arr.map(card).join('');
   }
+  if(!hlTag&&!sec&&!q)html+=`<div class="lab2"><h3>${esc(t.std)}</h3><table><tbody>${D.std.map(r=>`<tr><td class="nm">${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}</tbody></table></div><div class="lab2"><h3>${esc(t.eqp)}</h3><table><tbody>${D.equip.map(r=>`<tr><td class="nm">${esc(r[0])}</td><td>${esc(r[1])}</td><td>${r[2]} ${esc(t.qty)}</td></tr>`).join('')}</tbody></table></div>`;
   $('list').innerHTML=html;
   $('list').querySelectorAll('[data-tag]').forEach(b=>b.onclick=()=>{try{window.parent.postMessage({__tmkGoto:{to:'model',tag:b.dataset.tag,from:'analyses',anl:b.dataset.id}},'*')}catch(e){}});
 }
