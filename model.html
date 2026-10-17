@@ -4059,8 +4059,9 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
     if(h.code)return c.startsWith(h.code);if(h.inc)return c.includes(h.inc);
     if(h.s)return o.f.s===h.s&&o.f.a&&(o.f.ea||o.f.a[0])===h.a&&o.f.b&&(o.f.eb||o.f.b[0])===h.b;return false});
   const vruns=fo=>{const p=ptsOf(fo),o=[];for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i];if(Math.abs(a.x-b.x)<.01&&Math.abs(a.z-b.z)<.01&&Math.abs(a.y-b.y)>.9)o.push({a,b,fo,vert:1})}return o};
-  const KB2={tc:r=>tempFl(r),pt:r=>pressureTx(r),pg:r=>gauge(r,false),pgs:r=>gauge(r,false),tg:r=>bimet(r),ph:r=>phProbe(r),fm:r=>magFlowG(r),fv:(r,sp)=>vortex(r,dnOf(sp.ln)||50),
-    hv:(r,sp)=>{const dn=dnOf(sp.ln);return dn&&dn<=50?ctrlValve(r,dn):bflyPn(r)},ev:r=>eValve(r)};
+  const dnNear=dn=>{const k=Object.keys(DN).map(Number);return k.reduce((p,q)=>Math.abs(q-dn)<Math.abs(p-dn)?q:p)};
+  const KB2={tc:r=>tempFl(r),pt:r=>pressureTx(r),pg:r=>gauge(r,false),pgs:r=>gauge(r,false),tg:r=>bimet(r),ph:r=>phProbe(r),fm:r=>magFlowG(r),fv:(r,sp)=>vortex(r,dnNear(dnOf(sp.ln)||50)),
+    hv:(r,sp)=>{const dn=dnOf(sp.ln);return dn&&dn<=50?ctrlValve(r,dnNear(dn)):bflyPn(r)},ev:r=>eValve(r)};
   const eqInner=(sp,h)=>sp.kb==='lvr'?radarLT():sp.kb==='pdt'?dpTxSide():sp.kb==='lvm'?levelChamber(h.H||1.2):(sp.kb==='pt'||sp.kb==='pg'||sp.kb==='tg'||sp.kb==='ph')?KB2[sp.kb](.05,sp):tempFl(0);
   const mkPre=(sp,inner,r,how)=>{const g=new THREE.Group();g.add(inner);g.position.copy(sp.pos);
     if(how==='side')g.rotation.y=Math.atan2(-sp.dir.z,sp.dir.x);
