@@ -4000,6 +4000,10 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
   const sirenPost=H=>{const g=new THREE.Group();
     g.add(cy(.12,.12,.02,KM.flange,0,.01,0,'y',20));g.add(cy(.032,.032,H,KM.body,0,H/2,0,'y',12));
     g.add(bx(.2,.14,.14,KM.hous,0,H+.05,0));g.add(cy(.05,.12,.16,KM.red,.16,H+.05,0,'x',20));g.add(sp(.07,KM.red,0,H+.18,0));return g};
+  // ленточные весы под лентой конвейера (WT-12101A/B, 5N121-02 поз. 2): рама с тремя роликами и тензодатчиками, шкаф с индикатором сбоку
+  const beltScale=()=>{const g=new THREE.Group();
+    g.add(bx(1.5,.1,1.1,KM.body,0,0,0));g.add(bx(.12,.2,1.1,KM.flange,-.55,.12,0));g.add(bx(.12,.2,1.1,KM.flange,.55,.12,0));
+    [-.4,.4].forEach(z=>g.add(bx(.3,.16,.1,KM.act,0,-.12,z)));g.add(bx(.3,.4,.2,KM.hous,0,-.1,.72));g.add(bx(.2,.16,.02,KM.cap,0,-.05,.83));return g};
   // положения приборов по линии: горизонтальный участок трассы, ближайший к отметке EL плана; приборы одной линии распределяются по участку
   const runsOf=fo=>{const p=ptsOf(fo),o=[];for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i],dx=b.x-a.x,dz=b.z-a.z,L=Math.hypot(dx,dz);if(Math.abs(a.y-b.y)<.01&&L>1.6)o.push({a,b,y:a.y,L,ax:Math.abs(dx)>=Math.abs(dz)?'x':'z'})}return o};
   const VALVE_LN={'TV-11207':'PG-11202','TV-11211':'PG-11215','TV-11218':'PG-11213','HV-11201':'PA-11203','HV-11202':'VT-11203','HV-11203':'PG-11204'};
@@ -4066,6 +4070,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
   const mkPre=(sp,inner,r,how)=>{const g=new THREE.Group();g.add(inner);g.position.copy(sp.pos);
     if(how==='side')g.rotation.y=Math.atan2(-sp.dir.z,sp.dir.x);
     else if(how==='valveV')g.rotation.z=Math.PI/2;
+    else if(how==='slope')g.rotation.z=sp.slope;
     else if(how==='diag')g.quaternion.setFromRotationMatrix(sp.basis);
     else if(sp.nrm)g.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),sp.nrm);else if(sp.ax==='z')g.rotation.y=Math.PI/2;
     const top=new THREE.Box3().setFromObject(g),an=sp.pos.clone();an.y=Math.max(top.max.y,sp.pos.y)+.12;sp.pre={g,anchor:an,r}};
@@ -4082,7 +4087,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
         const y=h.y!=null?h.y:(isNaN(ely)?bb.min.y+sz.y*.5:ely);sp.pos=cc.clone().add(dir.clone().multiplyScalar(R)).setY(y);sp.dir=dir;sp.mode='side';
         mkPre(sp,eqInner(sp,h),0,'side');sp.d.push(h.note||('Установка на корпусе аппарата '+h.eq+' на отметке EL+'+y.toFixed(3).replace('.',',')+'; угол по окружности оценён'))}
       else if(h.mode==='free'){const base=h.at?P(h.at[0],h.at[1],0):c.clone().add(new THREE.Vector3((h.dx||0),0,(h.dz||0)));sp.pos=new THREE.Vector3(base.x,h.y||0,base.z);sp.mode='free';
-        mkPre(sp,sp.kb==='ua'?sirenPost(h.H||2.4):gasDet(h.H||2.2,sp.kb==='gtt'),0,'top');sp.d.push(h.note||('Стойка у аппарата '+h.eq+'; место оценено (план газовых детекторов -07 не привязан по координатам)'))}
+        sp.slope=h.slope||0;mkPre(sp,sp.kb==='wt'?beltScale():sp.kb==='ua'?sirenPost(h.H||2.4):gasDet(h.H||2.2,sp.kb==='gtt'),0,sp.kb==='wt'?'slope':'top');sp.d.push(h.note||('Стойка у аппарата '+h.eq+'; место оценено (план газовых детекторов -07 не привязан по координатам)'))}
       return}
     const fos=hostFlows(h);if(!fos.length){sp.skip=true;sp.why='линия '+(sp.ln||'')+' в модели отсутствует';return}
     const rs=[];fos.forEach(fo=>{runsOf(fo).forEach((r,i)=>{r.fo=fo;r.id=flowObjs.indexOf(fo)+'#'+i;rs.push(r)})});
