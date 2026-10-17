@@ -4057,10 +4057,11 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
   const hostFlows=h=>flowObjs.filter(o=>{const c=o.f.code||'';
     if(h.pre)return h.pre.some(p=>c.startsWith(p+'-')||c.startsWith(p+'/')||c===p);
     if(h.code)return c.startsWith(h.code);if(h.inc)return c.includes(h.inc);
-    if(h.s)return o.f.s===h.s&&o.f.a&&o.f.a[0]===h.a&&o.f.b&&o.f.b[0]===h.b;return false});
+    if(h.s)return o.f.s===h.s&&o.f.a&&(o.f.ea||o.f.a[0])===h.a&&o.f.b&&(o.f.eb||o.f.b[0])===h.b;return false});
   const vruns=fo=>{const p=ptsOf(fo),o=[];for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i];if(Math.abs(a.x-b.x)<.01&&Math.abs(a.z-b.z)<.01&&Math.abs(a.y-b.y)>.9)o.push({a,b,fo,vert:1})}return o};
   const KB2={tc:r=>tempFl(r),pt:r=>pressureTx(r),pg:r=>gauge(r,false),pgs:r=>gauge(r,false),tg:r=>bimet(r),ph:r=>phProbe(r),fm:r=>magFlowG(r),fv:(r,sp)=>vortex(r,dnOf(sp.ln)||50),
     hv:(r,sp)=>{const dn=dnOf(sp.ln);return dn&&dn<=50?ctrlValve(r,dn):bflyPn(r)},ev:r=>eValve(r)};
+  const eqInner=(sp,h)=>sp.kb==='lvr'?radarLT():sp.kb==='pdt'?dpTxSide():sp.kb==='lvm'?levelChamber(h.H||1.2):(sp.kb==='pt'||sp.kb==='pg'||sp.kb==='tg'||sp.kb==='ph')?KB2[sp.kb](.05,sp):tempFl(0);
   const mkPre=(sp,inner,r,how)=>{const g=new THREE.Group();g.add(inner);g.position.copy(sp.pos);
     if(how==='side')g.rotation.y=Math.atan2(-sp.dir.z,sp.dir.x);
     else if(how==='valveV')g.rotation.z=Math.PI/2;
@@ -4075,10 +4076,10 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
     if(h.eq){const bb=eqBox(h.eq);if(bb.isEmpty()){sp.skip=true;sp.why='аппарат '+h.eq+' не найден в модели';return}
       const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3());
       if(h.mode==='top'){const x=c.x+(h.dx||0),z=c.z+(h.dz||0),y=roofAt(h.eq,x,z,bb.max.y+5);if(y==null){sp.skip=true;sp.why='крыша '+h.eq+' не найдена';return}
-        sp.pos=new THREE.Vector3(x,y,z);sp.mode='top';mkPre(sp,sp.kb==='lvr'?radarLT():tempFl(0),0,'top');sp.d.push(h.note||('Установка на крыше аппарата '+h.eq+'; место на крыше оценено'))}
+        sp.pos=new THREE.Vector3(x,y,z);sp.mode='top';mkPre(sp,eqInner(sp,h),0,'top');sp.d.push(h.note||('Установка на крыше аппарата '+h.eq+'; место на крыше оценено'))}
       else if(h.mode==='side'){const cc=h.c?P(h.c[0],h.c[1],0):c,R=h.R||Math.max(sz.x,sz.z)/2,a=(90-(h.az||0))*Math.PI/180,dir=new THREE.Vector3(Math.cos(a),0,-Math.sin(a));
         const y=h.y!=null?h.y:(isNaN(ely)?bb.min.y+sz.y*.5:ely);sp.pos=cc.clone().add(dir.clone().multiplyScalar(R)).setY(y);sp.dir=dir;sp.mode='side';
-        mkPre(sp,sp.kb==='pdt'?dpTxSide():sp.kb==='lvm'?levelChamber(h.H||1.2):tempFl(0),0,'side');sp.d.push(h.note||('Установка на корпусе аппарата '+h.eq+' на отметке EL+'+y.toFixed(3).replace('.',',')+'; угол по окружности оценён'))}
+        mkPre(sp,eqInner(sp,h),0,'side');sp.d.push(h.note||('Установка на корпусе аппарата '+h.eq+' на отметке EL+'+y.toFixed(3).replace('.',',')+'; угол по окружности оценён'))}
       else if(h.mode==='free'){const base=h.at?P(h.at[0],h.at[1],0):c.clone().add(new THREE.Vector3((h.dx||0),0,(h.dz||0)));sp.pos=new THREE.Vector3(base.x,h.y||0,base.z);sp.mode='free';
         mkPre(sp,sp.kb==='ua'?sirenPost(h.H||2.4):gasDet(h.H||2.2,sp.kb==='gtt'),0,'top');sp.d.push(h.note||('Стойка у аппарата '+h.eq+'; место оценено (план газовых детекторов -07 не привязан по координатам)'))}
       return}
