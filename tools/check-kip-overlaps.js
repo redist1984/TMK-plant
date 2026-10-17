@@ -6,7 +6,7 @@ const b=await chromium.launch({executablePath:'/opt/pw-browsers/chromium',args:[
 const p=await b.newPage();await p.goto('http://localhost:8765/model_test.html');await p.waitForTimeout(9000);
 const r=await p.evaluate(only=>{const T=window.__T,S=T.scene,K=T.KIP;const out=[];
  const kipSet=new Set();K.g.traverse(o=>kipSet.add(o));
- const owner=m=>{let x=m;while(x){if(x.userData&&x.userData.tag)return x.userData.tag;x=x.parent}return m.userData&&m.userData.flow?('труба '+(m.userData.flow.code||'')).slice(0,40):'?'};
+ const owner=m=>{let x=m;while(x){if(x.userData&&x.userData.tag)return x.userData.tag;x=x.parent}return m.userData&&m.userData.flow?('труба '+(m.userData.flow.code||([m.userData.flow.ea||m.userData.flow.a,m.userData.flow.eb||m.userData.flow.b].map(x=>Array.isArray(x)?x[0]:x).join('>')))).slice(0,40):'?'};
  const isB=m=>{let x=m;while(x){if(x.userData&&x.userData.info&&x.userData.info.kind==='bldg')return true;x=x.parent}return false};
  const meshes=[];S.traverse(o=>{if(o.isMesh&&o.geometry&&o.visible!==false&&!kipSet.has(o)&&!(o.userData&&o.userData.dot)&&!isB(o)){o.updateMatrixWorld(true);const bb=new THREE.Box3().setFromObject(o);if(!bb.isEmpty())meshes.push({o,bb})}});
  const rc=new THREE.Raycaster();const dirs=[new THREE.Vector3(1,0,0),new THREE.Vector3(0,1,0),new THREE.Vector3(0,0,1)];
