@@ -1,4 +1,4 @@
-const CACHE = 'tmk-plant-v131';
+const CACHE = 'tmk-plant-v132';
 const ASSETS = [
   "logo.png",
   "sec_img/eq_EX-13501_2.jpg",
@@ -71,6 +71,7 @@ const ASSETS = [
   "analyses.html",
   "analyses-data.js",
   "anl-card.js",
+  "kip-data.js",
   "interlocks.html",
   "interlocks-data.js",
   "ilk-card.js",
