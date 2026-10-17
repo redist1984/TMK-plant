@@ -4098,9 +4098,13 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
     const rs=[];fos.forEach(fo=>{runsOf(fo).forEach((r,i)=>{r.fo=fo;r.id=flowObjs.indexOf(fo)+'#'+i;rs.push(r)})});
     let run=null;
     if(rs.length){run=rs.map((r,i)=>({r,sc:(isNaN(ely)?-r.L:Math.abs(r.y-ely)*3-r.L*.05)})).sort((a,b)=>a.sc-b.sc)[0].r}
+    if(h.near&&rs.length){const nb=typeof h.near==='string'?eqBox(h.near):null,np=nb&&!nb.isEmpty()?nb.getCenter(new THREE.Vector3()):Array.isArray(h.near)?P(h.near[0],h.near[1],0):null;
+      if(np){const pj=r=>{const d=r.b.clone().sub(r.a),L2=d.lengthSq()||1,t=Math.max(0,Math.min(1,np.clone().sub(r.a).dot(d)/L2));return {t,d:Math.hypot(np.x-(r.a.x+d.x*t),np.z-(r.a.z+d.z*t))}};
+        const rl=rs.filter(r=>r.L>=3),best=(rl.length?rl:rs).map(r=>({r,q:pj(r)})).sort((x,y)=>(x.q.d+(isNaN(ely)?0:Math.abs(x.r.y-ely)*3))-(y.q.d+(isNaN(ely)?0:Math.abs(y.r.y-ely)*3)))[0];run=best.r;sp.nearT=best.q.t}}
     const vr=[];fos.forEach(fo=>vruns(fo).forEach(v=>vr.push(v)));
     const vFirst=!!h.vert||(vr.length&&!rs.length)||(!h.hor&&vr.length&&!isNaN(ely)&&rs.length&&Math.abs(run.y-ely)>1.6&&vr.some(v=>ely>=Math.min(v.a.y,v.b.y)&&ely<=Math.max(v.a.y,v.b.y)));
-    if(vFirst&&vr.length){const v=vr.sort((x,y)=>Math.abs(y.b.y-y.a.y)-Math.abs(x.b.y-x.a.y))[0],lo=Math.min(v.a.y,v.b.y),hi=Math.max(v.a.y,v.b.y),y=Math.max(lo+.5,Math.min(hi-.5,isNaN(ely)?(lo+hi)/2:ely));
+    if(vFirst&&vr.length){const nb=h.near&&typeof h.near==='string'?eqBox(h.near):null,np=nb&&!nb.isEmpty()?nb.getCenter(new THREE.Vector3()):Array.isArray(h.near)?P(h.near[0],h.near[1],0):null,vl=vr.filter(v=>Math.abs(v.b.y-v.a.y)>=1.2);
+      const v=(np?(vl.length?vl:vr).sort((x,y)=>Math.hypot(x.a.x-np.x,x.a.z-np.z)-Math.hypot(y.a.x-np.x,y.a.z-np.z)):vr.sort((x,y)=>Math.abs(y.b.y-y.a.y)-Math.abs(x.b.y-x.a.y)))[0],lo=Math.min(v.a.y,v.b.y),hi=Math.max(v.a.y,v.b.y),y=Math.max(lo+.5,Math.min(hi-.5,isNaN(ely)?(lo+hi)/2:ely));
       sp.fo=v.fo;sp.pos=new THREE.Vector3(v.a.x,y,v.a.z);sp.nrm=new THREE.Vector3(0,0,1);sp.ax='y';sp.vert=1;
       sp.d.push((isNaN(ely)?'Отметка на плане не указана; ':`Отметка по плану EL+${sp.el}; `)+'линия вертикальная — прибор установлен сбоку трубы, высота оценена');
       const r=rOf(sp.fo),b=KB2[sp.kb];if(!b){sp.skip=true;sp.why='модель прибора не определена';return}
@@ -4113,7 +4117,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
       sp.d.push((isNaN(ely)?'Отметка на плане не указана; ':`Отметка по плану EL+${sp.el}; `)+'участок линии наклонный и короткий — прибор установлен на середине участка, положение оценено');
       mkPre(sp,b(r,sp),r,'diag');return}
     sp.fo=run.fo;sp.run=run;(XRUN[run.id]=XRUN[run.id]||[]).push(sp)});
-  Object.values(XRUN).forEach(a=>{a.sort((x,y)=>x.n-y.n);a.forEach((sp,i)=>{const r0=sp.run,ely=parseFloat(sp.el),t=Math.max(.08,Math.min(.92,(i+1)/(a.length+1)+((sp.host&&sp.host.off)||0))),v=r0.a.clone().lerp(r0.b,t);
+  Object.values(XRUN).forEach(a=>{a.sort((x,y)=>x.n-y.n);a.forEach((sp,i)=>{const r0=sp.run,ely=parseFloat(sp.el),t=Math.max(.08,Math.min(.92,sp.nearT!=null?sp.nearT+(i-(a.length-1)/2)*.03+((sp.host&&sp.host.off)||0):(i+1)/(a.length+1)+((sp.host&&sp.host.off)||0))),v=r0.a.clone().lerp(r0.b,t);
     sp.pos=v;sp.ax=r0.ax;const r=rOf(sp.fo),b=KB2[sp.kb];if(!b){sp.skip=true;sp.why='модель прибора не определена';return}
     sp.d.push((isNaN(ely)?'Отметка на плане не указана — ':`Отметка по плану EL+${sp.el}; `)+'прибор на трубе линии, положение вдоль трассы оценено');
     mkPre(sp,b(r,sp),r,'')})});
