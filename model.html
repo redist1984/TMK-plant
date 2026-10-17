@@ -258,7 +258,7 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
     <button class="btn" id="bHome" type="button">Общий вид</button>
     <button class="btn" id="bBld" type="button" aria-pressed="false">Здания прозрачные</button>
     <button class="btn" id="bAnim" type="button" aria-pressed="true">Движение потоков</button>
-    <button class="btn" id="bKip" type="button" aria-pressed="false" title="Слой КИП: датчики, регулирующие и отсечные клапаны (пробный участок — отделение 111)">КИП</button>
+    <button class="btn" id="bKip" type="button" aria-pressed="false" title="Слой КИП: датчики, регулирующие и отсечные клапаны">КИП</button>
     <button class="btn" id="bIlk" type="button" aria-pressed="true" title="Значки блокировок: красный щит — аппарат блокируется (получает команду останова, пуска или закрытия), синий контурный щит — на аппарате датчик или условие блокировки. Нажмите на аппарат, чтобы увидеть, по какому условию он блокируется.">⛨ Блокировки</button>
     <button class="btn" id="bAnl" type="button" aria-pressed="true" title="Значки точек отбора проб: зелёная колба на аппарате, число в ней — сколько точек отбора на этом аппарате по регламенту. Нажмите на аппарат, чтобы увидеть, что и с какой нормой анализируют. Полный список — вкладка «Анализы».">⚗ Анализы</button>
     <button class="btn" id="bLbl" type="button" aria-pressed="true">Подписи</button>
@@ -5457,7 +5457,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    flowObjs.forEach(f=>f.dots.forEach(d=>d.visible=false))}
  // Кнопка «Строительство» временно скрыта (анимация будет настроена позже): для возврата поставить true
  const SHOW_BUILD_TAB=false;
- const SHOW_KIP_BTN=false;   // кнопка «КИП» скрыта (слой и данные сохранены); true — вернуть
+ const SHOW_KIP_BTN=true;   // кнопка «КИП» над 3D-сценой
  $('bKip').hidden=!SHOW_KIP_BTN;
  $('tabBuild').hidden=!SHOW_BUILD_TAB;
  $('tabBuild').onclick=()=>{if(!BU.on){setIlk(false);setBuild(true)}};
