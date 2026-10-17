@@ -4087,7 +4087,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
         const y=h.y!=null?h.y:(isNaN(ely)?bb.min.y+sz.y*.5:ely);sp.pos=cc.clone().add(dir.clone().multiplyScalar(R)).setY(y);sp.dir=dir;sp.mode='side';
         mkPre(sp,eqInner(sp,h),0,'side');sp.d.push(h.note||('Установка на корпусе аппарата '+h.eq+' на отметке EL+'+y.toFixed(3).replace('.',',')+'; угол по окружности оценён'))}
       else if(h.mode==='free'){const base=h.at?P(h.at[0],h.at[1],0):c.clone().add(new THREE.Vector3((h.dx||0),0,(h.dz||0)));sp.pos=new THREE.Vector3(base.x,h.y||0,base.z);sp.mode='free';
-        sp.slope=h.slope||0;mkPre(sp,sp.kb==='wt'?beltScale():sp.kb==='ua'?sirenPost(h.H||2.4):gasDet(h.H||2.2,sp.kb==='gtt'),0,sp.kb==='wt'?'slope':'top');sp.d.push(h.note||('Стойка у аппарата '+h.eq+'; место оценено (план газовых детекторов -07 не привязан по координатам)'))}
+        sp.slope=h.slope||0;mkPre(sp,sp.kb==='wt'?beltScale():sp.kb==='ua'?sirenPost(h.H||2.4):(sp.kb==='lvr'||sp.kb==='lvm')?eqInner(sp,h):gasDet(h.H||2.2,sp.kb==='gtt'),0,sp.kb==='wt'?'slope':'top');sp.d.push(h.note||('Стойка у аппарата '+h.eq+'; место оценено (план газовых детекторов -07 не привязан по координатам)'))}
       return}
     const fos=hostFlows(h);if(!fos.length){sp.skip=true;sp.why='линия '+(sp.ln||'')+' в модели отсутствует';return}
     const rs=[];fos.forEach(fo=>{runsOf(fo).forEach((r,i)=>{r.fo=fo;r.id=flowObjs.indexOf(fo)+'#'+i;rs.push(r)})});
