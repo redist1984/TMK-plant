@@ -10,8 +10,8 @@ android {
         applicationId "com.tmkplant.app"
         minSdk 21
         targetSdk 34
-        versionCode 119
-        versionName "1.128"
+        versionCode 120
+        versionName "1.129"
     }
 
     buildTypes {
