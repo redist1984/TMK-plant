@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<link rel="icon" href="icon-192.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>КИП — перечень приборов</title>
+<script>try{var __t=localStorage.getItem('tmk_theme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
+  --line:#CBD5D2; --accent:#0B6E66; --accent-ink:#FFFFFF; --warn:#C79A00;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
+    --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C; --warn:#F2C230;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B;
+  --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#06201C; --warn:#F2C230;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans);display:flex;flex-direction:column;overflow:hidden}
+button,input,select{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--panel);flex:0 0 auto}
+.btn{white-space:nowrap;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 11px;font-weight:500;font-size:12.5px;cursor:pointer}
+.btn:active{background:var(--panel2)}
+#q{flex:1 1 200px;min-width:130px;max-width:320px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:6px 10px;font-size:13px}
+#dep,#cat{border:1px solid var(--line);background:var(--panel2);border-radius:8px;padding:6px 8px;font-size:12.5px;max-width:100%}
+.scroll{flex:1 1 auto;min-height:0;overflow:auto;padding:12px 10px 28px}
+.wrap{max-width:1100px;margin:0 auto}
+.intro{font-size:13px;color:var(--ink2);margin:0 0 10px}
+.count{font-size:12px;color:var(--ink3);margin:0 0 8px}
+h2.grp{font-size:14px;margin:16px 0 8px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+h2.grp small{font:12px var(--mono);color:var(--ink3);font-weight:500}
+details.it{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:10px;margin:0 0 8px}
+details.it.v{border-left-color:#2362C0}
+details.it>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:110px 1fr auto;gap:2px 10px;align-items:baseline;padding:8px 12px}
+details.it>summary::-webkit-details-marker{display:none}
+.tg{font:700 12.5px var(--mono);color:var(--accent)}
+.nm{font-weight:600;font-size:13.5px}
+.rg{font:12px var(--mono);color:var(--ink2);white-space:nowrap}
+.sub2{grid-column:2/4;font-size:12px;color:var(--ink3)}
+.body{padding:2px 12px 12px}
+.kv{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:3px 14px;margin:6px 0;font-size:12.5px}
+.kv dt{color:var(--ink3)}.kv dd{margin:0}
+h3{font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3);margin:10px 0 2px}
+ul.sp{margin:4px 0;padding-left:18px;font-size:12.5px;color:var(--ink2)}
+.doc{font-size:12px;color:var(--ink3);margin-top:6px}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:11px;color:var(--ink2);margin-right:6px}
+.empty{padding:30px 10px;text-align:center;color:var(--ink3)}
+@media (max-width:620px){details.it>summary{grid-template-columns:1fr}.sub2{grid-column:1}.kv{grid-template-columns:1fr}.kv dt{margin-top:4px}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <input id="q" type="search" autocomplete="off">
+  <select id="dep"></select>
+  <select id="cat"></select>
+</div>
+<div class="scroll" id="sc"><div class="wrap">
+  <p class="intro" id="intro"></p>
+  <p class="count" id="cnt"></p>
+  <div id="list"></div>
+</div></div>
+
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script src="kip-data.js"></script>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const D=window.KIP_DATA||{},PP=D.PP||{},PPU=D.PPU||{};
+let lang='ru',query='',dep='',cat='';
+const DEPS={'111':['Плавление и фильтрация серы','Oltingugurtni eritish va filtrlash'],'112':['Сжигание серы и конверсия','Oltingugurtni yoqish va konversiya'],'113':['Сушка и абсорбция','Quritish va absorbsiya'],'114':['Деаэрация и питательная вода','Deaeratsiya va ozuqa suvi'],'115':['Выработка электроэнергии','Elektr energiyasi ishlab chiqarish'],'121':['Склад серы и подача сырья','Oltingugurt ombori va xomashyo uzatish'],'122':['Резервуары жидкой серы','Suyuq oltingugurt rezervuarlari'],'123':['Склад серной кислоты','Kislota ombori'],'131':['Водоочистная станция','Suv tozalash stansiyasi'],'133':['Оборотная вода, дозировка','Aylanma suv, dozalash'],'134':['Оборотная вода','Aylanma suv'],'136':['Компрессорная, воздух КИПиА','Kompressor xonasi, KIPiA havosi']};
+// вид прибора по префиксу тега: первая буква позиции ISA
+const CATS={T:['Температура','Harorat'],P:['Давление','Bosim'],F:['Расход','Sarf'],L:['Уровень','Sath'],A:['Анализ','Tahlil'],H:['Ручное управление','Qo‘lda boshqaruv'],V:['Арматура','Armatura'],O:['Прочее','Boshqa']};
+const catOf=t=>{const c=t[0];if(/[TPFLAH]/.test(c)){if(c==='H')return 'V';return c}return /^[XSGWZ]/.test(c)?'O':'V'};
+const catOfItem=it=>/^(TV|PV|FV|LV|HV|AV|XV|SV|ESV|HSV|ZV|EV)/.test(it.tag)?'V':catOf(it.tag);
+const srcTxt=s=>{if(typeof s==='string')return s;const k=s[0];return k==='idx'?'Индекс приборов, поз. '+s[1]:k==='ds'?'Технический паспорт, стр. '+s[1]:k==='pl'?'План расположения, лист '+s[1]+(s[2]?', EL '+s[2]:''):s.join(' ')};
+const ITEMS=[];
+(D.d111||[]).forEach(o=>ITEMS.push({tag:o.tag,dep:o.dep||'111',dcs:o.dcs||'',name:o.name,nameu:o.nameu,d:o.d||[],src:(o.src||[]).map(srcTxt),rg:'',ln:''}));
+(D.K112||[]).forEach(r=>ITEMS.push({tag:r[0],dep:'112',dcs:r[1]||'',name:r[6],nameu:'',d:[r[11]].filter(Boolean),src:['3147-5N112-02 «Индекс приборов», поз. '+r[7],'3147-5N112-03 «Технический паспорт», стр. '+r[5],'3147-5N112-09 «План расположения», лист '+r[9]],rg:r[10]||'',ln:[r[3],r[4]].filter(Boolean).join(' · '),el:r[8]}));
+(D.ROWS||[]).forEach(o=>ITEMS.push({tag:o.tag,dep:o.dep,dcs:o.dcs||'',name:o.nm,nameu:'',d:o.d||[],src:o.src||[],rg:o.rg||'',ln:o.ln||'',el:o.el||'',off:(o.host&&o.host.skip)||''}));
+ITEMS.forEach(it=>{it.cat=catOfItem(it);it.pp=PP[it.tag]||PP[it.tag.split('/')[0]]||[]});
+ITEMS.sort((a,b)=>a.dep.localeCompare(b.dep)||a.tag.localeCompare(b.tag,undefined,{numeric:true}));
+const T={
+ ru:{ph:'Поиск: позиция, название, диапазон, линия',all:'Все отделения',allc:'Все виды',unit:'Отделение',
+  intro:'Приборы КИПиА по отделениям с техническими характеристиками из паспортов и индексов приборов. Нажмите на строку, чтобы раскрыть характеристики; кнопка «На 3D» открывает прибор на модели.',
+  shown:n=>'Приборов: '+n+' из '+ITEMS.length,none:'Ничего не найдено. Измените поиск или фильтр.',
+  rg:'Диапазон',ln:'Линия / аппарат',el:'Отметка',dcs:'Позиция в DCS',pas:'Технический паспорт',spec:'Описание',src:'Источник: ',go:'▸ На 3D',off:'Не показан на модели'},
+ uz:{ph:'Qidiruv: pozitsiya, nom, diapazon, liniya',all:'Barcha bo‘limlar',allc:'Barcha turlar',unit:'Bo‘lim',
+  intro:'Bo‘limlar bo‘yicha KIPiA asboblari, pasportlar va asboblar indeksidagi texnik xususiyatlar bilan. Xususiyatlarni ochish uchun qatorni bosing; «3D ga» tugmasi asbobni modelda ochadi.',
+  shown:n=>'Asboblar: '+n+' / '+ITEMS.length,none:'Hech narsa topilmadi. Qidiruv yoki filtrni o‘zgartiring.',
+  rg:'Diapazon',ln:'Liniya / apparat',el:'Belgi',dcs:'DCS pozitsiyasi',pas:'Texnik pasport',spec:'Tavsif',src:'Manba: ',go:'▸ 3D ga',off:'Modelda ko‘rsatilmagan'}
+};
+const L=()=>T[lang],li=i=>lang==='uz'?1:0;
+const depName=d=>(DEPS[d]||[d,d])[li()];
+function fillStatic(){
+  const t=L();
+  $('q').placeholder=t.ph;$('q').setAttribute('aria-label',t.ph);$('intro').textContent=t.intro;
+  const ds=[...new Set(ITEMS.map(i=>i.dep))];
+  $('dep').innerHTML=`<option value="">${esc(t.all)}</option>`+ds.map(d=>`<option value="${esc(d)}">${esc(t.unit)} ${esc(d)} · ${esc(depName(d))}</option>`).join('');
+  $('dep').value=dep;
+  $('cat').innerHTML=`<option value="">${esc(t.allc)}</option>`+Object.keys(CATS).map(k=>`<option value="${k}">${esc(CATS[k][li()])}</option>`).join('');
+  $('cat').value=cat;
+}
+const textOf=it=>[it.tag,it.dcs,it.name,it.nameu,it.rg,it.ln].join(' ').toLowerCase();
+function card(it){
+  const t=L(),nm=(lang==='uz'&&it.nameu)?it.nameu:it.name;
+  const kv=[[t.dcs,it.dcs],[t.rg,it.rg],[t.ln,it.ln],[t.el,it.el?'EL'+(/^[-+]/.test(it.el)?'':'+')+String(it.el).replace('.',','):'']].filter(r=>r[1]);
+  return `<details class="it${it.cat==='V'?' v':''}" data-tag="${esc(it.tag)}"><summary><span class="tg">${esc(it.tag)}</span><span class="nm">${esc(nm)}</span><span class="rg">${esc(it.rg)}</span>${it.ln?`<span class="sub2">${esc(it.ln)}</span>`:''}</summary>
+  <div class="body">${kv.length?`<dl class="kv">${kv.map(r=>`<dt>${esc(r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>`:''}
+  ${it.pp.length?`<h3>${esc(t.pas)}</h3><dl class="kv">${it.pp.map(r=>`<dt>${esc(lang==='uz'&&PPU[r[0]]?PPU[r[0]]:r[0])}</dt><dd>${esc(r[1])}</dd>`).join('')}</dl>`:''}
+  ${it.d.length?`<h3>${esc(t.spec)}</h3><ul class="sp">${it.d.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+  ${it.src.length?`<div class="doc">${esc(t.src)}${it.src.map(esc).join('; ')}</div>`:''}
+  <p style="margin:8px 0 0">${it.off?`<span class="pill">${esc(t.off)}: ${esc(it.off)}</span>`:`<button class="btn" type="button" data-go="${esc(it.tag)}">${esc(t.go)}</button>`}</p></div></details>`;
+}
+function render(){
+  const t=L(),q=query.trim().toLowerCase();
+  const items=ITEMS.filter(x=>(!dep||x.dep===dep)&&(!cat||x.cat===cat)&&(!q||textOf(x).includes(q)));
+  $('cnt').textContent=t.shown(items.length);
+  if(!items.length){$('list').innerHTML=`<div class="empty">${esc(t.none)}</div>`;return}
+  let html='',cur='';
+  for(const it of items){
+    if(it.dep!==cur){cur=it.dep;html+=`<h2 class="grp">${esc(t.unit)} ${esc(cur)} · ${esc(depName(cur))} <small>${items.filter(x=>x.dep===cur).length}</small></h2>`}
+    html+=card(it);
+  }
+  $('list').innerHTML=html;
+  $('list').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{try{window.parent.postMessage({__tmkGoto:{to:'model',tag:b.dataset.go,from:'kip',kip:1}},'*')}catch(e){}});
+}
+$('q').addEventListener('input',e=>{query=e.target.value;render()});
+$('dep').addEventListener('change',e=>{dep=e.target.value;render()});
+$('cat').addEventListener('change',e=>{cat=e.target.value;render()});
+try{window.parent.postMessage({__tmkReady:'kip'},'*')}catch(e){}
+function paint(l){lang=l==='uz'?'uz':'ru';fillStatic();render()}
+TmkLang.initChild(paint);TmkTheme.initChild(function(){});
+paint(TmkLang.getLang());
+})();
+</script>
+</body>
+</html>

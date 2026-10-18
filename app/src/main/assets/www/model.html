@@ -189,11 +189,6 @@ body.su-mode:not(.fs-mode) .subar{position:static;transform:none;width:auto;max-
 body.su-mode.fs-mode .subar{left:0;right:0;bottom:0;transform:none;width:auto;border-radius:0;max-height:42vh}
 body.su-mode.fs-mode #view,body.su-mode.fs-mode .labels{bottom:var(--suH,0px)}
 .ilkbar{max-height:min(48vh,380px);overflow:auto}
-.kipbar{max-height:min(48vh,380px);overflow:auto}
-.kipbar input{flex:1 1 200px;min-width:0;font:500 12.5px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
-.kb-list details{border-top:1px solid var(--line)}.kb-list summary{cursor:pointer;padding:6px 2px;font-weight:600;font-size:13px}.kb-list summary small{font-weight:500;color:var(--ink2);margin-left:6px}
-.kb-list .kb-r{display:grid;grid-template-columns:96px 1fr auto;gap:8px;align-items:baseline;width:100%;text-align:left;background:none;border:0;border-top:1px dashed var(--line);padding:4px 2px;font:500 12.5px var(--sans);color:var(--ink);cursor:pointer}
-.kb-list .kb-r:hover{background:var(--line)}.kb-list .kb-r b{font:600 12px var(--mono,monospace)}.kb-list .kb-r em{font-style:normal;color:var(--ink2);font-size:11.5px;white-space:nowrap}
 .ilkbar select{max-width:100%;min-width:0;flex:1 1 220px}
 .ilk-by{font-size:12.5px;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
 .ilk-out{font-size:13px;line-height:1.4}.ilk-out .st{display:flex;gap:8px;align-items:flex-start;padding:3px 0}
@@ -263,7 +258,8 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
     <button class="btn" id="bHome" type="button">Общий вид</button>
     <button class="btn" id="bBld" type="button" aria-pressed="false">Здания прозрачные</button>
     <button class="btn" id="bAnim" type="button" aria-pressed="false">Движение потоков</button>
-        <button class="btn" id="bIlk" type="button" aria-pressed="false" title="Значки блокировок: красный щит — аппарат блокируется (получает команду останова, пуска или закрытия), синий контурный щит — на аппарате датчик или условие блокировки. Нажмите на аппарат, чтобы увидеть, по какому условию он блокируется.">⛨ Блокировки</button>
+    <button class="btn" id="bKip" type="button" aria-pressed="false" title="Слой КИП: датчики, регулирующие и отсечные клапаны">КИП</button>
+    <button class="btn" id="bIlk" type="button" aria-pressed="false" title="Значки блокировок: красный щит — аппарат блокируется (получает команду останова, пуска или закрытия), синий контурный щит — на аппарате датчик или условие блокировки. Нажмите на аппарат, чтобы увидеть, по какому условию он блокируется.">⛨ Блокировки</button>
     <button class="btn" id="bAnl" type="button" aria-pressed="false" title="Значки точек отбора проб: зелёная колба на аппарате, число в ней — сколько точек отбора на этом аппарате по регламенту. Нажмите на аппарат, чтобы увидеть, что и с какой нормой анализируют. Полный список — вкладка «Анализы».">⚗ Анализы</button>
     <button class="btn" id="bLbl" type="button" aria-pressed="false">Подписи</button>
     <button class="btn" id="bWalk" type="button" aria-pressed="false" title="Прогулка от первого лица: W/A/S/D или стрелки — движение, мышь (перетаскивание) — обзор, Q/E — вверх/вниз, Shift — быстрее, Esc — выход">🚶 От первого лица</button>
@@ -276,7 +272,6 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
   <button class="btn" type="button" id="tabCut" role="tab" aria-selected="false" aria-pressed="false">Разрез</button>
   <button class="btn" type="button" id="tabStart" role="tab" aria-selected="false" aria-pressed="false">Пуск завода</button>
   <button class="btn" type="button" id="tabIlk" role="tab" aria-selected="false" aria-pressed="false" title="Имитация блокировок: вызвать срабатывание и посмотреть, что остановится">⛨ Блокировки</button>
-  <button class="btn" type="button" id="tabKip" role="tab" aria-selected="false" aria-pressed="false" title="Перечень приборов КИП по отделениям" hidden>КИП</button>
   <button class="btn" type="button" id="tabBuild" role="tab" aria-selected="false" aria-pressed="false">Строительство</button>
 </div>
 
@@ -356,14 +351,6 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
       <button class="btn" type="button" id="ilkRs">⟲ Сброс блокировки</button>
     </div>
     <div class="ilk-out rb" id="ilkOut"></div>
-  </div>
-  <div class="card subar kipbar" id="kipbar" role="tabpanel" aria-label="Перечень приборов КИП" hidden>
-    <div class="su-top">
-      <input type="search" id="kbQ" placeholder="Поиск: позиция, название, диапазон" aria-label="Поиск по приборам" autocomplete="off">
-      <span class="mono" id="kbN"></span>
-      <button class="btn" type="button" id="kbX" aria-label="Закрыть">✕</button>
-    </div>
-    <div class="kb-list rb" id="kbList"></div>
   </div>
   <div class="card subar" id="subar" role="tabpanel" aria-label="Пуск завода" hidden>
     <div class="su-top">
@@ -4276,32 +4263,15 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
     const h=kipHit(e);
     if(h){e.stopImmediatePropagation();if(h.object.userData.kipDep)kipDeptGo(h.object.userData.kipDep);else kipShow(h.object.userData.kipOwner)}else kipClose()},true);
   // при первом включении камера летит к пробному участку (паропровод НД и скруббер TW-11101)
-  function setKip(on){KIP.on=on;KIP.g.visible=on;kfBox.hidden=!on;if(!on)kipClose();else{kipApply()}}
+  function setKip(on){KIP.on=on;KIP.g.visible=on;kfBox.hidden=!on;$('bKip').setAttribute('aria-pressed',on);if(!on)kipClose();else{kipApply()}}
+  $('bKip').onclick=()=>setKip(!KIP.on);
   KIP.set=setKip;
   KIP.show=kipShow;
   // вкладка «КИП»: перечень всех приборов по отделениям; нажатие на строку — полёт к прибору и его карточка
-  const kbar=$('kipbar'),kbList=$('kbList'),kbQ=$('kbQ'),KBS={on:false};
-  const kbDep=d=>{const s=Object.values(SEC).find(x=>String(x.code).replace(/\D/g,'').includes(d));return s?((currentLang==='uz'&&s.nameu)?s.nameu:s.name):''};
-  function kbDraw(){const uz=currentLang==='uz',q=kbQ.value.trim().toLowerCase(),by={};let n=0;
-    KIP.items.forEach(it=>{const sp=it.sp,nm=(uz&&sp.nameu)?sp.nameu:sp.name;
-      if(q&&!(sp.tag+' '+nm+' '+(sp.rg||'')).toLowerCase().includes(q))return;(by[sp.dep]=by[sp.dep]||[]).push({sp,nm});n++});
-    kbList.innerHTML=Object.keys(by).sort().map(d=>{const a=by[d].sort((x,y)=>x.sp.tag.localeCompare(y.sp.tag,undefined,{numeric:true}));
-      return `<details${q||Object.keys(by).length===1?' open':''}><summary>${uz?'Bo‘lim ':'Отделение '}${esc(d)}${kbDep(d)?' · '+esc(kbDep(d)):''}<small>${a.length}</small></summary>`+
-        a.map(r=>`<button type="button" class="kb-r" data-t="${esc(r.sp.tag)}"><b>${esc(r.sp.tag)}</b><span>${esc(r.nm)}</span><em>${esc(r.sp.rg||'')}</em></button>`).join('')+'</details>'}).join('');
-    const sk=(KIP.skippedX||[]).filter(s=>!q||s.toLowerCase().includes(q));
-    if(sk.length)kbList.innerHTML+=`<details${q?' open':''}><summary>${uz?'Modelda ko‘rsatilmagan':'Не показаны на модели'}<small>${sk.length}</small></summary>`+sk.map(s=>{const i=s.indexOf(': ');return `<div class="kb-r" style="cursor:default"><b>${esc(s.slice(0,i))}</b><span>${esc(s.slice(i+2))}</span><em></em></div>`}).join('')+'</details>';
-    $('kbN').textContent=(uz?'Jami: ':'Всего: ')+n+' / '+KIP.items.length}
-  kbQ.oninput=kbDraw;
-  kbList.onclick=e=>{const b=e.target.closest('.kb-r');if(!b)return;const it=KIP.items.find(i=>i.sp.tag===b.dataset.t);if(!it)return;
+  KIP.goTag=tag=>{const it=KIP.items.find(i=>i.sp.tag===tag);if(!it)return false;
     if(!KIP.on)setKip(true);if(it.sp.hid){KIP.flt.dep.clear();KIP.flt.dep.add(it.sp.dep);KIP.flt.cat.clear();kipApply()}
     const bb=new THREE.Box3().setFromObject(it.g),c=bb.getCenter(new THREE.Vector3());kipLod();flyTo(c,Math.max(7,bb.getSize(new THREE.Vector3()).length()*3+4));
-    setTimeout(kipLod,900);kipShow(it.sp)};
-  window.setKipTab=on=>{if(on===KBS.on)return;
-    if(on){if(typeof setTab==='function')setTab(false);kbDraw()}
-    KBS.on=on;kbar.hidden=!on;const tb=$('tabKip');tb.setAttribute('aria-pressed',on);tb.setAttribute('aria-selected',on);
-    if(on){tabModel.setAttribute('aria-pressed',false);tabModel.setAttribute('aria-selected',false);if(!KIP.on)setKip(true)}else if(KIP.on)setKip(false)}
-  $("tabKip").hidden=false;$('tabKip').onclick=()=>{if(!KBS.on)setKipTab(true)};$('kbX').onclick=()=>{setTab(false)};
-  KIP.kbRedraw=()=>{if(KB.on)kbDraw()};
+    setTimeout(kipLod,900);kipShow(it.sp);return true};
  }
 
  // ---- значки блокировок на оборудовании (данные: interlocks-data.js) ----
@@ -4480,7 +4450,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  }
  // Вкладка PFD: «Показать в 3D» — камера летит к аппарату, открывается карточка (index.html передаёт __tmkFocus).
  const PFD_TAGS=new Set(["BO-11301", "DA-114.101", "EX-11201", "EX-11202", "EX-11203", "EX-11204", "EX-11205", "EX-11206", "EX-11207", "EX-11301", "EX-11302", "EX-11303", "EX-11304", "EX-11305", "FU-11201", "PP-11301", "PP-11302", "PP-11303", "PP-11304AB", "PP-114.101AB", "RE-11201", "SK-11301", "SM-11301", "TW-11301", "TW-11302", "TW-11303", "TW-11304", "VE-11301", "VE-11302", "VE-11401"]);
- window.addEventListener('message',ev=>{const d=ev.data;if(d&&d.__tmkFocus&&d.anlAll&&window.anlFocus){window.anlFocus('',true);return}if(!d||!d.__tmkFocus||!d.tag)return;const tag=d.tag;if(d.anl&&window.anlFocus)window.anlFocus(tag,false);
+ window.addEventListener('message',ev=>{const d=ev.data;if(d&&d.__tmkFocus&&d.kip&&d.tag&&KIP.goTag){KIP.goTag(d.tag);return}if(d&&d.__tmkFocus&&d.anlAll&&window.anlFocus){window.anlFocus('',true);return}if(!d||!d.__tmkFocus||!d.tag)return;const tag=d.tag;if(d.anl&&window.anlFocus)window.anlFocus(tag,false);
    if(byTag[tag]&&byTag[tag].length){lockedTag=tag;select(tag);lockCameraOn(tag)}
    showEq(tag)});
  try{window.parent.postMessage({__tmkReady:'model'},'*')}catch(err){}
@@ -4558,7 +4528,6 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
    if(typeof setStart==='function')setStart(false);
    if(typeof setBuild==='function')setBuild(false);
    if(typeof setIlk==='function')setIlk(false);
-   if(typeof setKipTab==='function')setKipTab(false);
    tabModel.setAttribute('aria-pressed',!showCut);tabModel.setAttribute('aria-selected',!showCut);
    tabCut.setAttribute('aria-pressed',showCut);tabCut.setAttribute('aria-selected',showCut);
    cutbarEl.hidden=!showCut;
@@ -5521,6 +5490,8 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    flowObjs.forEach(f=>f.dots.forEach(d=>d.visible=false))}
  // Кнопка «Строительство» временно скрыта (анимация будет настроена позже): для возврата поставить true
  const SHOW_BUILD_TAB=false;
+ const SHOW_KIP_BTN=true;   // кнопка «КИП» над 3D-сценой
+ $('bKip').hidden=!SHOW_KIP_BTN;
  $('tabBuild').hidden=!SHOW_BUILD_TAB;
  $('tabBuild').onclick=()=>{if(!BU.on){setIlk(false);setBuild(true)}};
  $('buPlay').onclick=()=>{if(BU.t>=BU_T1)BU.t=BU_T0;BU.play=!BU.play;buApply()};
@@ -6054,9 +6025,9 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
  function paintModelUI(lang){
    currentLang=lang; const T=L();
    $('tEyebrow').textContent=T.eyebrow; $('tH1').textContent=T.h1;
-   $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim;if(KIP.fltRedraw&&KIP.on)KIP.fltRedraw(); $('bLbl').textContent=T.bLbl;$('bIlk').textContent=currentLang==='uz'?'⛨ Blokirovkalar':'⛨ Блокировки';$('bAnl').textContent=currentLang==='uz'?'⚗ Tahlillar':'⚗ Анализы';$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
+   $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim;$('bKip').textContent=currentLang==='uz'?'KIPiA':'КИП'; if(KIP.fltRedraw&&KIP.on)KIP.fltRedraw(); $('bLbl').textContent=T.bLbl;$('bIlk').textContent=currentLang==='uz'?'⛨ Blokirovkalar':'⛨ Блокировки';$('bAnl').textContent=currentLang==='uz'?'⚗ Tahlillar':'⚗ Анализы';$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
    $('bHelp').title=T.bHelpTitle;
-   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода';$('tabIlk').textContent=lang==='uz'?'⛨ Blokirovkalar':'⛨ Блокировки';$('tabKip').textContent=lang==='uz'?'KIPiA':'КИП';$('kbQ').placeholder=lang==='uz'?'Qidiruv: pozitsiya, nom, diapazon':'Поиск: позиция, название, диапазон';if(KIP.kbRedraw)KIP.kbRedraw();if(KIP.deptRedraw)KIP.deptRedraw();if(typeof ilkFill==='function')ilkFill();$('tabBuild').textContent=lang==='uz'?'Qurilish':'Строительство';if(BU.inited){buBuildPanel();buPaint();buFollowUI();$('buToday').textContent=lang==='uz'?'Bugun':'Сегодня';$('buMore').textContent=(lang==='uz'?'Obyektlar':'Объекты')+(bubar.classList.contains('open')?' ▾':' ▴')} $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
+   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода';$('tabIlk').textContent=lang==='uz'?'⛨ Blokirovkalar':'⛨ Блокировки';if(KIP.deptRedraw)KIP.deptRedraw();if(typeof ilkFill==='function')ilkFill();$('tabBuild').textContent=lang==='uz'?'Qurilish':'Строительство';if(BU.inited){buBuildPanel();buPaint();buFollowUI();$('buToday').textContent=lang==='uz'?'Bugun':'Сегодня';$('buMore').textContent=(lang==='uz'?'Obyektlar':'Объекты')+(bubar.classList.contains('open')?' ▾':' ▴')} $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
    bCutFab.title=T.tabCut; bCutFab.setAttribute('aria-label',T.tabCut);
    $('tCutEyebrow').textContent=T.cutEyebrow; $('tCutOnly').textContent=T.cutOnly;
    $('cutSegOff').textContent=T.cutOff;
