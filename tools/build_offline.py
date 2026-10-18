@@ -76,7 +76,7 @@ SHIM = '<script>window.A=function(p){try{return parent.__tmkAsset(p)}catch(e){re
 PDF_CLICK = '''<script>document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href^="docs_pdf/"]');
 if(!a)return;var u=parent.__tmkAsset(decodeURI(a.getAttribute('href')));if(u&&u.indexOf('blob:')===0){e.preventDefault();window.open(u,'_blank')}});</script>'''
 pages = {}
-for name in ('model', 'flow', 'pfd', 'interlocks', 'analyses', 'docs', 'settings', 'help'):
+for name in ('model', 'flow', 'pfd', 'interlocks', 'analyses', 'kip', 'docs', 'settings', 'help'):
     h = common(inline_scripts(rd(name + '.html')))
     h = h.replace('src="sec_img/${esc(f)}"', 'src="${A(\'sec_img/\'+f)}"')
     h = h.replace("src='sec_img/'+f", "src=A('sec_img/'+f)")
@@ -110,7 +110,7 @@ function page(n){
   for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
   return new TextDecoder('utf-8').decode(u);
 }
-var ids={model:'f-model',flow:'f-flow',pfd:'f-pfd',interlocks:'f-ilk',analyses:'f-anl',docs:'f-docs',settings:'f-settings',help:'f-help'};
+var ids={model:'f-model',flow:'f-flow',pfd:'f-pfd',interlocks:'f-ilk',analyses:'f-anl',kip:'f-kip',docs:'f-docs',settings:'f-settings',help:'f-help'};
 for(var n in ids)document.getElementById(ids[n]).srcdoc=page(n);
 })();
 </script>'''
