@@ -1289,6 +1289,9 @@ const F = [
  {s:"steam",a:[5261.0,2355,18.0],ea:"XX-11401",b:[5240.265,2367.907,6.262],eb:"EX-11202",code:"пар после впрыска № 1 → C1 (1B-верх)",p3:[[5261.0,2355,18.0],[5260.55,2355,18.0],[5260.55,2363.6,18.0],[5260.55,2363.6,9.0],[5260.55,2368.9,9.0],[5247.5,2368.9,9.0],[5247.5,2368.9,4.6],[5239.745,2368.9,4.6],[5239.745,2368.207,4.6],[5239.745,2368.207,6.262],[5240.265,2367.907,6.262]]},
  {s:"steam",a:[5240.265,2367.907,4.962],ea:"EX-11202",b:[5245.3,2361,8.4],eb:"XX-11402",code:"D1 (1B-верх, 423 °C) → впрыск № 2",p3:[[5240.265,2367.907,4.962],[5239.312,2368.457,4.962],[5239.312,2368.457,9.6],[5243.9,2368.457,9.6],[5243.9,2361,9.6],[5245.6,2361,9.6],[5245.6,2361,8.4],[5245.3,2361,8.4]]},
  {s:"steam",a:["XX-11403",.6],b:["XX-11501",0.8],dashed:1,r:0.1,via:"RS>RE",p3:[[5231.86,2368.1,6.0],[5231.86,2368.6,6.0],[5231.86,2368.6,8.72],[5229.7,2368.6,8.72],[5229.7,2394.2,8.72],[5255.8,2394.2,8.72],[5255.8,2399.0,8.72],[5255.8,2399.0,7.0],[5255.8,2419.2,7.0],[5255.8,2419.2,6.6]]},
+ {s:"steam",a:[5249.66,2332.2,8.81],ea:"EX-11201",b:[5249.66,2332.2,13.0],eb:"свеча",dashed:1,r:0.06,code:"VT-11401-100-HB4-P3 (сброс пара из барабана на свечу)",p3:[[5249.66,2332.2,8.81],[5249.66,2332.2,13.0]]},
+ {s:"steam",a:[5249.66,2322.3,8.81],ea:"EX-11201",b:[5249.66,2322.3,11.5],eb:"свеча",dashed:1,r:0.025,code:"VT-11402-50-HB4-P3 (воздушник барабана)",p3:[[5249.66,2322.3,8.81],[5249.66,2322.3,11.5]]},
+ {s:"steam",a:[5231.86,2366.1,0.73],ea:"XX-11403",b:[5231.86,2366.1,5.5],eb:"свеча",dashed:1,r:0.06,code:"VT-11403-100-IC3-P4 (сброс паросборного коллектора на свечу)",p3:[[5231.86,2366.1,0.73],[5231.86,2366.1,5.5]]},
  {s:"steamlp",a:["XX-11501",0.8],b:["ST-11501",8.77],e:9.57,dashed:1},
  {s:"steamlp",a:["ST-11501",8.77],b:["XX-11503",0.8],e:9.82},
  {s:"steamlp",a:["XX-11503",0.8],b:["XX-11502",1],e:3.3},
@@ -4004,6 +4007,10 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
   const magFlowG=r=>{const g=new THREE.Group(),L=Math.max(.4,r*1.5),R=r*1.35;
     g.add(cy(r*1.08,r*1.08,L,KM.hous,0,0,0,'x',32));[-1,1].forEach(s=>g.add(cy(R,R,.04,KM.flange,s*L/2,0,0,'x',40)));g.add(cy(r*1.28,r*1.28,L*.5,KM.body,0,0,0,'x',32));
     const h=r*1.28;g.add(cy(.05,.05,.1,KM.body,0,h+.04,0));g.add(cy(.075,.075,.12,KM.ex,0,h+.15,0));g.add(sp(.075,KM.ex,0,h+.21,0));return g};
+  // шкаф CEMS у дымовой трубы: шкаф-анализатор с козырьком и пробоотборной трубкой вверх (к штуцеру на стволе трубы)
+  const cemsCab=()=>{const g=new THREE.Group();
+    g.add(bx(1.0,2.0,.7,KM.hous,0,1.0,0));g.add(bx(1.1,.06,.8,KM.cap,0,2.03,0));g.add(bx(.5,.9,.02,KM.sig,0,1.2,.36));
+    g.add(cy(.02,.02,2.6,KM.body,.35,2.3,0,'y',10));g.add(cy(.12,.12,.05,KM.flange,0,.025,0,'y',16));return g};
   // диафрагма (дроссельное устройство): фланцевая пара с кольцом диафрагмы и двумя импульсными отборами вверх
   const orifice=r=>{const g=new THREE.Group(),R=Math.max(r*1.3,r+.05),W=.05;
     [-1,1].forEach(s=>g.add(cy(R,R,.035,KM.flange,s*W,0,0,'x',40)));g.add(cy(r*1.04,r*1.04,W*2,KM.body,0,0,0,'x',40));
@@ -4111,7 +4118,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
         const y=h.y!=null?h.y:(isNaN(ely)?bb.min.y+sz.y*.5:ely);sp.pos=cc.clone().add(dir.clone().multiplyScalar(R)).setY(y);sp.dir=dir;sp.mode='side';
         mkPre(sp,eqInner(sp,h),0,'side');sp.d.push(h.note||('Установка на корпусе аппарата '+h.eq+' на отметке EL+'+y.toFixed(3).replace('.',',')+'; угол по окружности оценён'))}
       else if(h.mode==='free'){const base=h.at?P(h.at[0],h.at[1],0):c.clone().add(new THREE.Vector3((h.dx||0),0,(h.dz||0)));sp.pos=new THREE.Vector3(base.x,h.y||0,base.z);sp.mode='free';
-        sp.slope=h.slope||0;mkPre(sp,sp.kb==='wt'?beltScale():sp.kb==='ua'?sirenPost(h.H||2.4):(sp.kb==='lvr'||sp.kb==='lvm')?eqInner(sp,h):gasDet(h.H||2.2,sp.kb==='gtt'),0,sp.kb==='wt'?'slope':'top');sp.d.push(h.note||('Стойка у аппарата '+h.eq+'; место оценено (план газовых детекторов -07 не привязан по координатам)'))}
+        sp.slope=h.slope||0;mkPre(sp,sp.kb==='cems'?cemsCab():sp.kb==='wt'?beltScale():sp.kb==='ua'?sirenPost(h.H||2.4):(sp.kb==='lvr'||sp.kb==='lvm')?eqInner(sp,h):gasDet(h.H||2.2,sp.kb==='gtt'),0,sp.kb==='wt'?'slope':'top');sp.d.push(h.note||('Стойка у аппарата '+h.eq+'; место оценено (план газовых детекторов -07 не привязан по координатам)'))}
       return}
     const fos=hostFlows(h);if(!fos.length){sp.skip=true;sp.why='линия '+(sp.ln||'')+' в модели отсутствует';return}
     const rs=[];fos.forEach(fo=>{runsOf(fo).forEach((r,i)=>{r.fo=fo;r.id=flowObjs.indexOf(fo)+'#'+i;rs.push(r)})});
@@ -4168,6 +4175,16 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
     sp0.cat=catOf(sp0);kipMergeItem(g,sp0);
     KIP.items.push({sp:sp0,g,spr,r,vis:true});
   });
+  // метки отделений: по центру приборов отделения, с числом приборов; нажатие — подлёт и показ приборов отделения
+  KIP.dsprites=[];
+  const kipDeptTex=(d,n)=>{const uz=currentLang==='uz',c=document.createElement('canvas');c.width=400;c.height=64;const x=c.getContext('2d');
+    x.fillStyle='rgba(16,24,32,.9)';x.strokeStyle='#ffd23f';x.lineWidth=4;const r=14;x.beginPath();x.moveTo(r,3);x.lineTo(397-r,3);x.quadraticCurveTo(397,3,397,3+r);x.lineTo(397,61-r);x.quadraticCurveTo(397,61,397-r,61);x.lineTo(r,61);x.quadraticCurveTo(3,61,3,61-r);x.lineTo(3,3+r);x.quadraticCurveTo(3,3,r,3);x.fill();x.stroke();
+    x.fillStyle='#fff';x.font='700 29px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText((uz?'Bo‘lim ':'Отд. ')+d+' · '+n+(uz?' asbob':' приб.'),200,34);return new THREE.CanvasTexture(c)};
+  {const by={};KIP.items.forEach(it=>{(by[it.sp.dep]=by[it.sp.dep]||[]).push(it)});
+   Object.keys(by).sort().forEach(d=>{const a=by[d],c=new THREE.Vector3();let y=-1e9;a.forEach(it=>{c.add(it.spr.position);y=Math.max(y,it.spr.position.y)});c.multiplyScalar(1/a.length);
+     const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:kipDeptTex(d,a.length),depthTest:false,transparent:true,sizeAttenuation:false}));
+     spr.scale.set(.25,.04,1);spr.position.set(c.x,y+3,c.z);spr.renderOrder=1000;spr.userData.kipDep=d;spr.userData.n=a.length;KIP.g.add(spr);KIP.dsprites.push(spr)})}
+  KIP.deptRedraw=()=>KIP.dsprites.forEach(s=>{s.material.map.dispose();s.material.map=kipDeptTex(s.userData.kipDep,s.userData.n);s.material.needsUpdate=true});
   // один прибор состоит из 10–15 мелких мешей: сливаем их по материалу в один меш (меньше вызовов отрисовки на телефоне)
   function kipMergeItem(g,sp0){g.updateMatrixWorld(true);const inv=g.matrixWorld.clone().invert(),by=new Map(),old=[];
     g.traverse(c=>{if(!c.isMesh||!c.geometry||Array.isArray(c.material)||c.userData.kipHit||!c.visible)return;
@@ -4216,27 +4233,33 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
     b.textContent=t;b.hidden=false}
   KIP.simUpd=()=>{kipSim()};
   $('kiX').onclick=kipClose;
-  // фильтр по отделению и виду прибора (пустой выбор = показать все)
+  // фильтр по отделению и виду прибора: приборы видны только у выбранных отделений (пустой выбор = все скрыты, на модели остаются метки отделений)
   const CATN={F:['Расход','Sarf'],P:['Давление','Bosim'],T:['Температура','Harorat'],L:['Уровень','Sath'],V:['Арматура','Armatura'],A:['Прочее','Boshqa']};
   KIP.flt={dep:new Set(),cat:new Set()};
   const kfBox=$('kipFlt');
-  function kipApply(){KIP.items.forEach(it=>{const f=KIP.flt,v=(!f.dep.size||f.dep.has(it.sp.dep))&&(!f.cat.size||f.cat.has(it.sp.cat));it.vis=v;it.sp.hid=!v;it.g.visible=v;const h=KIP.hits&&KIP.hits[it.sp.tag];if(h)h.visible=v});
+  function kipApply(){KIP.items.forEach(it=>{const f=KIP.flt,v=f.dep.has(it.sp.dep)&&(!f.cat.size||f.cat.has(it.sp.cat));it.vis=v;it.sp.hid=!v;it.g.visible=v;const h=KIP.hits&&KIP.hits[it.sp.tag];if(h)h.visible=v});
     hl.visible=false;kipLod();kipClose();kipFltDraw()}
   function kipFltDraw(){const uz=currentLang==='uz',f=KIP.flt,deps=[...new Set(KIP.items.map(i=>i.sp.dep))].sort(),cats=Object.keys(CATN).filter(c=>KIP.items.some(i=>i.sp.cat===c));
     const n=(k,v)=>KIP.items.filter(i=>i.sp[k]===v).length,vis=KIP.items.filter(i=>i.vis).length;
     const chip=(t,k,v,on)=>`<button type="button" class="btn" data-kf="${k}" data-v="${v}" aria-pressed="${on}">${esc(t)}</button>`;
     kfBox.innerHTML=`<div class="kf-t">${uz?'Bo‘lim':'Отделение'}</div><div class="kf-r">${deps.map(d=>chip(d+' · '+n('dep',d),'dep',d,f.dep.has(d))).join('')}</div>`+
       `<div class="kf-t">${uz?'Asbob turi':'Вид прибора'}</div><div class="kf-r">${cats.map(c=>chip(CATN[c][uz?1:0]+' · '+n('cat',c),'cat',c,f.cat.has(c))).join('')}</div>`+
-      `<div class="kf-r"><span class="mono">${uz?'Ko‘rsatilgan':'Показано'}: ${vis} / ${KIP.items.length}</span>${(f.dep.size||f.cat.size)?`<button type="button" class="btn" data-kf="reset">${uz?'Tozalash':'Сбросить'}</button>`:''}</div>`}
+      `<div class="kf-r"><span class="mono">${uz?'Ko‘rsatilgan':'Показано'}: ${vis} / ${KIP.items.length}</span>${(f.dep.size||f.cat.size)?`<button type="button" class="btn" data-kf="reset">${uz?'Umumiy ko‘rinish':'К общему виду'}</button>`:''}</div>`}
   kfBox.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.kf;
-    if(k==='reset'){KIP.flt.dep.clear();KIP.flt.cat.clear()}else{const st=KIP.flt[k];st.has(b.dataset.v)?st.delete(b.dataset.v):st.add(b.dataset.v)}kipApply()});
+    if(k==='reset'){KIP.flt.dep.clear();KIP.flt.cat.clear();kipApply();flyTo(HOME.tgt,null,HOME.pos);return}else{const st=KIP.flt[k];st.has(b.dataset.v)?st.delete(b.dataset.v):st.add(b.dataset.v)}kipApply()});
   KIP.fltRedraw=kipFltDraw;
+  // нажатие на метку отделения: подлёт к приборам отделения и показ только их
+  function kipDeptGo(d){KIP.flt.dep.clear();KIP.flt.dep.add(d);KIP.flt.cat.clear();kipApply();
+    const its=KIP.items.filter(i=>i.sp.dep===d),bb=new THREE.Box3();its.forEach(i=>bb.expandByObject(i.g));if(bb.isEmpty())return;
+    if(typeof isolated!=='undefined'&&isolated)unIso();
+    flyTo(bb.getCenter(new THREE.Vector3()),Math.max(25,bb.getSize(new THREE.Vector3()).length()*1.15))}
+  KIP.goDept=kipDeptGo;
   const kr=new THREE.Raycaster(),km2=new THREE.Vector2();let kd=null;
   // наведение: прибор перехватывает курсор раньше аппарата и трубы за ним (capture + stopImmediatePropagation), обводка бокса прибора
   const hl=new THREE.Box3Helper(new THREE.Box3(),0xffd23f);hl.visible=false;hl.material.depthTest=false;hl.renderOrder=998;KIP.g.add(hl);
   // подписи-спрайты (sizeAttenuation:false) не ловятся лучом: проверяем попадание в их экранный прямоугольник, ближайшая к камере подпись выигрывает
   const kipLabelHit=(e,r0)=>{let best=null,bd=1e9;const H=r0.height,v=new THREE.Vector3();
-    KIP.sprites.forEach(spr=>{if(!spr.visible||spr.userData.kipOwner.hid)return;v.copy(spr.position).project(camera);if(v.z>1||v.z<-1)return;
+    KIP.sprites.concat(KIP.dsprites).forEach(spr=>{if(!spr.visible||(spr.userData.kipOwner&&spr.userData.kipOwner.hid))return;v.copy(spr.position).project(camera);if(v.z>1||v.z<-1)return;
       const cx=r0.left+(v.x+1)/2*r0.width,cy=r0.top+(1-v.y)/2*H,w=spr.scale.x*H*.95,h=spr.scale.y*H*.95*1.3;
       if(Math.abs(e.clientX-cx)<=w/2&&Math.abs(e.clientY-cy)<=h/2){const d=camera.position.distanceTo(spr.position);if(d<bd){bd=d;best=spr}}});
     return best?{object:best}:null};
@@ -4246,16 +4269,15 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
   cvs.addEventListener('pointerdown',e=>{kd=[e.clientX,e.clientY];KIP.sw=!!(KIP.on&&kipHit(e))},true);   // KIP.sw: нажатие пришлось на прибор или подпись — объекты под ними не трогаем (ни короткое, ни долгое нажатие)
   cvs.addEventListener('pointermove',e=>{if(!KIP.on||e.buttons){hl.visible=false;return}const h=kipHit(e);
     if(!h){hl.visible=false;return}
-    e.stopImmediatePropagation();const o=h.object.userData.kipOwner,it=KIP.items.find(i=>i.sp===o);if(it){hl.box.setFromObject(it.g).expandByScalar(.03);hl.visible=true}
+    e.stopImmediatePropagation();const dp=h.object.userData.kipDep;if(dp){const t=document.getElementById('tip')||tip;if(t){const r0=cvs.getBoundingClientRect();t.textContent=(currentLang==='uz'?'Bo‘lim ':'Отделение ')+dp+' · '+h.object.userData.n+(currentLang==='uz'?' asbob: bosing — ko‘rsatish':' приб.: нажмите, чтобы показать');t.style.left=(e.clientX-r0.left)+'px';t.style.top=(e.clientY-r0.top)+'px';t.hidden=false}hl.visible=false;cvs.style.cursor='pointer';return}const o=h.object.userData.kipOwner,it=KIP.items.find(i=>i.sp===o);if(it){hl.box.setFromObject(it.g).expandByScalar(.03);hl.visible=true}
     const t=document.getElementById('tip')||tip;if(t){const r0=cvs.getBoundingClientRect();t.textContent=o.tag+' · '+((currentLang==='uz'&&o.nameu)?o.nameu:o.name);t.style.left=(e.clientX-r0.left)+'px';t.style.top=(e.clientY-r0.top)+'px';t.hidden=false}
     cvs.style.cursor='pointer'},true);
   cvs.addEventListener('pointerup',e=>{if(!KIP.on||!kd)return;const mv=Math.hypot(e.clientX-kd[0],e.clientY-kd[1]);kd=null;if(mv>5)return;
     const r0=cvs.getBoundingClientRect();km2.x=((e.clientX-r0.left)/r0.width)*2-1;km2.y=-((e.clientY-r0.top)/r0.height)*2+1;kr.setFromCamera(km2,camera);
     const h=kipHit(e);
-    if(h){e.stopImmediatePropagation();kipShow(h.object.userData.kipOwner)}else kipClose()},true);
+    if(h){e.stopImmediatePropagation();if(h.object.userData.kipDep)kipDeptGo(h.object.userData.kipDep);else kipShow(h.object.userData.kipOwner)}else kipClose()},true);
   // при первом включении камера летит к пробному участку (паропровод НД и скруббер TW-11101)
-  function setKip(on){KIP.on=on;KIP.g.visible=on;kfBox.hidden=!on;$('bKip').setAttribute('aria-pressed',on);if(!on)kipClose();else{kipFltDraw();kipLod();
-    if(!KIP.seen){KIP.seen=true;flyTo(new THREE.Vector3(-66.5,5.5,-38),null,new THREE.Vector3(-52,12,-24))}}}
+  function setKip(on){KIP.on=on;KIP.g.visible=on;kfBox.hidden=!on;$('bKip').setAttribute('aria-pressed',on);if(!on)kipClose();else{kipApply()}}
   $('bKip').onclick=()=>setKip(!KIP.on);
   KIP.set=setKip;
   KIP.show=kipShow;
@@ -4268,10 +4290,12 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
     kbList.innerHTML=Object.keys(by).sort().map(d=>{const a=by[d].sort((x,y)=>x.sp.tag.localeCompare(y.sp.tag,undefined,{numeric:true}));
       return `<details${q||Object.keys(by).length===1?' open':''}><summary>${uz?'Bo‘lim ':'Отделение '}${esc(d)}${kbDep(d)?' · '+esc(kbDep(d)):''}<small>${a.length}</small></summary>`+
         a.map(r=>`<button type="button" class="kb-r" data-t="${esc(r.sp.tag)}"><b>${esc(r.sp.tag)}</b><span>${esc(r.nm)}</span><em>${esc(r.sp.rg||'')}</em></button>`).join('')+'</details>'}).join('');
+    const sk=(KIP.skippedX||[]).filter(s=>!q||s.toLowerCase().includes(q));
+    if(sk.length)kbList.innerHTML+=`<details${q?' open':''}><summary>${uz?'Modelda ko‘rsatilmagan':'Не показаны на модели'}<small>${sk.length}</small></summary>`+sk.map(s=>{const i=s.indexOf(': ');return `<div class="kb-r" style="cursor:default"><b>${esc(s.slice(0,i))}</b><span>${esc(s.slice(i+2))}</span><em></em></div>`}).join('')+'</details>';
     $('kbN').textContent=(uz?'Jami: ':'Всего: ')+n+' / '+KIP.items.length}
   kbQ.oninput=kbDraw;
   kbList.onclick=e=>{const b=e.target.closest('.kb-r');if(!b)return;const it=KIP.items.find(i=>i.sp.tag===b.dataset.t);if(!it)return;
-    if(!KIP.on)setKip(true);if(it.sp.hid){KIP.flt.dep.clear();KIP.flt.cat.clear();kipApply()}
+    if(!KIP.on)setKip(true);if(it.sp.hid){KIP.flt.dep.clear();KIP.flt.dep.add(it.sp.dep);KIP.flt.cat.clear();kipApply()}
     const bb=new THREE.Box3().setFromObject(it.g),c=bb.getCenter(new THREE.Vector3());kipLod();flyTo(c,Math.max(7,bb.getSize(new THREE.Vector3()).length()*3+4));
     setTimeout(kipLod,900);kipShow(it.sp)};
   window.setKipTab=on=>{if(on===KBS.on)return;
@@ -6036,7 +6060,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    $('tEyebrow').textContent=T.eyebrow; $('tH1').textContent=T.h1;
    $('bHome').textContent=T.bHome; $('bBld').textContent=T.bBld; $('bAnim').textContent=T.bAnim;$('bKip').textContent=currentLang==='uz'?'KIPiA':'КИП'; if(KIP.fltRedraw&&KIP.on)KIP.fltRedraw(); $('bLbl').textContent=T.bLbl;$('bIlk').textContent=currentLang==='uz'?'⛨ Blokirovkalar':'⛨ Блокировки';$('bAnl').textContent=currentLang==='uz'?'⚗ Tahlillar':'⚗ Анализы';$('bWalk').textContent=currentLang==='uz'?'🚶 Birinchi shaxsdan':'🚶 От первого лица';$('walkHint').textContent=currentLang==='uz'?'W A S D / ← ↑ → ↓ — yurish · sichqoncha — qarash · Q / E — past / yuqori · Shift — tezroq · Esc — chiqish':'W A S D / ← ↑ → ↓ — идти · мышь — смотреть · Q / E — вниз / вверх · Shift — быстрее · Esc — выход';
    $('bHelp').title=T.bHelpTitle;
-   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода';$('tabIlk').textContent=lang==='uz'?'⛨ Blokirovkalar':'⛨ Блокировки';$('tabKip').textContent=lang==='uz'?'KIPiA':'КИП';$('kbQ').placeholder=lang==='uz'?'Qidiruv: pozitsiya, nom, diapazon':'Поиск: позиция, название, диапазон';if(KIP.kbRedraw)KIP.kbRedraw();if(typeof ilkFill==='function')ilkFill();$('tabBuild').textContent=lang==='uz'?'Qurilish':'Строительство';if(BU.inited){buBuildPanel();buPaint();buFollowUI();$('buToday').textContent=lang==='uz'?'Bugun':'Сегодня';$('buMore').textContent=(lang==='uz'?'Obyektlar':'Объекты')+(bubar.classList.contains('open')?' ▾':' ▴')} $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
+   tabModel.textContent=T.tabModel; tabCut.textContent=T.tabCut; $('tabStart').textContent=lang==='uz'?'Zavodni ishga tushirish':'Пуск завода';$('tabIlk').textContent=lang==='uz'?'⛨ Blokirovkalar':'⛨ Блокировки';$('tabKip').textContent=lang==='uz'?'KIPiA':'КИП';$('kbQ').placeholder=lang==='uz'?'Qidiruv: pozitsiya, nom, diapazon':'Поиск: позиция, название, диапазон';if(KIP.kbRedraw)KIP.kbRedraw();if(KIP.deptRedraw)KIP.deptRedraw();if(typeof ilkFill==='function')ilkFill();$('tabBuild').textContent=lang==='uz'?'Qurilish':'Строительство';if(BU.inited){buBuildPanel();buPaint();buFollowUI();$('buToday').textContent=lang==='uz'?'Bugun':'Сегодня';$('buMore').textContent=(lang==='uz'?'Obyektlar':'Объекты')+(bubar.classList.contains('open')?' ▾':' ▴')} $('suMore').textContent=(lang==='uz'?'Bosqichlar':'Этапы')+($('subar').classList.contains('open')?' ▾':' ▴');{const m=$('suMode');m.options[0].text=lang==='uz'?'Ta’mirdan keyin':'После ремонта';m.options[1].text=lang==='uz'?'Noldan':'С нуля';if(typeof suFollowUI==='function')suFollowUI()}if(SU.inited){suBuildPanel();if(SU.on)suPaint()}
    bCutFab.title=T.tabCut; bCutFab.setAttribute('aria-label',T.tabCut);
    $('tCutEyebrow').textContent=T.cutEyebrow; $('tCutOnly').textContent=T.cutOnly;
    $('cutSegOff').textContent=T.cutOff;
