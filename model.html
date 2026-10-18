@@ -257,11 +257,11 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
     <select id="secSel" aria-label="Отделение"><option value="">Все отделения</option></select>
     <button class="btn" id="bHome" type="button">Общий вид</button>
     <button class="btn" id="bBld" type="button" aria-pressed="false">Здания прозрачные</button>
-    <button class="btn" id="bAnim" type="button" aria-pressed="true">Движение потоков</button>
+    <button class="btn" id="bAnim" type="button" aria-pressed="false">Движение потоков</button>
     <button class="btn" id="bKip" type="button" aria-pressed="false" title="Слой КИП: датчики, регулирующие и отсечные клапаны">КИП</button>
-    <button class="btn" id="bIlk" type="button" aria-pressed="true" title="Значки блокировок: красный щит — аппарат блокируется (получает команду останова, пуска или закрытия), синий контурный щит — на аппарате датчик или условие блокировки. Нажмите на аппарат, чтобы увидеть, по какому условию он блокируется.">⛨ Блокировки</button>
-    <button class="btn" id="bAnl" type="button" aria-pressed="true" title="Значки точек отбора проб: зелёная колба на аппарате, число в ней — сколько точек отбора на этом аппарате по регламенту. Нажмите на аппарат, чтобы увидеть, что и с какой нормой анализируют. Полный список — вкладка «Анализы».">⚗ Анализы</button>
-    <button class="btn" id="bLbl" type="button" aria-pressed="true">Подписи</button>
+    <button class="btn" id="bIlk" type="button" aria-pressed="false" title="Значки блокировок: красный щит — аппарат блокируется (получает команду останова, пуска или закрытия), синий контурный щит — на аппарате датчик или условие блокировки. Нажмите на аппарат, чтобы увидеть, по какому условию он блокируется.">⛨ Блокировки</button>
+    <button class="btn" id="bAnl" type="button" aria-pressed="false" title="Значки точек отбора проб: зелёная колба на аппарате, число в ней — сколько точек отбора на этом аппарате по регламенту. Нажмите на аппарат, чтобы увидеть, что и с какой нормой анализируют. Полный список — вкладка «Анализы».">⚗ Анализы</button>
+    <button class="btn" id="bLbl" type="button" aria-pressed="false">Подписи</button>
     <button class="btn" id="bWalk" type="button" aria-pressed="false" title="Прогулка от первого лица: W/A/S/D или стрелки — движение, мышь (перетаскивание) — обзор, Q/E — вверх/вниз, Shift — быстрее, Esc — выход">🚶 От первого лица</button>
     <button class="btn" id="bHelp" type="button" title="Вращение — левая кнопка мыши, сдвиг — правая, масштаб — колесо. Нажмите на аппарат или здание, чтобы открыть карточку. Внизу — разрезы: плоскость двигается ползунком, внутреннее устройство аппаратов видно на срезе. «От первого лица» — прогулка по заводу: W/A/S/D или стрелки, мышь — обзор, Q/E — высота, Shift — быстрее, Esc — выход." aria-label="Подсказка по управлению">?</button>
   </div>
@@ -4242,7 +4242,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  }
 
  // ---- значки блокировок на оборудовании (данные: interlocks-data.js) ----
- const ILKB={g:new THREE.Group(),on:true,items:[]};
+ const ILKB={g:new THREE.Group(),on:false,items:[]};ILKB.g.visible=false;
  const ILKS={on:false,alarm:new Set(),stopped:[],tm:[],run:0,flows:new Set(),calls:[],split:[],views:[]};
  if(window.ILK){
   scene.add(ILKB.g);
@@ -4262,7 +4262,7 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  // ---- значки точек отбора проб (вкладка «Анализы»; данные: analyses-data.js, регламент п. 9.3) ----
  // Один значок (колба) на аппарат: число в значке — сколько точек отбора на нём. Значок висит над аппаратом на 2,4 м
  // выше его верха, рядом с щитом блокировок, и ничего не пересекает. Подробности — в карточке аппарата и на вкладке «Анализы».
- const ANLB={g:new THREE.Group(),on:true,items:[],pulse:null};
+ const ANLB={g:new THREE.Group(),on:false,items:[],pulse:null};ANLB.g.visible=false;
  if(window.ANL){
   scene.add(ANLB.g);
   const flaskTex=n=>{const c=document.createElement('canvas');c.width=c.height=96;const x=c.getContext('2d');
@@ -5484,7 +5484,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
  function applyFlow(){chips.querySelectorAll('.chip').forEach(c=>{const on=active.has(c.dataset.k);c.setAttribute('aria-pressed',on);c.classList.toggle('dim',active.size>0&&!on)});
    flowObjs.forEach(f=>{const on=(!active.size||active.has(f.s))&&(!SU.on||f.rev>0)&&(!BU.on||f.bv>0);f.tube.visible=on;const dim=SU.on&&f.tube.material===suDim[f.s];f.dots.forEach(d=>d.visible=on&&anim&&!dim&&!BU.on&&!f.ilkStop)})}
  // toggles
- let anim=!matchMedia('(prefers-reduced-motion: reduce)').matches; $('bAnim').setAttribute('aria-pressed',anim);
+ let anim=false; // при запуске все слои выключены; $('bAnim').setAttribute('aria-pressed',anim);
  $('bAnim').onclick=()=>{anim=!anim;$('bAnim').setAttribute('aria-pressed',anim);applyFlow()};
  // Buildings: solid façades as in the render by default; "transparent" shows the equipment inside
  // (switched on automatically when a department is opened, back to solid with "Общий вид").
@@ -5494,7 +5494,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
  // glass buildings = the user's button or a mode that needs the inside view; each reason is cleared by its own exit, so none leaves glass behind
  $('bBld').onclick=()=>{const g=$('bBld').getAttribute('aria-pressed')!=='true';BF.user=g;if(!g)BF.focus=BF.su=BF.ilk=BF.abk=false;bldSync()};
  bldSync();
- let showL=true; $('bLbl').onclick=()=>{showL=!showL;$('bLbl').setAttribute('aria-pressed',showL)};
+ let showL=false; $('bLbl').onclick=()=>{showL=!showL;$('bLbl').setAttribute('aria-pressed',showL)};
  $('bHome').onclick=()=>{walkSet(false);unIso();closeD();BF.user=BF.focus=BF.su=BF.ilk=BF.abk=false;bldSync();[1,2,3].forEach(k=>{if(ABK.floors[k])ABK.floors[k].visible=true});ABK.slabs.forEach(m=>m.visible=true)};
  applyFlow();
 
