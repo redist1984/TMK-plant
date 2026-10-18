@@ -95,6 +95,11 @@ h1{font-size:20px;margin:6px 0 4px}
   <div class="body" id="hAnlBody"></div>
 </details>
 
+<details class="sec" id="secKip">
+  <summary><span class="ic">◎</span><span id="hKipT">КИП</span><span class="car">▾</span></summary>
+  <div class="body" id="hKipBody"></div>
+</details>
+
 <details class="sec" id="secIlk">
   <summary><span class="ic">⛨</span><span id="hIlkT">Блокировки</span><span class="car">▾</span></summary>
   <div class="body" id="hIlkBody"></div>
@@ -120,7 +125,7 @@ ru: {
   eyebrow:'Завод TMK', h1:'Помощь по приложению',
   sub:'Как пользоваться приложением: куда нажимать и что это даёт. Разделы ниже можно раскрывать по очереди.',
   tdModel:'3D-модель', tdFlow:'Схема потоков', tdPfd:'PFD', tdIlk:'Блокировки', tdAnl:'Анализы', tdDocs:'Документы', tdSettings:'Настройки', tdHelp:'Помощь',
-  hStartT:'Пуск завода', hIlkT:'Блокировки', hAnlT:'Анализы',
+  hStartT:'Пуск завода', hIlkT:'Блокировки', hAnlT:'Анализы', hKipT:'КИП (приборы на 3D-модели)',
   hStartBody: [
     row('▶','Вкладка «Пуск завода» (над 3D-сценой)','Имитация пуска по схеме BFD «Логическая последовательность ввода объектов»: 137 → 136 → вода → 135 → 114.1/114 → 121-111-122-112-113-123/124 → 115. Потоки постепенно появляются на трубах, ещё не пущенное оборудование серое.'),
     row('⏯','Кнопки ▶/⏸ и ⟲, скорость, ползунок времени Т+','▶/⏸ запускает и ставит на паузу, ⟲ возвращает в начало, ползунок перематывает по времени от начала пуска.'),
@@ -134,6 +139,11 @@ ru: {
     row('▸','Кнопка «Аппарат ▸ 3D»','Переносит в 3D-модель: камера подлетает к аппарату, значок-колба мигает, открывается карточка аппарата. Кнопка «Все точки в 3D» возвращает общий вид завода со всеми значками.'),
     row('⚗','Кнопка «⚗ Анализы» над 3D-сценой','Включает и выключает зелёные значки-колбы на аппаратах. Число в колбе — сколько точек отбора на этом аппарате. Нажмите на аппарат: в карточке появится блок «Анализы» со списком параметров и норм; такой же блок есть в карточках схемы потоков и PFD.'),
     row('⚠','Привязка к аппаратам','Если позиция в регламенте называется иначе, чем в модели (например, TK-12302 в регламенте и подземный резервуар VE-12302 в модели), в карточке есть пометка, к какому аппарату привязана точка. Такие точки стоит сверить по схеме.')
+  ].join(''),
+  hKipBody: [
+    row('◎','Что такое слой «КИП»','Датчики и клапаны по чертежам КИПиА (комплекты 3147-5N111, 5N112, 5N113, 5N114, 5N115, 5N122, 5N123, 5N121, 5N131, 5N133, 5N134, 5N136 и далее по отделениям; сейчас 352 прибор в отделениях 111, 112, 113, 114, 115, 121, 122, 123, 131, 133, 134 и 136) на трубах и аппаратах 3D-модели. Слой включается кнопкой «КИП» над 3D-сценой: фильтры по отделению и виду прибора, нажатие на прибор или его подпись открывает карточку с паспортными данными.'),
+    row('👆','Наведение и клик','Прибор ловит наведение и клик раньше аппарата или трубы за ним: появляется жёлтая обводка и подсказка с тегом. Клик по самому прибору или по его подписи открывает карточку, как у объекта: название, тег и тег DCS, диапазон, линия, отметка по плану, лист чертежа, технические данные из паспорта -03 (среда, точность, сигнал, питание, материалы, присоединение) и источник. Во вкладке «Пуск завода» в карточке показано состояние прибора по ходу пуска и ориентировочное значение (температура, давление) по паспорту. Пометка «оценено» означает, что в чертеже данных нет (например, габариты корпуса или положение вдоль трубы).'),
+    row('☰','Панель фильтра','При включённом слое справа вверху появляется панель: кнопки отделений и видов приборов (расход, давление, температура, уровень, арматура, прочее) с числом приборов. Выбранные кнопки оставляют на сцене только подходящие приборы, пустой выбор показывает все; «Сбросить» снимает фильтр, внизу показано «Показано: N / всего».')
   ].join(''),
   hIlkBody: [
     row('⛨','Что такое блокировка','Автоматическая защита: «если произошло вот это — автоматика сделает вот что». Данные взяты с листов «Логическая схема блокировок» (на русском языке).'),
@@ -160,6 +170,7 @@ ru: {
     row('▦','Выпадающий список «Все отделения»','Выбор отделения завода — камера показывает только его, остальное скрывается или становится прозрачным. Кнопка ✕ в карточке отделения (или Esc) возвращает всё как было: непрозрачные здания и обычное оборудование.'),
     row('⌂','Кнопка «Общий вид»','Сбрасывает выделение и возвращает камеру к виду на весь завод.'),
     row('▢','Кнопка «Здания прозрачные»','Включает/выключает прозрачность стен зданий, чтобы видеть оборудование внутри.'),
+    row('⏻','Слои при запуске','При каждом открытии 3D-модели все слои выключены: «Движение потоков», «КИП», значки блокировок, значки анализов и «Подписи». Модель (оборудование, здания, трубопроводы) видна сразу, нужные слои включаются кнопками вверху; выбор между запусками не сохраняется.'),
     row('➤','Кнопка «Движение потоков»','Включает/выключает анимацию движения по трубопроводам (точки, бегущие по линиям).'),
     row('Aa','Кнопка «Подписи»','Показывает/скрывает текстовые подписи оборудования над сценой.'),
     row('⛨','Кнопка «⛨ Блокировки» (вверху)','Включает и выключает значки блокировок на аппаратах: красный щит — аппарат блокируется (получает команду остановить, пустить или закрыть), синий контурный щит — на аппарате датчик или условие блокировки. Нажмите на аппарат — в карточке будет написано, по какому условию.'),
@@ -230,7 +241,7 @@ uz: {
   eyebrow:'TMK zavodi', h1:'Ilova bo‘yicha yordam',
   sub:'Ilovadan qanday foydalanish: qayerga bosish va bu nimaga olib kelishi. Quyidagi bo‘limlarni birma-bir ochish mumkin.',
   tdModel:'3D-model', tdFlow:'Oqim sxemasi', tdPfd:'PFD', tdIlk:'Blokirovkalar', tdAnl:'Tahlillar', tdDocs:'Hujjatlar', tdSettings:'Sozlamalar', tdHelp:'Yordam',
-  hStartT:'Zavodni ishga tushirish', hIlkT:'Blokirovkalar', hAnlT:'Tahlillar',
+  hStartT:'Zavodni ishga tushirish', hIlkT:'Blokirovkalar', hAnlT:'Tahlillar', hKipT:'KIPiA (3D-modeldagi asboblar)',
   hStartBody: [
     row('▶','«Zavodni ishga tushirish» yorlig‘i (3D-sahna ustida)','BFD «Obyektlarni ishga tushirishning mantiqiy ketma-ketligi» sxemasi bo‘yicha ishga tushirish imitatsiyasi: 137 → 136 → suv → 135 → 114.1/114 → 121-111-122-112-113-123/124 → 115. Oqimlar quvurlarda asta-sekin paydo bo‘ladi, hali ishga tushmagan jihoz kulrang.'),
     row('⏯','▶/⏸ va ⟲ tugmalari, tezlik, T+ vaqt slayderi','▶/⏸ ishga tushiradi va to‘xtatadi, ⟲ boshiga qaytaradi, slayder vaqt bo‘yicha suradi.'),
@@ -244,6 +255,11 @@ uz: {
     row('▸','«Apparat ▸ 3D» tugmasi','3D-modelga olib boradi: kamera apparatga uchadi, kolba belgisi miltillaydi, apparat kartochkasi ochiladi. «Barcha nuqtalar 3D da» tugmasi zavodning umumiy ko‘rinishini barcha belgilar bilan qaytaradi.'),
     row('⚗','3D-sahna ustidagi «⚗ Tahlillar» tugmasi','Apparatlardagi yashil kolba belgilarini yoqadi va o‘chiradi. Kolbadagi son — shu apparatdagi namuna olish nuqtalari soni. Apparatni bosing: kartochkada «Tahlillar» bloki chiqadi; xuddi shunday blok oqim sxemasi va PFD kartochkalarida ham bor.'),
     row('⚠','Apparatlarga bog‘lanish','Agar reglamentdagi pozitsiya nomi modeldagidan farq qilsa (masalan, reglamentda TK-12302, modelda yer osti rezervuari VE-12302), kartochkada nuqta qaysi apparatga bog‘langani yozilgan. Bunday nuqtalarni sxema bo‘yicha tekshirish kerak.')
+  ].join(''),
+  hKipBody: [
+    row('◎','«KIPiA» qatlami nima','KIPiA chizmalari (3147-5N111, 5N112, 5N113, 5N114, 5N115, 5N122, 5N123, 5N121, 5N131, 5N133, 5N134, 5N136 va boshqa bo‘limlar to‘plamlari; hozir 111, 112, 113, 114, 115, 121, 122, 123, 131, 133, 134 va 136-bo‘limlarda 352 ta asbob) bo‘yicha 3D-modeldagi quvurlar va apparatlardagi datchiklar va klapanlar. Qatlam 3D-sahna ustidagi «KIPiA» tugmasi bilan yoqiladi: bo‘lim va asbob turi bo‘yicha filtrlar, asbob yoki uning yozuvini bosish pasport ma’lumotli kartochkani ochadi.'),
+    row('👆','Kursor va bosish','Asbob o‘z orqasidagi apparat yoki quvurdan oldin kursor va bosishni ushlaydi: sariq kontur va teg bilan maslahat chiqadi. Asbobning o‘ziga yoki uning yorlig‘iga bosish obyektdagidek kartochkani ochadi: nomi, teg va DCS tegi, diapazon, liniya, reja bo‘yicha belgi, chizma varag‘i, -03 pasportidagi texnik ma’lumotlar (muhit, aniqlik, signal, quvvat, materiallar, ulanish) va manba. «Zavodni ishga tushirish» yorlig‘ida kartochkada asbobning ishga tushirish jarayonidagi holati va pasport bo‘yicha taxminiy qiymat (harorat, bosim) ko‘rsatiladi. «Baholangan» belgisi chizmada ma’lumot yo‘qligini bildiradi (masalan, korpus o‘lchamlari yoki quvur bo‘ylab joylashuv).'),
+    row('☰','Filtr paneli','Qatlam yoqilganda yuqori o‘ngda panel chiqadi: bo‘limlar va asbob turlari (sarf, bosim, harorat, sath, armatura, boshqa) tugmalari va asboblar soni. Tanlangan tugmalar sahnada faqat mos asboblarni qoldiradi, tanlov bo‘sh bo‘lsa hammasi ko‘rinadi; «Tozalash» filtrni olib tashlaydi, pastda «Ko‘rsatilgan: N / jami» yoziladi.')
   ].join(''),
   hIlkBody: [
     row('⛨','Blokirovka nima','Avtomatik himoya: «agar mana bu sodir bo‘lsa — avtomatika mana buni bajaradi». Ma’lumotlar «Blokirovkalarning mantiqiy sxemasi» varaqlaridan olingan (rus tilida).'),
@@ -370,6 +386,8 @@ function paintUI(lang){
   document.getElementById('hAnlBody').innerHTML = L.hAnlBody;
   document.getElementById('hStartT').textContent = L.hStartT;
   document.getElementById('hStartBody').innerHTML = L.hStartBody;
+  document.getElementById('hKipT').textContent = L.hKipT;
+  document.getElementById('hKipBody').innerHTML = L.hKipBody;
   document.getElementById('hIlkT').textContent = L.hIlkT;
   document.getElementById('hIlkBody').innerHTML = L.hIlkBody;
   document.getElementById('hSetBody').innerHTML = L.hSetBody;
