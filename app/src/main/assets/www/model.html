@@ -1362,8 +1362,11 @@ function start(){
  const QUALITY=(()=>{let m='auto';try{m=new URLSearchParams(location.search).get('q')||localStorage.getItem('tmk_quality')||'auto'}catch(e){}
    if(m==='lite')return {mode:m,lite:true};if(m==='high')return {mode:m,lite:false};
    const touch=matchMedia('(pointer:coarse)').matches,mem=navigator.deviceMemory||8,cores=navigator.hardwareConcurrency||8;
-   return {mode:'auto',lite:touch&&(mem<=4||cores<=6||Math.min(screen.width,screen.height)<=480)}})();
+   // слабый ПК: мало ядер/памяти или программная отрисовка (SwiftShader, llvmpipe, Basic Render Driver)
+   let soft=false;try{const gl=document.createElement('canvas').getContext('webgl'),ext=gl&&gl.getExtension('WEBGL_debug_renderer_info');soft=!!ext&&/swiftshader|llvmpipe|software|basic render/i.test(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)||'')}catch(e){}
+   return {mode:'auto',lite:soft||(touch?(mem<=4||cores<=6||Math.min(screen.width,screen.height)<=480):(mem<=4||cores<=4))}})();
  const LITE=QUALITY.lite;
+ let CULL=LITE; // отсечение мелочи и 30 кадров/с: сразу в облегчённом режиме, в «Авто» включается на лету, если кадры медленные (см. loop)
  const renderer=new THREE.WebGLRenderer({antialias:!LITE, logarithmicDepthBuffer:true, powerPreference:'high-performance'});
  renderer.setPixelRatio(Math.min(devicePixelRatio,LITE?1.25:2));
  view.appendChild(renderer.domElement);
@@ -5995,7 +5998,11 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
   el.addEventListener('pointerdown',e=>{tp.add(e.pointerId);tl=0;refit()},true);
   el.addEventListener('pointermove',e=>{if(!tp.has(e.pointerId))return;const n=performance.now();if(n-tl>250){tl=n;refit()}},true);
   ['pointerup','pointercancel'].forEach(ev=>el.addEventListener(ev,e=>tp.delete(e.pointerId),true))}
- function loop(now){requestAnimationFrame(loop);if(LITE&&now-last<28)return;const dt=Math.min(.05,(now-last)/1000);last=now;
+ const FPSW={n:0,t0:0,done:false};
+ function loop(now){requestAnimationFrame(loop);if(CULL&&now-last<28)return;const dt=Math.min(.05,(now-last)/1000);last=now;
+   // «Авто»: после 20 кадров прогрева берём среднее время кадра за 30 кадров (или 6 с); хуже 22 кадров/с — облегчаем на лету
+   if(QUALITY.mode==='auto'&&!CULL&&!FPSW.done){FPSW.n++;if(FPSW.n===20)FPSW.t0=now;
+     if(FPSW.n>20&&(FPSW.n>=50||now-FPSW.t0>6000)){FPSW.done=true;if((now-FPSW.t0)/(FPSW.n-20)>45){CULL=true;renderer.setPixelRatio(Math.min(devicePixelRatio,1.25));resize()}}}
    if(WALK.on){tw=null;walkStep(dt)}else{
    if(tw){const k=Math.min(1,(now-tw.t0)/tw.d),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;camera.position.lerpVectors(tw.from.p,tw.to.p,e);controls.target.lerpVectors(tw.from.t,tw.to.t,e);if(k>=1)tw=null}
    controls.update();}
@@ -6012,7 +6019,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
      if(c.hk.userData.jaws){const a=.25+.35*Math.max(0,(L-o.L[0])/(o.L[1]-o.L[0])-.5);c.hk.userData.jaws.forEach((j,i)=>{j.rotation.x=(i?-1:1)*a})}});
    if(anim){flowObjs.forEach(f=>{if(!f.tube.visible||f.ilkStop)return;f.off=(f.off+dt*6/f.len)%1;const n=f.dots.length,lim=SU.on?f.rev:1,dim=SU.on&&f.tube.material&&f.tube.material===suDim[f.s];f.dots.forEach((d,i)=>{const u=((i/n)+f.off)%1;if(SU.on)d.visible=!dim&&u<=lim;const q=f.path.getPointAt(Math.min(u,.9995));if(q)d.position.copy(q)})})}
    suTick(dt);buTick(dt);
-   if(LITE)liteCull();
+   if(CULL)liteCull();
    suGunAnim();suRainAnim();suShotAnim();const vp=suRender();
    const w=vp.w,h=vp.h;
    if(ANLB.on)ANLB.items.forEach(i=>{const v=i.objs.some(o=>{let q=o;while(q&&q!==scene){if(!q.visible)return false;q=q.parent}return true});i.sp.visible=v;const pl=ANLB.pulse&&(ANLB.pulse.tag==='*'||ANLB.pulse.tag===i.tag)&&now-ANLB.pulse.t<5000;i.sp.scale.setScalar(pl?.038*(1.35+.35*Math.sin(now/130)):.038)});
