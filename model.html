@@ -1544,6 +1544,18 @@ function start(){
 
  const pickables=[]; const byTag={}; const bySec={}; const allObj=[];
  function reg(obj,tag,sec,info){obj.userData={tag,sec,info};pickables.push(obj);(byTag[tag]=byTag[tag]||[]).push(obj);(bySec[sec]=bySec[sec]||[]).push(obj);allObj.push(obj);obj.userData.base=obj.material}
+ // Часть позиций перечня физически входит в состав другого оборудования (патронный
+ // фильтр и насос ВД на раме обратного осмоса, мешалки на баках) и строится внутри
+ // родителя без своего тега. Такой узел виден на сцене, но в карточке помечался
+ // «не показан в 3D» и не выбирался. regSub привязывает тег к уже построенной
+ // детали: геометрия не меняется, меняется только адресуемость.
+ const EQINFO={}; (DATA.eq||[]).forEach(e=>{EQINFO[e.t]=e});
+ function regSub(obj,tag){
+   const info=EQINFO[tag];
+   if(!obj||!info||byTag[tag])return obj;      // не дублируем, если тег уже построен отдельно
+   reg(obj,tag,eqSec(tag)||info.s,{kind:'eq',o:info});
+   return obj;
+ }
  function edges(mesh){const e=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry,30),edgeMat);mesh.add(e);return e}
 
  // buildings (architecture: 5J… drawings)
@@ -3457,8 +3469,8 @@ function start(){
        [[-.45,.6],[.0,.6],[.45,.6],[-.45,1.15],[.0,1.15],[.45,1.15],[-.45,1.7],[.0,1.7],[.45,1.7]].forEach(([x,y])=>{const q=c_(.21,5.6,x,y,.5,pv,14);q.rotation.x=Math.PI/2;
          [-2.2,3.2].forEach(z=>c_(.25,.08,x,y,z,BL,14).rotation.x=Math.PI/2)});
        tb(V(-.7,.6,-2.4),V(-.7,1.7,-2.4),.07,SS);tb(V(.7,.6,3.4),V(.7,1.7,3.4),.07,SS);tb(V(-.7,1.95,-2.4),V(-.7,1.95,3.3),.05,SS);
-       vessel(.4,1.1,-.45,-3.15,0,SS,.25,0);                                                               // DM-09 cartridge filter
-       c_(.32,1.0,.45,.6,-3.15,SS,16);c_(.36,.5,.45,1.35,-3.15,BL,16);                                    // DM-10 HP pump
+               {const n0=g.children.length;vessel(.4,1.1,-.45,-3.15,0,SS,.25,0);regSub(g.children[n0],'DM-09');}         // DM-09 cartridge filter (vessel() returns the top mark, not the mesh)                                                               // DM-09 cartridge filter
+       regSub(c_(.32,1.0,.45,.6,-3.15,SS,16),'DM-10');c_(.36,.5,.45,1.35,-3.15,BL,16);                                    // DM-10 HP pump
        b(.6,1.6,.35,.6,.95,-2.2,sm(0xE0E3E3))}
      else if(o.k==='decarb'){ // CO2 degasifier Ø1,6 on the permeate pit slab, packed tower with side fan 2000 m³/h, top distributor (sheet 15 sec. 5-5)
        const sh=c_(1.6,3.0,0,1.5,0,UP,24);edges(sh);dome(1.6,3.0,UP,true);c_(.3,.5,0,3.55,0,UP,12);

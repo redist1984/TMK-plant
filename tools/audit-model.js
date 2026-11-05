@@ -83,8 +83,29 @@ for (const r of DATA.reg) for (const t of r.t || []) regTags.add(t);
 const dataSpan = html.slice(html.indexOf('const DATA = '), html.indexOf('const IMGS = '));
 const outsideData = html.replace(dataSpan, '');
 const inScene = new Set();
-for (const m of outsideData.matchAll(/\bt\s*:\s*['"]([A-Za-z0-9._\-А-Яа-я]+)['"]/g)) {
+// тег может содержать «/», «~», «…» (PP-13208A/B, SM-12303A~D, RW-1…6),
+// поэтому берём всё до закрывающей кавычки
+for (const m of outsideData.matchAll(/\bt\s*:\s*['"]([^'"]+)['"]/g)) {
   inScene.add(m[1]);
+}
+// regSub(mesh,'TAG') — привязка тега к детали, построенной внутри родителя
+// (патронный фильтр и насос ВД на раме обратного осмоса). Скобки в аргументах
+// вложенные, поэтому ищем парную закрывающую скобку, а тег берём последним.
+for (let i = outsideData.indexOf('regSub('); i >= 0; i = outsideData.indexOf('regSub(', i + 1)) {
+  let depth = 0;
+  let end = -1;
+  for (let k = i + 'regSub'.length; k < outsideData.length; k++) {
+    const c = outsideData[k];
+    if (c === '(') depth++;
+    else if (c === ')') {
+      depth--;
+      if (depth === 0) { end = k; break; }
+    }
+  }
+  if (end < 0) continue;
+  const args = outsideData.slice(i, end);
+  const tail = args.match(/,\s*['"]([^'"]+)['"]\s*$/);
+  if (tail) inScene.add(tail[1]);
 }
 
 const rows = [];
