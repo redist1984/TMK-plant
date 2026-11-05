@@ -9,6 +9,7 @@
     "android:assets": "node tools/build-android-assets.js",
     "geometry": "node tools/geometry/run.js",
     "geometry:baseline": "node tools/geometry/run.js --update-baseline",
+    "audit": "node tools/audit-model.js",
     "flow-labels": "node tools/check-flow-labels.js"
   },
   "devDependencies": {
