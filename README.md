@@ -84,15 +84,22 @@ network-first, но старый кэш иначе останется у тех,
 
 ## Офлайн-сборка одним файлом
 
+Нужен только **Node** — Python не требуется:
+
 ```powershell
-python tools/build_offline.py                  # dist-offline/TMK-plant-offline.html
-python tools/build_offline.py --with-pdf       # + все PDF внутри (~230 МБ)
+npm install                       # один раз: sharp для пережатия картинок
+npm run offline                   # dist-offline/TMK-plant-offline.html (~40 МБ)
+npm run offline -- --with-pdf     # + все PDF внутри (~230 МБ)
 ```
+
+Без `npm install` сборка тоже работает: `node tools/build-offline.js` просто
+не пережимает JPEG, и файл выходит примерно на 11 МБ больше.
 
 Скрипт вкладывает страницы в `index.html` как `srcdoc`-iframe, встраивает
 скрипты и шрифты, картинки кладёт base64-блоками и отдаёт blob-URL по
-требованию, service worker и manifest убирает. Результат открывается прямо
-с диска по `file://`, без сети и без сервера.
+требованию, service worker и manifest убирает. Страницы декодируются лениво —
+при открытии собирается только видимая вкладка, остальные при первом
+переключении. Результат открывается прямо с диска по `file://`, без сети.
 
 ## Android-приложение
 
@@ -101,7 +108,7 @@ python tools/build_offline.py --with-pdf       # + все PDF внутри (~230
 
 Главное: **контент в Android-проекте не хранится**. Каталог
 `android/app/src/main/assets/www/` собирается из корня репозитория скриптом
-`tools/build-android-assets.py` при каждой сборке APK и добавлен в
+`tools/build-android-assets.js` при каждой сборке APK и добавлен в
 `android/.gitignore`. Поэтому правка любого файла в корне автоматически
 попадает и в APK — второй копии, которая могла бы разъехаться с сайтом,
 просто нет.
@@ -116,11 +123,15 @@ python tools/build_offline.py --with-pdf       # + все PDF внутри (~230
 | Что | Чем | Когда |
 |---|---|---|
 | Сайт | `pages.yml` — деплой корня на Pages | пуш в `main` |
-| Офлайн-файл | `dist.yml`, job `offline` — `tools/build_offline.py` | PR, `main`, тег `v*` |
-| APK | `dist.yml`, job `apk` — `tools/build-android-assets.py` + Gradle | PR, `main`, тег `v*` |
+| Офлайн-файл | `dist.yml`, job `offline` — `tools/build-offline.js` | PR, `main`, тег `v*` |
+| APK | `dist.yml`, job `apk` — `tools/build-android-assets.js` + Gradle | PR, `main`, тег `v*` |
 
 На тег `v*` оба артефакта прикладываются к GitHub Release. Локальные сборки
 описаны в соответствующих разделах выше и в `android/README.md`.
+
+Единственное исключение — генератор PFD (`tools/pfd/build.py`): он на Python
+(pymupdf, opencv, scikit-image), потому что работает с растром исходного
+чертежа. Нужен редко — только когда меняется сам PFD.
 
 ## Публикация
 

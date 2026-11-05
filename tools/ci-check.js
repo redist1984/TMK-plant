@@ -348,8 +348,8 @@ function checkAndroid() {
     if (!fs.existsSync(path.join(dir, f))) fail('android', `android/${f.split(path.sep).join('/')}: нет файла`);
   }
 
-  if (!fs.existsSync(P('tools', 'build-android-assets.py'))) {
-    fail('android', 'tools/build-android-assets.py: нет скрипта сборки контента для APK');
+  if (!fs.existsSync(P('tools', 'build-android-assets.js'))) {
+    fail('android', 'tools/build-android-assets.js: нет скрипта сборки контента для APK');
   }
 
   // Сгенерированная копия сайта не должна попадать в репозиторий.

@@ -1,5 +1,5 @@
 # Каталог контента собирается из корня репозитория скриптом
-# tools/build-android-assets.py — в git его не храним, чтобы не держать
+# tools/build-android-assets.js — в git его не храним, чтобы не держать
 # вторую копию 215 МБ и не расходиться с main.
 app/src/main/assets/www/
 
