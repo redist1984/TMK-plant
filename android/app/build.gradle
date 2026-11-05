@@ -55,16 +55,16 @@ android {
 }
 
 // Контент приложения собирается из корня репозитория и в git не хранится
-// (см. tools/build-android-assets.py и android/.gitignore). Поэтому любое
+// (см. tools/build-android-assets.js и android/.gitignore). Поэтому любое
 // изменение сайта автоматически попадает в APK при следующей сборке.
-// Интерпретатор Python задаётся переменной окружения PYTHON (по умолчанию
-// python3; на Windows удобно выставить PYTHON=python или полный путь).
+// Интерпретатор — Node (переменная окружения NODE, по умолчанию node из PATH),
+// чтобы не требовать Python на машине разработчика.
 tasks.register('buildAssets', Exec) {
     group = 'build'
     description = 'Копирует сайт из корня репозитория в app/src/main/assets/www'
     // Скрипт лежит в tools/ корня репозитория, то есть на уровень выше android/.
     workingDir rootProject.projectDir.parentFile
-    commandLine(System.getenv('PYTHON') ?: 'python3', 'tools/build-android-assets.py')
+    commandLine(System.getenv('NODE') ?: 'node', 'tools/build-android-assets.js')
 }
 
 tasks.named('preBuild') {

@@ -7,7 +7,7 @@ WebView-обёртка вокруг того же сайта, что публи�
 ## Что важно понимать
 
 **Контента в этом каталоге нет.** `app/src/main/assets/www/` собирается из
-корня репозитория скриптом `tools/build-android-assets.py` и в git не
+корня репозитория скриптом `tools/build-android-assets.js` и в git не
 хранится (см. `.gitignore`). Поэтому:
 
 * единственный источник правды — корень репозитория;
@@ -20,18 +20,17 @@ APK.
 
 ## Локальная сборка
 
-Нужны JDK 17+ и Android SDK (platform 34, build-tools 34). Python — только
-для сборки контента.
+Нужны JDK 17+ и Android SDK (platform 34, build-tools 34), плюс **Node** для
+сборки контента. Python не требуется.
 
 ```powershell
 # из корня репозитория
-python tools/build-android-assets.py      # контент -> android/app/src/main/assets/www
+node tools/build-android-assets.js      # контент -> android/app/src/main/assets/www
 
 cd android
 # путь к SDK, если Android Studio установлена нестандартно
 #   local.properties: sdk.dir=C\:\\path\\to\\Android\\Sdk
 $env:JAVA_HOME = 'D:\Android Studio\jbr'
-$env:PYTHON    = 'python'                 # интерпретатор для шага buildAssets
 
 .\gradlew.bat assembleDebug
 # результат: app/build/outputs/apk/debug/app-debug.apk
@@ -39,10 +38,9 @@ $env:PYTHON    = 'python'                 # интерпретатор для ш
 
 `gradlew` сам подтянет нужный Gradle (9.6.0) и зависимости из google()/
 mavenCentral(). Android Studio открывает каталог `android/` как обычный
-проект.
-
-Если `PYTHON` не задан, используется `python3`. Ошибка вида «python3: not
-found» на Windows — это она; задайте `PYTHON=python` или полный путь.
+проект; контент она собирает сама — задача `buildAssets` висит на `preBuild`
+и вызывает `node tools/build-android-assets.js`. Если `node` не в PATH,
+задайте путь: `NODE=C:\Program Files\nodejs\node.exe`.
 
 ## Версия приложения
 

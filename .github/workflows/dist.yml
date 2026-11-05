@@ -7,7 +7,7 @@
 #   * APK       — job apk ниже (контент копируется из корня в assets/www)
 #
 # Пути к контенту нигде не дублируются вручную: и офлайн-сборка, и Android
-# читают те же файлы, что лежат в корне.
+# читают те же файлы, что лежат в корне. Всё на Node — Python не требуется.
 name: Сборка артефактов
 
 on:
@@ -31,12 +31,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: '3.12'
+          node-version: '20'
+          cache: npm
+
+      # sharp пережимает JPEG: без него офлайн-файл весит на ~11 МБ больше
+      - name: Установить зависимости сборки
+        run: npm ci
 
       - name: Собрать офлайн-версию одним файлом
-        run: python3 tools/build_offline.py --out dist-offline
+        run: npm run offline -- --out dist-offline
 
       - uses: actions/upload-artifact@v4
         with:
@@ -60,12 +65,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: '3.12'
+          node-version: '20'
 
-      - name: Контент из корня репозитория -> assets/www
-        run: python3 tools/build-android-assets.py
+      # Контент в assets/www готовит Gradle-задача buildAssets (см.
+      # android/app/build.gradle) — она вызывает node tools/build-android-assets.js.
 
       - name: Проверить, что контент не попал под контроль версий
         run: |

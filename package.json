@@ -1,14 +1,18 @@
 {
   "name": "tmk-plant-tools",
   "private": true,
-  "description": "Инструменты проекта: проверки целостности и геометрии 3D-модели",
+  "description": "Инструменты проекта: офлайн-сборка, контент для APK, проверки геометрии модели",
   "scripts": {
     "check": "node tools/ci-check.js",
+    "offline": "node tools/build-offline.js",
+    "offline:pdf": "node tools/build-offline.js --with-pdf",
+    "android:assets": "node tools/build-android-assets.js",
     "geometry": "node tools/geometry/run.js",
     "geometry:baseline": "node tools/geometry/run.js --update-baseline",
     "flow-labels": "node tools/check-flow-labels.js"
   },
   "devDependencies": {
-    "playwright-core": "^1.64.1"
+    "playwright-core": "^1.64.1",
+    "sharp": "^0.35.5"
   }
 }
