@@ -76,6 +76,17 @@ const sections = new Set(Object.keys(DATA.sections));
 const regTags = new Set();
 for (const r of DATA.reg) for (const t of r.t || []) regTags.add(t);
 
+// «Есть ли аппарат в 3D» определяется не полем m в DATA.eq, а тем, попал ли тег
+// в массив геометрии: модель при построении регистрирует объекты через reg() и
+// показывает «не показан в 3D» только если byTag[tag] пуст. Поэтому ищем
+// определения вида {t:'DM-01', k:"ptank", ...} во всём файле вне блока DATA.
+const dataSpan = html.slice(html.indexOf('const DATA = '), html.indexOf('const IMGS = '));
+const outsideData = html.replace(dataSpan, '');
+const inScene = new Set();
+for (const m of outsideData.matchAll(/\bt\s*:\s*['"]([A-Za-z0-9._\-А-Яа-я]+)['"]/g)) {
+  inScene.add(m[1]);
+}
+
 const rows = [];
 for (const e of DATA.eq) {
   const tag = e.t;
@@ -90,7 +101,7 @@ for (const e of DATA.eq) {
     untranslated: untranslated.length,
     untranslatedList: untranslated,
     // m:true — аппарат есть в 3D-модели; при false карточка помечается «не показан в 3D»
-    notIn3d: e.m === false,
+    notIn3d: !inScene.has(tag),
     badSection: !sections.has(e.s),
     noWeight: !String(e.w || '').trim(),
     noQty: !String(e.q || '').trim(),
