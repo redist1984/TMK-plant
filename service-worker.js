@@ -1,4 +1,4 @@
-const CACHE = 'tmk-plant-v140';
+const CACHE = 'tmk-plant-v141';
 const ASSETS = [
   "logo.png",
   "sec_img/eq_EX-13501_2.jpg",
@@ -204,9 +204,9 @@ const ASSETS = [
   "sec_img/wtp_2.jpg",
   "sec_img/wtp_3.jpg",
   "lang.js",
-  "m.png",
-  "p2.png",
-  "theme.js"
+  "theme.js",
+  "vendor/three.min.js",
+  "vendor/OrbitControls.js"
 ];
 self.addEventListener('install', e => {
   self.skipWaiting();
