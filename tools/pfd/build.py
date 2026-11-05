@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Сборка вкладки PFD: python3 tools/pfd/build.py <WZ-POT-262.pdf>
-Требуется: poppler (pdfimages), numpy, pillow, opencv-python-headless, scikit-image.
+Требуется: numpy, pillow, opencv-python-headless, scikit-image, pymupdf.
+Внешние программы (poppler/pdfimages) больше не нужны: картинки из PDF
+достаёт PyMuPDF — см. extract_images().
 Результат:
   pfd/pfd-data.js        — векторная схема (линии аппаратов, трубы, стрелки, ромбы, подписи), потоки, карточки
   pfd/scan/sheet1..3.jpg — очищенный скан (только для сверки: кнопка «Скан» во вкладке)
 Разметка (зоны аппаратов, направления потоков, пунктиры, подписи) — в eqboxes.py и manual.py."""
-import sys, os, json, subprocess, tempfile, re
+import sys, os, json, io, tempfile, re
 import numpy as np, cv2
 from PIL import Image, ImageDraw
 HERE=os.path.dirname(os.path.abspath(__file__)); ROOT=os.path.abspath(os.path.join(HERE,'..','..'))
@@ -17,9 +19,36 @@ from sym import SYM,targets
 import tables as TB
 import manual as M
 
+def extract_images(pdf_path, outdir):
+    """Достаёт встроенные изображения из PDF в том же порядке и с теми же
+    именами (im-000.jpg, im-001.jpg, ...), что и poppler `pdfimages -j`.
+    Существует только потому, что poppler на машине может отсутствовать;
+    результат для этого PDF побайтово совпадает с pdfimages -j."""
+    import pymupdf  # PyMuPDF
+    doc = pymupdf.open(pdf_path)
+    n = 0
+    try:
+        for page in doc:
+            for img in page.get_images(full=True):
+                data = doc.extract_image(img[0])
+                ext = (data.get('ext') or 'jpg').lower()
+                raw = data['image']
+                out = os.path.join(outdir, 'im-%03d.jpg' % n)
+                if ext in ('jpg', 'jpeg'):
+                    with open(out, 'wb') as fh:
+                        fh.write(raw)
+                else:
+                    # редкий случай: картинка не в JPEG — остальной код ждёт .jpg
+                    Image.open(io.BytesIO(raw)).convert('RGB').save(out, 'JPEG', quality=95)
+                n += 1
+    finally:
+        doc.close()
+    return n
+
 pdf=sys.argv[1]; OUT=os.path.join(ROOT,'pfd'); os.makedirs(os.path.join(OUT,'scan'),exist_ok=True)
-tmp=tempfile.mkdtemp(prefix='pfd_'); T.SHEET_DIR=tmp
-subprocess.check_call(['pdfimages','-j',pdf,os.path.join(tmp,'im')])
+tmp=os.path.join(tempfile.gettempdir(),'pfd_build'); os.makedirs(tmp,exist_ok=True); T.SHEET_DIR=tmp
+_got=extract_images(pdf,tmp)
+if _got<3: raise SystemExit(f'в PDF найдено изображений: {_got}, ожидалось минимум 3')
 IMG={'1':'im-002.jpg','2':'im-000.jpg','3':'im-001.jpg'}   # лист основной надписи → страница PDF
 # нижняя граница таблицы потоков на скане и (лист 2) штамп, стоящий рядом с таблицей
 SCAN_CUT={'1':(1150,None),'2':(1350,(1325,1184,2006,1426)),'3':(1170,None)}
