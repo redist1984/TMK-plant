@@ -289,9 +289,8 @@ try {
   }
 } catch (e) { /* fall through to static list below */ }
 if (!currentPaths || !currentPaths.length) currentPaths = Object.keys(KNOWN);
-// Note: when a sync from Google Drive actually changes anything, index.html
-// reloads the whole app (see tmkSyncDone in index.html), which re-runs this
-// script and picks up any newly downloaded PDFs automatically.
+// Список PDF берётся с устройства (TmkNative.listDocsPdf) и обновляется при
+// каждом открытии вкладки, поэтому скачанные/добавленные файлы видны сразу.
 
 const SECTIONS = [
  ["121","Склад серы и подача сырья","Oltingugurt ombori va xomashyo uzatish","3147-5Hg121-02/04"],

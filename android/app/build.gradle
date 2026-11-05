@@ -1,0 +1,76 @@
+plugins {
+    id 'com.android.application'
+}
+
+// versionCode/versionName можно переопределить при сборке:
+//   gradle assembleRelease -PversionCode=57 -PversionName=1.57
+// В CI подставляются автоматически (см. .github/workflows/android.yml).
+def appVersionCode = (findProperty('versionCode') ?: '1').toInteger()
+def appVersionName = (findProperty('versionName') ?: '1.0').toString()
+
+// Подпись release. android/keystore.properties в git не попадает; если файла
+// нет, release собирается неподписанным (только для проверки сборки).
+def keystorePropsFile = rootProject.file('keystore.properties')
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+
+android {
+    namespace 'com.tmkplant.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.tmkplant.app"
+        minSdk 21
+        targetSdk 34
+        versionCode appVersionCode
+        versionName appVersionName
+    }
+
+    if (keystoreProps.containsKey('storeFile')) {
+        signingConfigs {
+            release {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (keystoreProps.containsKey('storeFile')) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+// Контент приложения собирается из корня репозитория и в git не хранится
+// (см. tools/build-android-assets.py и android/.gitignore). Поэтому любое
+// изменение сайта автоматически попадает в APK при следующей сборке.
+// Интерпретатор Python задаётся переменной окружения PYTHON (по умолчанию
+// python3; на Windows удобно выставить PYTHON=python или полный путь).
+tasks.register('buildAssets', Exec) {
+    group = 'build'
+    description = 'Копирует сайт из корня репозитория в app/src/main/assets/www'
+    // Скрипт лежит в tools/ корня репозитория, то есть на уровень выше android/.
+    workingDir rootProject.projectDir.parentFile
+    commandLine(System.getenv('PYTHON') ?: 'python3', 'tools/build-android-assets.py')
+}
+
+tasks.named('preBuild') {
+    dependsOn 'buildAssets'
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+}

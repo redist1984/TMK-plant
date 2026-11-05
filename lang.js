@@ -1,12 +1,12 @@
 // Общий помощник переключения языка интерфейса (RU ⇄ UZ) между index.html
-// (родительский документ, держит все 4 вкладки в <iframe>) и самими вкладками
-// (model.html, flow.html, docs.html, drive.html).
+// (родительский документ, держит все вкладки в <iframe>) и самими вкладками
+// (model.html, flow.html, pfd.html, interlocks.html, analyses.html, kip.html,
+// docs.html, settings.html, help.html).
 //
 // Каждый file:// документ в WebView — это отдельный источник (origin), поэтому
 // напрямую достучаться из index.html до window внутри чужого <iframe> нельзя
 // (SecurityError), и localStorage тоже не гарантированно общий между ними.
-// Поэтому язык синхронизируется через postMessage — тем же способом, что и
-// события Google Диска (см. window.tmkDriveEvent в index.html/drive.html).
+// Поэтому язык синхронизируется через postMessage.
 (function (global) {
   var KEY = 'tmk_lang';
 
