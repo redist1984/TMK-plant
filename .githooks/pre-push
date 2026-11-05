@@ -1,0 +1,48 @@
+#!/bin/sh
+# pre-push: не пускаем в main напрямую и не пушим заведомо сломанное дерево.
+#
+# Ставится один раз в каждом клоне:
+#   git config core.hooksPath .githooks
+#
+# Это предохранитель, а не граница безопасности: обходится флагом --no-verify.
+# Настоящая защита main — правила репозитория на стороне GitHub.
+set -u
+
+remote="${1:-origin}"
+fail=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main|refs/heads/master)
+      echo "pre-push: прямой пуш в $remote_ref запрещён — только ветка и pull request." >&2
+      fail=1
+      continue
+      ;;
+  esac
+
+  branch=${remote_ref#refs/heads/}
+  case "$branch" in
+    feat/*|fix/*|chore/*|docs/*|ci/*|refactor/*|test/*|perf/*) ;;
+    *)
+      echo "pre-push: имя ветки '$branch' не по соглашению (feat/ fix/ chore/ docs/ ci/ refactor/ test/ perf/)." >&2
+      fail=1
+      ;;
+  esac
+done
+
+if [ "$fail" -ne 0 ]; then
+  echo "pre-push: пуш отменён." >&2
+  exit 1
+fi
+
+if command -v node >/dev/null 2>&1; then
+  echo "pre-push: node tools/ci-check.js"
+  if ! node tools/ci-check.js; then
+    echo "pre-push: проверки не пройдены, пуш отменён." >&2
+    exit 1
+  fi
+else
+  echo "pre-push: node не найден, проверки пропущены." >&2
+fi
+
+exit 0
