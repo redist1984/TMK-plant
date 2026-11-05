@@ -52,6 +52,41 @@ function serve() {
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
 }
 
+// «Прыгающая модель»: в model.html цикл анимации непрерывно двигает мостовые
+// краны — мост по рельсам, тележку по пролёту, крюк по высоте (rope.scale.y).
+// Габарит крана из-за этого меняется на метры между прогонами, и любая проверка,
+// построенная на Box3, получает разные числа. Для замеров останавливаем кадры и
+// ставим краны в фиксированное положение (крюк поднят, мост и тележка в нуле) —
+// модель при этом не меняется, это только состояние.
+async function freezeAndPark(page) {
+  await page.evaluate(() => {
+    // следующий кадр не запросится — цикл анимации останавливается сам
+    window.requestAnimationFrame = () => 0;
+  });
+  await page.waitForTimeout(200);
+  return page.evaluate(() => {
+    const T = window.__T;
+    const cranes = T.CRANES || [];
+    let parked = 0;
+    for (const c of cranes) {
+      const o = c.o;
+      if (!o) continue;
+      c.bridge.position.x = 0;
+      c.tr.position.z = 0;
+      const L = o.L && o.L[0] != null ? o.L[0] : 2;
+      c.rope.scale.y = L;
+      c.rope.position.y = c.hookY - L / 2;
+      c.hk.position.y = c.hookY - L;
+      parked++;
+    }
+    let meshes = 0;
+    T.scene.traverse((o) => {
+      if (o.isMesh) meshes++;
+    });
+    return { parked, meshes };
+  });
+}
+
 // Модель достраивается после загрузки, и часть геометрии продолжает двигаться
 // (анимация ввода, движущиеся элементы). Устойчивого «затишья» у неё нет:
 // сигнатура габаритов не замирает и за минуты. Поэтому выдерживаем фиксированную
@@ -134,10 +169,15 @@ const BASELINE_FILE = path.join(__dirname, 'baseline.json');
     server.close();
     process.exit(2);
   }
-  // Выдерживаем паузу, чтобы сцена дошла до рабочего состояния.
+  // Выдерживаем паузу, чтобы сцена дошла до рабочего состояния, затем
+  // останавливаем анимацию и ставим краны в фиксированное положение.
   const waitMs = Number(arg('--wait', process.env.TMK_GEO_WAIT || '8000')) || 8000;
   const meshes = await waitReady(page, waitMs);
-  console.log(`сцена: ${meshes} сеток, пауза ${(waitMs / 1000).toFixed(1)} с`);
+  const frozen = await freezeAndPark(page);
+  console.log(
+    `сцена: ${frozen.meshes} сеток, пауза ${(waitMs / 1000).toFixed(1)} с, ` +
+      `кранов зафиксировано: ${frozen.parked} (анимация остановлена)`
+  );
 
   const baseline = fs.existsSync(BASELINE_FILE)
     ? JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8'))
