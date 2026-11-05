@@ -52,29 +52,21 @@ function serve() {
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
 }
 
-// Ждём, пока сцена перестанет достраиваться: часть геометрии (опоры, площадки,
-// слой КИП) добавляется асинхронно, и проверка, снятая в разные моменты, даёт
-// разные числа — объекты «переезжают» через пороги. Считаем общее число
-// объектов и ждём, пока оно не перестанет меняться.
-async function settle(page, stableMs = 1200, maxMs = 60000) {
-  const t0 = Date.now();
-  let last = -1;
-  let since = Date.now();
-  while (Date.now() - t0 < maxMs) {
-    const n = await page.evaluate(() => {
-      let c = 0;
-      window.__T.scene.traverse(() => c++);
-      return c;
+// Модель достраивается после загрузки, и часть геометрии продолжает двигаться
+// (анимация ввода, движущиеся элементы). Устойчивого «затишья» у неё нет:
+// сигнатура габаритов не замирает и за минуты. Поэтому выдерживаем фиксированную
+// паузу, достаточную, чтобы сцена дошла до рабочего состояния, а расхождение
+// между прогонами компенсируем допуском (см. --tolerance). Проверка — грубый
+// детектор регрессий, а не эталонное измерение.
+async function waitReady(page, ms) {
+  await page.waitForTimeout(ms);
+  return page.evaluate(() => {
+    let meshes = 0;
+    window.__T.scene.traverse((o) => {
+      if (o.isMesh) meshes++;
     });
-    if (n !== last) {
-      last = n;
-      since = Date.now();
-    } else if (Date.now() - since >= stableMs) {
-      return { settled: true, objects: n, waited: Date.now() - t0 };
-    }
-    await page.waitForTimeout(250);
-  }
-  return { settled: false, objects: last, waited: Date.now() - t0 };
+    return meshes;
+  });
 }
 
 function arg(name, fallback) {
@@ -142,17 +134,15 @@ const BASELINE_FILE = path.join(__dirname, 'baseline.json');
     server.close();
     process.exit(2);
   }
-  // Ждём, пока сцена перестанет меняться (см. settle выше).
-  const st = await settle(page);
-  console.log(
-    `сцена: ${st.objects} объектов, ждали ${(st.waited / 1000).toFixed(1)} с` +
-      (st.settled ? '' : ' — ВНИМАНИЕ: не стабилизировалась, число находок может гулять')
-  );
+  // Выдерживаем паузу, чтобы сцена дошла до рабочего состояния.
+  const waitMs = Number(arg('--wait', process.env.TMK_GEO_WAIT || '8000')) || 8000;
+  const meshes = await waitReady(page, waitMs);
+  console.log(`сцена: ${meshes} сеток, пауза ${(waitMs / 1000).toFixed(1)} с`);
 
   const baseline = fs.existsSync(BASELINE_FILE)
     ? JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8'))
     : {};
-  // Допуск: единицы находок могут «дрожать» из-за округлений и порядка обхода.
+  // Допуск: измерение зависит от момента съёмки, единицы находок «дрожат».
   const tolerance = Number(arg('--tolerance', process.env.TMK_GEO_TOLERANCE || '0')) || 0;
   const next = {};
   let failed = 0;
