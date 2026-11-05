@@ -1,0 +1,4 @@
+# Shell-скрипты и git-хуки обязаны иметь LF: с CRLF на Windows ломается
+# shebang ("bad interpreter"), и хук молча перестаёт работать.
+.githooks/* text eol=lf
+*.sh        text eol=lf

@@ -1,0 +1,19 @@
+#!/bin/sh
+# pre-commit: базовая проверка целостности до того, как коммит создан.
+#
+# Ставится один раз в каждом клоне:
+#   git config core.hooksPath .githooks
+#
+# Это предохранитель, а не граница безопасности: обходится флагом --no-verify.
+set -u
+
+if command -v node >/dev/null 2>&1; then
+  node tools/ci-check.js || {
+    echo "pre-commit: проверки не пройдены, коммит отменён (--no-verify чтобы обойти)." >&2
+    exit 1
+  }
+else
+  echo "pre-commit: node не найден, проверки пропущены." >&2
+fi
+
+exit 0
