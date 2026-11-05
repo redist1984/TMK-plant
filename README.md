@@ -94,6 +94,34 @@ python tools/build_offline.py --with-pdf       # + все PDF внутри (~230
 требованию, service worker и manifest убирает. Результат открывается прямо
 с диска по `file://`, без сети и без сервера.
 
+## Android-приложение
+
+`android/` — проект Android Studio: WebView-обёртка вокруг того же сайта.
+Подробности в [android/README.md](android/README.md).
+
+Главное: **контент в Android-проекте не хранится**. Каталог
+`android/app/src/main/assets/www/` собирается из корня репозитория скриптом
+`tools/build-android-assets.py` при каждой сборке APK и добавлен в
+`android/.gitignore`. Поэтому правка любого файла в корне автоматически
+попадает и в APK — второй копии, которая могла бы разъехаться с сайтом,
+просто нет.
+
+Приложение работает полностью офлайн: разрешение `INTERNET` не запрашивается,
+внутри APK лежат все страницы, фото и PDF.
+
+## Как это собирается
+
+Три формы проекта собираются из одних и тех же файлов в корне:
+
+| Что | Чем | Когда |
+|---|---|---|
+| Сайт | `pages.yml` — деплой корня на Pages | пуш в `main` |
+| Офлайн-файл | `dist.yml`, job `offline` — `tools/build_offline.py` | PR, `main`, тег `v*` |
+| APK | `dist.yml`, job `apk` — `tools/build-android-assets.py` + Gradle | PR, `main`, тег `v*` |
+
+На тег `v*` оба артефакта прикладываются к GitHub Release. Локальные сборки
+описаны в соответствующих разделах выше и в `android/README.md`.
+
 ## Публикация
 
 `.github/workflows/pages.yml` — на каждый пуш в `main` выкладывает корень

@@ -1,0 +1,105 @@
+# Сборка артефактов из одного и того же исходника.
+#
+# Задача: любое изменение в репозитории автоматически доезжает до всех трёх
+# форм проекта — сайта (GitHub Pages), офлайн-файла и Android-приложения.
+#   * сайт      — .github/workflows/pages.yml (деплой корня)
+#   * офлайн    — job offline ниже (собирается из корня)
+#   * APK       — job apk ниже (контент копируется из корня в assets/www)
+#
+# Пути к контенту нигде не дублируются вручную: и офлайн-сборка, и Android
+# читают те же файлы, что лежат в корне.
+name: Сборка артефактов
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: dist-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline:
+    name: offline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Собрать офлайн-версию одним файлом
+        run: python3 tools/build_offline.py --out dist-offline
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tmk-plant-offline
+          path: dist-offline/TMK-plant-offline.html
+          if-no-files-found: error
+
+  apk:
+    name: apk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # нужен полный счётчик коммитов для versionCode
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Контент из корня репозитория -> assets/www
+        run: python3 tools/build-android-assets.py
+
+      - name: Проверить, что контент не попал под контроль версий
+        run: |
+          if git ls-files --error-unmatch android/app/src/main/assets/www >/dev/null 2>&1; then
+            echo "assets/www отслеживается git — это дубль контента, так нельзя" >&2
+            exit 1
+          fi
+
+      - name: Собрать APK
+        working-directory: android
+        run: |
+          VCODE=$(git rev-list --count HEAD)
+          echo "versionCode=$VCODE"
+          ./gradlew assembleDebug -PversionCode="$VCODE" -PversionName="1.$VCODE" --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tmk-plant-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+  release:
+    name: release
+    # Тег v* — публикуем оба артефакта в GitHub Releases.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [offline, apk]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/tmk-plant-apk/*.apk
+            artifacts/tmk-plant-offline/*.html

@@ -44,13 +44,6 @@
     padding:6px 12px;border-radius:999px;display:none;z-index:20;white-space:nowrap;
   }
   #offline.show{display:block}
-  header .sync{
-    margin-left:auto;background:transparent;border:1px solid #2C3A36;color:#7F908B;
-    border-radius:8px;width:30px;height:30px;font-size:17px;line-height:1;cursor:pointer;display:none;flex:0 0 auto;
-  }
-  header .sync.show{display:block}
-  header .sync.spin{animation:tmkspin 1s linear infinite}
-  @keyframes tmkspin{to{transform:rotate(360deg)}}
   body.fs-mode header,body.fs-mode nav.tabs{display:none}
 </style>
 </head>
@@ -58,7 +51,6 @@
 
 <header>
   <img class="emblem" src="logo.png" alt="TMK Chemicals" width="82" height="28"><span class="logo" id="tLogo">Сернокислотный завод <b>TMK Chemicals</b></span>
-  <button id="btnSync" class="sync" type="button" title="Проверить обновления">⟳</button>
 </header>
 
 <main>
@@ -108,7 +100,6 @@ window.addEventListener('offline',()=>document.getElementById('offline').classLi
 const UI = {
   ru: {
     logo: 'Сернокислотный завод <b>TMK Chemicals</b>',
-    sync: 'Проверить обновления',
     offline: 'Автономный режим — часть данных может не загрузиться',
     tabs: 'Разделы приложения',
     model: '3D-модель', flow: 'Схема потоков', pfd: 'PFD', ilk: 'Блокировки', anl: 'Анализы', kip: 'КИП', docs: 'Документы', settings: 'Настройки', help: 'Помощь',
@@ -116,7 +107,6 @@ const UI = {
   },
   uz: {
     logo: 'Oltingugurt kislotasi zavodi «<b>TMK Chemicals</b>»',
-    sync: 'Yangilanishlarni tekshirish',
     offline: 'Oflayn rejim — ba’zi ma’lumotlar yuklanmasligi mumkin',
     tabs: 'Ilova bo‘limlari',
     model: '3D-model', flow: 'Oqim sxemasi', pfd: 'PFD', ilk: 'Blokirovkalar', anl: 'Tahlillar', kip: 'KIPiA', docs: 'Hujjatlar', settings: 'Sozlamalar', help: 'Yordam',
@@ -126,7 +116,6 @@ const UI = {
 function paintUI(lang){
   const L = UI[lang] || UI.ru;
   document.getElementById('tLogo').innerHTML = L.logo;
-  document.getElementById('btnSync').title = L.sync;
   document.getElementById('offline').textContent = L.offline;
   document.getElementById('tabs').setAttribute('aria-label', L.tabs);
   document.querySelector('[data-t="model"] .lbl').textContent = L.model;
@@ -253,41 +242,9 @@ if('serviceWorker' in navigator){
   let swR=!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(swR)return;swR=true;location.reload();});
 }
 
-// "Обновить данные" — only meaningful inside the Android app (TmkNative bridge),
-// hidden in the plain PWA/browser where there is nothing for it to call.
-const btnSync = document.getElementById('btnSync');
-if (window.TmkNative && TmkNative.checkForUpdates) {
-  btnSync.classList.add('show');
-  btnSync.addEventListener('click', ()=>{
-    btnSync.classList.add('spin');
-    try{ TmkNative.checkForUpdates(); }catch(e){}
-  });
-}
-// Called by MainActivity (native) once a sync attempt finishes, whether or
-// not anything changed, so the button stops spinning and (if content was
-// actually updated) the page reloads to show it.
-window.tmkSyncDone = function(changed){
-  btnSync.classList.remove('spin');
-  if (changed) location.reload();
-};
-
-// Native's webView.evaluateJavascript(...) always runs in THIS top-level
-// document, never inside a child <iframe> — so browseDriveFolder() /
-// downloadAndOpenDriveFile()'s async result (window.tmkDriveEvent, expected
-// by drive.html) has to be relayed into the "Архив" iframe by hand here,
-// otherwise it silently lands on an object that doesn't exist and the
-// spinner inside drive.html waits forever.
-// WebView treats each file:// document as its own isolated origin, so this
-// top-level document is NOT allowed to reach into the iframe's window
-// directly (that throws SecurityError, even though it's the same app/folder).
-// postMessage is the one channel that's allowed to cross that boundary.
-window.tmkDriveEvent = function(kind, requestId, payload){
-  try{
-    const w = frames.drive && frames.drive.contentWindow;
-    console.log('tmkDriveEvent relay: kind=' + kind + ' requestId=' + requestId + ' haveFrame=' + !!w);
-    if (w) w.postMessage({__tmkDriveEvent: true, kind: kind, requestId: requestId, payload: payload}, '*');
-  }catch(e){ console.log('tmkDriveEvent relay error: ' + e); }
-};
+// "Обновить данные" и приём событий Google Диска убраны вместе с Drive-синком:
+// приложение и сайт теперь обновляются только сменой самих файлов (см.
+// README), поэтому JS-мосту сообщать вебу не о чем.
 </script>
 </body>
 </html>

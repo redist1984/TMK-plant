@@ -2,3 +2,6 @@
 # shebang ("bad interpreter"), и хук молча перестаёт работать.
 .githooks/* text eol=lf
 *.sh        text eol=lf
+
+# Gradle wrapper запускается на Linux в CI — тоже только LF.
+android/gradlew text eol=lf

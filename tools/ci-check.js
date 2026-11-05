@@ -37,6 +37,10 @@ function listFiles(dir, filter, out = []) {
     const full = path.join(dir, e.name);
     if (e.isDirectory()) {
       if (e.name === 'node_modules' || e.name === '.git') continue;
+      // assets/www и build/ — сгенерированные копии сайта для APK
+      const norm = full.split(path.sep).join('/');
+      if (norm.includes('/android/app/src/main/assets') || norm.includes('/android/app/build')
+          || norm.includes('/android/.gradle')) continue;
       listFiles(full, filter, out);
     } else if (filter(full)) {
       out.push(full);
@@ -290,6 +294,63 @@ function checkRulesets() {
 }
 
 // ---------------------------------------------------------------------------
+// 7. Секреты: репозиторий публичный, ключи в нём недопустимы.
+//    Проверяем текст всех файлов, которые вообще могут их содержать.
+// ---------------------------------------------------------------------------
+const SECRET_PATTERNS = [
+  // Литерал «AIza…» собирается из двух кусков намеренно: иначе этот самый
+  // шаблон находился бы собственным поиском и ложно срабатывал.
+  { re: new RegExp('AIza' + 'Sy[0-9A-Za-z_-]{30,}', 'g'), what: 'API-ключ Google' },
+  { re: new RegExp('googleapis\\.com' + '/drive', 'g'), what: 'обращение к Google Drive API' },
+  { re: new RegExp('drive\\.google\\.com' + '/drive/folders', 'g'), what: 'ссылка на папку Google Диска' },
+  { re: new RegExp('-----BEGIN (?:RSA |EC |OPENSSH )?' + 'PRIVATE KEY-----', 'g'), what: 'приватный ключ' },
+];
+
+function checkSecrets() {
+  const skip = /\.(?:png|jpe?g|gif|pdf|zip|woff2?|apk|jar|ico)$/i;
+  const files = listFiles(ROOT, (p) => !skip.test(p) && !p.includes(`${path.sep}.git${path.sep}`));
+
+  for (const f of files) {
+    let text;
+    try {
+      text = readText(f);
+    } catch (e) {
+      continue; // бинарный файл
+    }
+    for (const { re, what } of SECRET_PATTERNS) {
+      re.lastIndex = 0;
+      if (re.test(text)) fail('secret', `${rel(f)}: похоже на ${what}`);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 8. Android-проект: контент должен собираться из корня, а не лежать копией.
+// ---------------------------------------------------------------------------
+function checkAndroid() {
+  const dir = P('android');
+  if (!fs.existsSync(dir)) return;
+
+  for (const f of ['settings.gradle', 'build.gradle', 'gradlew', 'gradlew.bat',
+    path.join('gradle', 'wrapper', 'gradle-wrapper.jar'),
+    path.join('app', 'build.gradle'),
+    path.join('app', 'src', 'main', 'java', 'com', 'tmkplant', 'app', 'MainActivity.java')]) {
+    if (!fs.existsSync(path.join(dir, f))) fail('android', `android/${f.split(path.sep).join('/')}: нет файла`);
+  }
+
+  if (!fs.existsSync(P('tools', 'build-android-assets.py'))) {
+    fail('android', 'tools/build-android-assets.py: нет скрипта сборки контента для APK');
+  }
+
+  // Сгенерированная копия сайта не должна попадать в репозиторий.
+  const gi = P('android', '.gitignore');
+  const ignoreText = fs.existsSync(gi) ? readText(gi) : '';
+  if (!ignoreText.includes('app/src/main/assets/www/')) {
+    fail('android', 'android/.gitignore: не игнорирует app/src/main/assets/www/');
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Запуск
 // ---------------------------------------------------------------------------
 checkSyntax();
@@ -299,8 +360,10 @@ checkDocs();
 checkHtmlLinks();
 checkImgs();
 checkRulesets();
+checkSecrets();
+checkAndroid();
 
-const checks = ['syntax', 'sw', 'precache', 'docs', 'links', 'img', 'ruleset'];
+const checks = ['syntax', 'sw', 'precache', 'docs', 'links', 'img', 'ruleset', 'secret', 'android'];
 const byCheck = Object.fromEntries(checks.map((c) => [c, 0]));
 for (const e of errors) {
   const key = e.slice(1, e.indexOf(']'));
