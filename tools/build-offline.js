@@ -133,6 +133,18 @@ const PDF_CLICK =
   'if(!a)return;var u=parent.__tmkAsset(decodeURI(a.getAttribute("href")));' +
   'if(u&&u.indexOf("blob:")===0){e.preventDefault();window.open(u,"_blank")}});</script>';
 
+// Лёгкая версия собирается без PDF, но ссылки на чертежи в docs.html остаются.
+// Чтобы получатель не решил, что «сломалось», показываем плашку и перехватываем
+// клик с внятным объяснением.
+const PDF_MISSING =
+  '<div style="position:fixed;left:8px;right:8px;bottom:8px;z-index:9999;background:#8a5a00;color:#fff;' +
+  'padding:8px 12px;border-radius:8px;font:500 13px system-ui,sans-serif;box-shadow:0 2px 8px #0006">' +
+  'Чертежи в этот файл не вложены — ссылки на PDF не откроются. Возьмите версию full.</div>' +
+  '<script>document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest(' +
+  '\'a[href^="docs_pdf/"]\');if(!a)return;e.preventDefault();' +
+  'alert("В этой версии офлайн-файла чертежи не вложены. Возьмите версию full — в ней все PDF внутри файла.");' +
+  '},true);</script>';
+
 // Ленивая загрузка: srcdoc ставится при первом показе вкладки, а не для всех сразу.
 const LOADER = [
   '<script>',
@@ -183,6 +195,7 @@ async function build() {
     h = h.replace("src='sec_img/'+f", "src=A('sec_img/'+f)");
     h = h.replace("const u='pfd/scan/sheet'+sheet+'.jpg'", "const u=A('pfd/scan/sheet'+sheet+'.jpg')");
     if (WITH_PDF && name === 'docs') h = h.replace('</body>', PDF_CLICK + '</body>');
+    if (!WITH_PDF && name === 'docs') h = h.replace('</body>', PDF_MISSING + '</body>');
     h = h.replace('<head>', '<head>' + SHIM);
     pages.set(name, h);
   }
