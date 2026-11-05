@@ -19,6 +19,10 @@ concurrency:
 
 jobs:
   checks:
+    # Имя задания задано явно: от него зависит имя статус-проверки, которое
+    # требует ruleset (.github/rulesets/main-protection-strict.json).
+    # Не переименовывать, не согласовав с ruleset.
+    name: checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

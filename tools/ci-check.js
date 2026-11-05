@@ -225,6 +225,71 @@ function checkPrecache(sw) {
 }
 
 // ---------------------------------------------------------------------------
+// 6. Rulesets (.github/rulesets/*.json) — импортируются в GitHub вручную,
+//    поэтому единственная возможность поймать опечатку — здесь.
+// ---------------------------------------------------------------------------
+const RULE_TYPES = new Set([
+  'creation', 'update', 'deletion', 'non_fast_forward', 'required_linear_history',
+  'required_signatures', 'pull_request', 'required_status_checks', 'merge_queue',
+  'required_deployments', 'commit_message_pattern', 'commit_author_email_pattern',
+  'committer_email_pattern', 'branch_name_pattern', 'tag_name_pattern', 'workflows',
+  'code_scanning', 'file_path_restriction', 'max_file_size', 'license_credit_requirement',
+]);
+const ENFORCEMENT = new Set(['active', 'disabled', 'evaluate']);
+
+function checkRulesets() {
+  const dir = P('.github', 'rulesets');
+  if (!fs.existsSync(dir)) return;
+
+  const files = fs.readdirSync(dir).filter((n) => n.endsWith('.json')).sort();
+  if (files.length === 0) return;
+
+  for (const f of files) {
+    const where = `.github/rulesets/${f}`;
+    let rs;
+    try {
+      rs = JSON.parse(readText(path.join(dir, f)));
+    } catch (e) {
+      fail('ruleset', `${where}: невалидный JSON — ${e.message}`);
+      continue;
+    }
+
+    if (!rs.name) fail('ruleset', `${where}: нет поля name`);
+    if (rs.target !== 'branch') fail('ruleset', `${where}: target должен быть "branch", а не ${JSON.stringify(rs.target)}`);
+    if (!ENFORCEMENT.has(rs.enforcement)) fail('ruleset', `${where}: enforcement = ${JSON.stringify(rs.enforcement)}`);
+
+    const include = rs.conditions && rs.conditions.ref_name && rs.conditions.ref_name.include;
+    if (!Array.isArray(include) || include.length === 0) {
+      // Пустой include — частая ловушка: ruleset выглядит активным,
+      // но не применяется ни к одной ветке. Для «всех ветвей» нужен "~ALL".
+      fail('ruleset', `${where}: пустой conditions.ref_name.include — правила не применятся ни к одной ветке`);
+    } else if (/main-protection/.test(f) && !include.includes('refs/heads/main')) {
+      fail('ruleset', `${where}: файл про защиту main, а include = ${JSON.stringify(include)}`);
+    }
+
+    if (!Array.isArray(rs.rules) || rs.rules.length === 0) {
+      fail('ruleset', `${where}: пустой список rules`);
+      continue;
+    }
+    for (const r of rs.rules) {
+      if (!RULE_TYPES.has(r.type)) fail('ruleset', `${where}: неизвестный тип правила ${JSON.stringify(r.type)}`);
+      if (r.type === 'pull_request') {
+        const n = r.parameters && r.parameters.required_approving_review_count;
+        if (typeof n !== 'number') fail('ruleset', `${where}: у pull_request нет числового required_approving_review_count`);
+      }
+      if (r.type === 'required_status_checks') {
+        const list = r.parameters && r.parameters.required_status_checks;
+        if (!Array.isArray(list) || list.length === 0) {
+          fail('ruleset', `${where}: у required_status_checks пустой список проверок`);
+        } else {
+          for (const c of list) if (!c || !c.context) fail('ruleset', `${where}: проверка без context`);
+        }
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Запуск
 // ---------------------------------------------------------------------------
 checkSyntax();
@@ -233,8 +298,9 @@ checkPrecache(sw);
 checkDocs();
 checkHtmlLinks();
 checkImgs();
+checkRulesets();
 
-const checks = ['syntax', 'sw', 'precache', 'docs', 'links', 'img'];
+const checks = ['syntax', 'sw', 'precache', 'docs', 'links', 'img', 'ruleset'];
 const byCheck = Object.fromEntries(checks.map((c) => [c, 0]));
 for (const e of errors) {
   const key = e.slice(1, e.indexOf(']'));
