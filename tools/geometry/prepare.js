@@ -14,7 +14,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const MARKER = 'KIP.set=setKip;';
 const EXPOSE =
-  'window.__T={byTag,flowObjs,KIP,P,ptsOf,runsOf,rOf,camera,controls,flyTo,scene};';
+  'window.__T={byTag,flowObjs,KIP,P,ptsOf,runsOf,rOf,camera,controls,flyTo,scene,CRANES};';
 
 function prepare() {
   const src = fs.readFileSync(path.join(ROOT, 'model.html'), 'utf8');
