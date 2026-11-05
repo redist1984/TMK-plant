@@ -1,1 +1,10 @@
 dist-offline/
+
+# Python: кэш байткода от tools/*.py и tools/pfd/*.py
+__pycache__/
+*.py[cod]
+
+# Локальные артефакты и ОС
+.DS_Store
+Thumbs.db
+*.log
