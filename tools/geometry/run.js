@@ -52,6 +52,31 @@ function serve() {
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
 }
 
+// Ждём, пока сцена перестанет достраиваться: часть геометрии (опоры, площадки,
+// слой КИП) добавляется асинхронно, и проверка, снятая в разные моменты, даёт
+// разные числа — объекты «переезжают» через пороги. Считаем общее число
+// объектов и ждём, пока оно не перестанет меняться.
+async function settle(page, stableMs = 1200, maxMs = 60000) {
+  const t0 = Date.now();
+  let last = -1;
+  let since = Date.now();
+  while (Date.now() - t0 < maxMs) {
+    const n = await page.evaluate(() => {
+      let c = 0;
+      window.__T.scene.traverse(() => c++);
+      return c;
+    });
+    if (n !== last) {
+      last = n;
+      since = Date.now();
+    } else if (Date.now() - since >= stableMs) {
+      return { settled: true, objects: n, waited: Date.now() - t0 };
+    }
+    await page.waitForTimeout(250);
+  }
+  return { settled: false, objects: last, waited: Date.now() - t0 };
+}
+
 function arg(name, fallback) {
   const i = process.argv.indexOf(name);
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : fallback;
@@ -117,12 +142,18 @@ const BASELINE_FILE = path.join(__dirname, 'baseline.json');
     server.close();
     process.exit(2);
   }
-  // даём сцене достроиться (KIP-слой собирается асинхронно)
-  await page.waitForTimeout(4000);
+  // Ждём, пока сцена перестанет меняться (см. settle выше).
+  const st = await settle(page);
+  console.log(
+    `сцена: ${st.objects} объектов, ждали ${(st.waited / 1000).toFixed(1)} с` +
+      (st.settled ? '' : ' — ВНИМАНИЕ: не стабилизировалась, число находок может гулять')
+  );
 
   const baseline = fs.existsSync(BASELINE_FILE)
     ? JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8'))
     : {};
+  // Допуск: единицы находок могут «дрожать» из-за округлений и порядка обхода.
+  const tolerance = Number(arg('--tolerance', process.env.TMK_GEO_TOLERANCE || '0')) || 0;
   const next = {};
   let failed = 0;
 
@@ -142,13 +173,15 @@ const BASELINE_FILE = path.join(__dirname, 'baseline.json');
     next[check.name] = count;
 
     const allowed = baseline[check.name];
-    const over = typeof allowed === 'number' && count > allowed;
+    const over = typeof allowed === 'number' && count > allowed + tolerance;
     if (over) failed++;
 
     const mark = over ? '✖' : count > 0 ? '•' : '✔';
     console.log(
       `\n${mark} ${check.title}: ${count}` +
-        (typeof allowed === 'number' ? ` (базовая линия ${allowed})` : ' (нет базовой линии)') +
+        (typeof allowed === 'number'
+          ? ` (базовая линия ${allowed}${tolerance ? ` +${tolerance}` : ''})`
+          : ' (нет базовой линии)') +
         `, ${Date.now() - started} мс`
     );
     for (const line of items.slice(0, 12)) console.log('   ' + line);
