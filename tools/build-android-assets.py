@@ -22,7 +22,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEST = os.path.join(ROOT, "android", "app", "src", "main", "assets", "www")
 
 # Каталоги, которые целиком уходят в приложение.
-DIRS = ["vendor", "sec_img", "pfd", "docs_pdf"]
+DIRS = ["vendor", "sec_img", "pfd", "docs_pdf", "fonts"]
 
 # Файлы в корне, которые нужны приложению.
 FILES = [

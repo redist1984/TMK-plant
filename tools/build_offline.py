@@ -21,8 +21,8 @@ rd = lambda p, m='r': open(P(p), m, **({'encoding': 'utf-8'} if m == 'r' else {}
 b64 = lambda b: base64.b64encode(b).decode()
 
 # --- шрифты -> data URI
-fonts = rd('tools/offline-fonts/fonts.css')
-fonts = re.sub(r'url\(([^)]+\.woff2)\)', lambda m: 'url(data:font/woff2;base64,%s)' % b64(rd('tools/offline-fonts/' + m.group(1), 'rb')), fonts)
+fonts = rd('fonts/fonts.css')
+fonts = re.sub(r'url\(([^)]+\.woff2)\)', lambda m: 'url(data:font/woff2;base64,%s)' % b64(rd('fonts/' + m.group(1), 'rb')), fonts)
 FONT_STYLE = '<style>' + fonts + '</style>'
 
 def inline_scripts(html, base=''):
@@ -35,7 +35,10 @@ def inline_scripts(html, base=''):
 
 def strip_net(html):
     html = re.sub(r'<link rel="preconnect"[^>]*>\s*', '', html)
+    # Шрифты: и старый вариант с Google Fonts, и нынешний локальный файл —
+    # в офлайн-сборке они встраиваются base64 в <style>.
     html = re.sub(r'<link rel="stylesheet" href="https://fonts[^>]*>', FONT_STYLE, html)
+    html = html.replace('<link rel="stylesheet" href="fonts/fonts.css">', FONT_STYLE)
     html = re.sub(r'<link rel="(manifest|apple-touch-icon)"[^>]*>\s*', '', html)
     return html
 

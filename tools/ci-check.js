@@ -164,6 +164,13 @@ function checkHtmlLinks() {
     let m;
     while ((m = re.exec(src))) {
       let ref = m[1].trim();
+      // Внешние шрифты — прямой запрет: приложение должно работать офлайн,
+      // а шрифты лежат в fonts/ и раздаются из репозитория.
+      if (/fonts\.(?:googleapis|gstatic)\.com/i.test(ref)) {
+        const at = src.slice(0, m.index).split('\n').length;
+        fail('links', `${h}:${at} внешний шрифт вместо локального: ${ref}`);
+        continue;
+      }
       if (!ref || EXTERNAL.test(ref)) continue;
       if (ref.includes('${')) continue; // шаблонная строка, собирается в рантайме
       if (seen.has(ref)) continue;
