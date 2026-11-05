@@ -1,0 +1,31 @@
+# Проверки целостности проекта.
+# Запускается на каждый pull request и на каждый пуш в main.
+# Ловит то, что глазами не видно: битые ссылки и картинки, синтаксис,
+# расхождение service-worker.js с файлами на диске, неполный индекс PDF.
+name: Проверки
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Проверки целостности
+        run: node tools/ci-check.js
