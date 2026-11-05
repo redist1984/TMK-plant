@@ -1,0 +1,53 @@
+# Проверки геометрии 3D-модели.
+#
+# Запускается только когда меняются сама модель или инструменты проверок:
+# прогон занимает около шести минут и поднимает браузер, поэтому на каждый PR
+# его ставить не нужно. Вручную — из вкладки Actions.
+name: Геометрия модели
+
+on:
+  pull_request:
+    paths:
+      - 'model.html'
+      - 'flow.html'
+      - 'tools/geometry/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/geometry.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: geometry-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  geometry:
+    name: geometry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Установить playwright-core
+        run: npm ci
+
+      - name: Проверить, что Chrome есть в образе
+        run: google-chrome --version || chromium --version || echo "нет системного Chrome"
+
+      - name: Проверки геометрии
+        run: npm run geometry
+        env:
+          # в образе ubuntu-latest есть Google Chrome; если нет — fallback на Edge
+          TMK_BROWSER: chrome
+          # Модель достраивается после загрузки, и габариты отдельных аппаратов
+          # ещё двигаются: один и тот же объект даёт разницу в метры между
+          # прогонами, из-за чего число находок плавает на единицы. Проверка —
+          # грубый детектор регрессий, поэтому допуск 6, а не 0.
+          TMK_GEO_TOLERANCE: '6'

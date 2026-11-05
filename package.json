@@ -1,0 +1,14 @@
+{
+  "name": "tmk-plant-tools",
+  "private": true,
+  "description": "Инструменты проекта: проверки целостности и геометрии 3D-модели",
+  "scripts": {
+    "check": "node tools/ci-check.js",
+    "geometry": "node tools/geometry/run.js",
+    "geometry:baseline": "node tools/geometry/run.js --update-baseline",
+    "flow-labels": "node tools/check-flow-labels.js"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.64.1"
+  }
+}

@@ -51,7 +51,10 @@ function listFiles(dir, filter, out = []) {
 
 const rel = (p) => path.relative(ROOT, p).split(path.sep).join('/');
 
-const htmlFiles = fs.readdirSync(ROOT).filter((n) => n.toLowerCase().endsWith('.html'));
+const htmlFiles = fs
+  .readdirSync(ROOT)
+  // model_test.html — генерируемая копия model.html для проверок геометрии
+  .filter((n) => n.toLowerCase().endsWith('.html') && n !== 'model_test.html');
 const jsFiles = listFiles(ROOT, (p) => p.endsWith('.js') && !p.includes('node_modules'));
 
 // ---------------------------------------------------------------------------

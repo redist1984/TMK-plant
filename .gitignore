@@ -4,6 +4,13 @@ dist-offline/
 __pycache__/
 *.py[cod]
 
+# Node: зависимости для проверок геометрии (tools/geometry)
+node_modules/
+
+# Генерируемая копия model.html для проверок геометрии.
+# В git не нужна: собирается из model.html через tools/geometry/prepare.js
+model_test.html
+
 # Локальные артефакты и ОС
 .DS_Store
 Thumbs.db
