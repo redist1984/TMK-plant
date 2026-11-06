@@ -1,9 +1,11 @@
 {
   "name": "tmk-plant-tools",
   "private": true,
-  "description": "Инструменты проекта: офлайн-сборка, контент для APK, проверки геометрии модели",
+  "description": "Инструменты проекта: офлайн-сборка, контент для APK, проверки геометрии модели, дымовой тест",
   "scripts": {
     "check": "node tools/ci-check.js",
+    "smoke": "node tools/smoke-test.js",
+    "smoke:offline": "node tools/smoke-test.js --offline dist-offline/TMK-plant-offline-lite.html",
     "offline": "node tools/build-offline.js",
     "offline:pdf": "node tools/build-offline.js --with-pdf",
     "android:assets": "node tools/build-android-assets.js",

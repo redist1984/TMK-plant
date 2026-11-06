@@ -1,0 +1,67 @@
+# Дымовой тест: приложение открывается в браузере, все девять вкладок
+# работают, данные на месте (PFD, блокировки, анализы, КИП, ссылки на PDF).
+#
+# Это единственный гейт, который ловит поломку вида «упал вызов в построителе
+# модели» — статические проверки такую ошибку не видят, а пользователь видит
+# пустой экран.
+name: Дымовой тест
+
+on:
+  pull_request:
+    paths:
+      - '*.html'
+      - '*.js'
+      - 'tools/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Дымовой тест приложения
+        run: npm run smoke
+        env:
+          TMK_BROWSER: chrome
+
+  smoke-offline:
+    name: smoke-offline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Установить зависимости
+        run: npm ci
+
+      - name: Собрать офлайн-версию
+        run: npm run offline -- --out dist-offline --name TMK-plant-offline-lite
+
+      - name: Дымовой тест офлайн-сборки
+        run: node tools/smoke-test.js --offline dist-offline/TMK-plant-offline-lite.html
+        env:
+          TMK_BROWSER: chrome
