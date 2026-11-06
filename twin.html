@@ -223,6 +223,7 @@ const TXT = {
     heatSteam: 'Пар 6,4 МПа / 450 °C',
     heatPower: 'Тепло реакций',
     heatTurbine: 'Турбина (оценка)',
+    heatExtraction: 'Отбор 0,8 МПа',
     heatNote: 'Пар считается из тепла реакций горения и конверсии; КПД котла подобран по проектному балансу. Мощность турбины — оценка по допущению КПД, в балансе её нет.',
     tempTitle: 'Температуры газа',
     tempPoint: 'Точка', tempCalc: 'Расчёт', tempDesign: 'Проект', tempDev: 'Откл.',
@@ -279,6 +280,7 @@ const TXT = {
     heatSteam: 'Bug‘ 6,4 MPa / 450 °C',
     heatPower: 'Reaksiya issiqligi',
     heatTurbine: 'Turbina (taxmin)',
+    heatExtraction: 'Olib tashlash 0,8 MPa',
     heatNote: 'Bug‘ yonish va konversiya reaksiyalari issiqligidan hisoblanadi; qozon FIK loyihaviy balans bo‘yicha tanlangan. Turbina quvvati — FIK taxmini bo‘yicha baho, balansda u yo‘q.',
     tempTitle: 'Gaz temperaturalari',
     tempPoint: 'Nuqta', tempCalc: 'Hisob', tempDesign: 'Loyiha', tempDev: 'Farq',
@@ -495,6 +497,7 @@ function paintHeat(L, model) {
   const cls = Math.abs(dev) < 0.5 ? 'ok' : '';
   $('heatKpis').innerHTML =
     '<div class="kpi ' + cls + '"><div class="k">' + esc(L.heatSteam) + '</div><div class="v">' + f(h.steam_t_h, 1) + '<span class="u">' + esc(L.units.th) + '</span></div></div>'
+    + '<div class="kpi"><div class="k">' + esc(L.heatExtraction) + '</div><div class="v">' + f(h.extraction_t_h, 1) + '<span class="u">' + esc(L.units.th) + '</span></div></div>'
     + '<div class="kpi"><div class="k">' + esc(L.heatPower) + '</div><div class="v">' + f(h.heatMw, 1) + '<span class="u">' + esc(L.units.mw) + '</span></div></div>'
     + '<div class="kpi"><div class="k">' + esc(L.heatTurbine) + '</div><div class="v">' + f(h.turbinePowerMw, 1) + '<span class="u">' + esc(L.units.mw) + '</span></div></div>';
 }

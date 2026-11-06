@@ -32,6 +32,21 @@ const low = H.solve(solve({ load: 0.7 }));
 ok('на 70 % нагрузки пар падает', low.steam_t_h < nom.steam_t_h, low.steam_t_h + ' т/ч');
 ok('пар на 70 % около 70 % от номинала', near(low.steam_t_h, nom.steam_t_h * 0.7, 0.06), low.steam_t_h + ' т/ч');
 
+// --- турбина с отбором
+ok('отбор на плавление и обогрев 16 т/ч', near(nom.extraction_t_h, 16, 0.05), nom.extraction_t_h + ' т/ч');
+ok('в конденсатор идёт пар минус отбор', near(nom.condensing_t_h, nom.steam_t_h - nom.extraction_t_h, 0.01),
+  nom.condensing_t_h + ' т/ч');
+ok('мощность турбины около 20 МВт', near(nom.turbinePowerMw, 20, 0.1), nom.turbinePowerMw + ' МВт');
+ok('КПД турбины в разумных пределах 0,75…0,95', nom.turbineEta > 0.75 && nom.turbineEta < 0.95, nom.turbineEta);
+
+// без отбора мощность выше — пар дорабатывает до конденсатора
+const noExt = H.solve(solve({}), { extraction_t_h: 0 });
+ok('без отбора мощность выше', noExt.turbinePowerMw > nom.turbinePowerMw, noExt.turbinePowerMw + ' против ' + nom.turbinePowerMw);
+
+// отбор больше выработки пара не отбирается
+const over = H.solve(solve({}), { extraction_t_h: 200 });
+ok('отбор не больше выработки пара', over.extraction_t_h === over.steam_t_h, over.extraction_t_h + ' из ' + over.steam_t_h);
+
 // при остановке горения пара нет
 const stop = H.solve({ stopped: true });
 ok('при остановке пара нет', stop.steam_t_h === 0 && stop.heatMw === 0);
