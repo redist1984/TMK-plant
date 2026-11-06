@@ -121,6 +121,15 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
     </div>
 
     <div class="card" style="margin-top:12px">
+      <h2 id="tempTitle">Температуры газа</h2>
+      <table>
+        <thead><tr><th id="tempPoint">Точка</th><th id="tempCalc">Расчёт</th><th id="tempDesign">Проект</th><th id="tempDev">Откл.</th></tr></thead>
+        <tbody id="tempBody"></tbody>
+      </table>
+      <p class="note" id="tempNote">Печь и ступени считаются из тепла реакций и теплоёмкости газа; входы ступеней — уставки.</p>
+    </div>
+
+    <div class="card" style="margin-top:12px">
       <h2 id="ilkTitle">Блокировки</h2>
       <div id="ilkCounts" class="ilkcounts"></div>
       <label class="ilktoggle"><input type="checkbox" id="ilkUse" checked> <span id="ilkUseLbl">учитывать блокировки в расчёте</span></label>
@@ -137,6 +146,8 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 <script src="twin/logic.js"></script>
 <script src="twin/apply.js"></script>
 <script src="twin/heat.js"></script>
+<script src="twin/heatcap.js"></script>
+<script src="twin/temps.js"></script>
 <script>
 (function(){
 'use strict';
@@ -190,6 +201,11 @@ const TXT = {
     heatPower: 'Тепло реакций',
     heatTurbine: 'Турбина (оценка)',
     heatNote: 'Пар считается из тепла реакций горения и конверсии; КПД котла подобран по проектному балансу. Мощность турбины — оценка по допущению КПД, в балансе её нет.',
+    tempTitle: 'Температуры газа',
+    tempPoint: 'Точка', tempCalc: 'Расчёт', tempDesign: 'Проект', tempDev: 'Откл.',
+    tempNote: 'Печь и ступени считаются из тепла реакций и теплоёмкости газа; входы ступеней — уставки. 4-я ступень в проектном балансе не сходится: рост 311 → 415 °C теплом конверсии не объясняется.',
+    tempSuspect: 'расхождение в балансе',
+    tempNone: 'Горение остановлено — температур нет',
   },
   uz: {
     eb: 'Egizak · oltingugurt liniyasi',
@@ -235,6 +251,11 @@ const TXT = {
     heatPower: 'Reaksiya issiqligi',
     heatTurbine: 'Turbina (taxmin)',
     heatNote: 'Bug‘ yonish va konversiya reaksiyalari issiqligidan hisoblanadi; qozon FIK loyihaviy balans bo‘yicha tanlangan. Turbina quvvati — FIK taxmini bo‘yicha baho, balansda u yo‘q.',
+    tempTitle: 'Gaz temperaturalari',
+    tempPoint: 'Nuqta', tempCalc: 'Hisob', tempDesign: 'Loyiha', tempDev: 'Farq',
+    tempNote: 'Pech va bosqichlar reaksiya issiqligi va gaz issiqlik sig‘imidan hisoblanadi; bosqich kirishlari — ustavkalar. 4-bosqich loyihaviy balansda mos kelmaydi.',
+    tempSuspect: 'balansda nomuvofiqlik',
+    tempNone: 'Yonish to‘xtatilgan — temperatura yo‘q',
   }
 };
 let lang = 'ru';
@@ -408,6 +429,32 @@ function paintHeat(L, model) {
     + '<div class="kpi"><div class="k">' + esc(L.heatTurbine) + '</div><div class="v">' + f(h.turbinePowerMw, 1) + '<span class="u">' + esc(L.units.mw) + '</span></div></div>';
 }
 
+/** Температуры газа: расчёт против проекта, с пометкой, где баланс сам не сходится. */
+function paintTemps(L, model) {
+  $('tempTitle').textContent = L.tempTitle;
+  $('tempPoint').textContent = L.tempPoint;
+  $('tempCalc').textContent = L.tempCalc;
+  $('tempDesign').textContent = L.tempDesign;
+  $('tempDev').textContent = L.tempDev;
+  $('tempNote').textContent = L.tempNote;
+  if (!window.TwinGasPath) { $('tempBody').innerHTML = ''; return; }
+  const g = TwinGasPath.gasPath(model);
+  const rows = (g.points || []).filter((p) => p.computed);
+  if (!rows.length) {
+    $('tempBody').innerHTML = '<tr><td colspan="4" class="muted">' + esc(L.tempNone) + '</td></tr>';
+    return;
+  }
+  $('tempBody').innerHTML = rows.map((p) => {
+    const dev = p.design != null ? ((p.t - p.design) / p.design) * 100 : null;
+    const cls = p.suspect ? 'muted' : (dev == null ? '' : Math.abs(dev) < 5 ? '' : 'bad');
+    const devTxt = dev == null ? '—' : (dev > 0 ? '+' : '') + dev.toFixed(1) + ' %';
+    return '<tr><td>' + esc(p.name) + (p.suspect ? ' <span class="muted">(' + esc(L.tempSuspect) + ')</span>' : '') + '</td>'
+      + '<td class="num">' + f(p.t, 0) + '</td>'
+      + '<td class="num">' + (p.design != null ? f(p.design, 0) : '—') + '</td>'
+      + '<td class="num ' + (cls === 'bad' ? 'down' : '') + '">' + devTxt + '</td></tr>';
+  }).join('');
+}
+
 function render() {
   const L = t();
   const ctl = controls();
@@ -433,6 +480,7 @@ function render() {
 
   paintInterlocks(L, ilk, cons);
   paintHeat(L, cur);
+  paintTemps(L, cur);
   if (cur.error) {
     $('alert').innerHTML = '<div class="alert bad">' + esc(cur.error) + '</div>';
   } else {
