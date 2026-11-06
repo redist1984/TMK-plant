@@ -452,6 +452,40 @@ function checkAndroid() {
 }
 
 // ---------------------------------------------------------------------------
+// 12. README не расходится с реальностью
+//
+// README ссылается на команды и файлы. Скрипт мог быть переименован, файл —
+// удалён, а README об этом не узнает: такие расхождения находил человек.
+// Проверяем ровно то, что можно проверить машинно: npm-скрипты и пути node.
+// ---------------------------------------------------------------------------
+function checkReadme() {
+  const abs = P('README.md');
+  if (!fs.existsSync(abs)) return;
+  const md = readText(abs);
+
+  let pkg = null;
+  try {
+    pkg = JSON.parse(readText(P('package.json')));
+  } catch (e) {
+    fail('readme', 'package.json не разбирается: ' + e.message);
+    return;
+  }
+  const scripts = (pkg && pkg.scripts) || {};
+
+  for (const m of md.matchAll(/npm run ([a-z][\w:-]*)/g)) {
+    if (!scripts[m[1]]) {
+      fail('readme', `README ссылается на «npm run ${m[1]}», но такого скрипта в package.json нет`);
+    }
+  }
+
+  for (const m of md.matchAll(/\bnode (tools\/[\w./-]+\.js)/g)) {
+    if (!fs.existsSync(P(m[1]))) {
+      fail('readme', `README ссылается на «${m[1]}», но файла нет`);
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Запуск
 // ---------------------------------------------------------------------------
 checkSyntax();
@@ -464,8 +498,9 @@ checkImgs();
 checkRulesets();
 checkSecrets();
 checkAndroid();
+checkReadme();
 
-const checks = ['syntax', 'scope', 'sw', 'precache', 'docs', 'links', 'img', 'ruleset', 'secret', 'android'];
+const checks = ['syntax', 'scope', 'sw', 'precache', 'docs', 'links', 'img', 'ruleset', 'secret', 'android', 'readme'];
 const byCheck = Object.fromEntries(checks.map((c) => [c, 0]));
 for (const e of errors) {
   const key = e.slice(1, e.indexOf(']'));
