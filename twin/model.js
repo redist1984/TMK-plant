@@ -127,6 +127,7 @@ function solve(c = {}) {
       so2_burner_nm3: num(nSO2_0 * NM3, 0),
       so3_burner_nm3: num(nSO3_0 * NM3, 0),
       o2_burner_nm3: num(o2 * 0 + nO2_0 * NM3, 0),
+      n2_burner_nm3: num(nAirN2 * NM3, 0),
       o2_dry_pct: num((nO2_0 / (nSO2_0 + nSO3_0 + nO2_0 + nAirN2)) * 100, 1),
       so2_dry_pct: num((nSO2_0 / (nSO2_0 + nSO3_0 + nO2_0 + nAirN2)) * 100, 1),
     },

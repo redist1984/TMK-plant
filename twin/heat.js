@@ -1,4 +1,6 @@
 'use strict';
+// IIFE: файл подключается и как модуль Node, и как обычный <script>.
+(function () {
 /*
  * Тепловой блок: сколько пара даёт участок и сколько тепла уходит в газ.
  *
@@ -106,3 +108,4 @@ function round(v, d) {
 const API = { solve, designHeat, reactionHeat, MB, ETA };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 else self.TwinHeat = API;
+})();
