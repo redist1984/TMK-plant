@@ -142,6 +142,37 @@ function ok(name, cond, extra) {
   ok('без 2-й абсорбции кислота падает', m.acid.h2so4_100_t_h < base.acid.h2so4_100_t_h);
 }
 
+// --- 10. Уставки из таблицы мониторинга DCS
+{
+  const S = require('./signals.js');
+  const st = S.stats(DATA.items);
+  ok('условий привязано к приборам DCS', st.found >= 30, st.found + ' из ' + st.total);
+  ok('из них с уставками HH/H/L/LL', st.withSp >= 20, st.withSp);
+
+  // перекрёстная проверка: схема говорит «< 500 мм», таблица DCS даёт LL = 500 мм
+  const sp = S.setpoint({ text: '< 500 мм', op: '<' }, 'LIAS-11101');
+  ok('LIAS-11101 → LT-11101, LL = 500 мм', sp && sp.value === 500 && sp.which === 'LL' && sp.tag === 'LT-11101',
+    sp ? `${sp.tag} ${sp.which}=${sp.value} ${sp.unit}` : 'не найдено');
+
+  // Закрытые в схемах уставки — это уставки защит (ПАЗ). В таблице мониторинга
+  // DCS их приборов нет: это другой комплект. Проверяем именно это, чтобы не
+  // создалось впечатление, будто пробел закрыт.
+  let closed = 0, closedResolved = 0;
+  for (const it of DATA.items) {
+    for (const c of it.causes) {
+      if (!c.cond.setpointUnknown) continue;
+      closed++;
+      if (S.setpoint(c.cond, c.tag)) closedResolved++;
+    }
+  }
+  ok('закрытые уставки таблицей DCS не закрываются (это комплект ПАЗ)',
+    closed > 0 && closedResolved === 0, `закрыто ${closed}, из них нашлось ${closedResolved}`);
+
+  // чего нет в таблице — честно остаётся без уставки
+  const none = S.setpoint({ text: '> ** °C', op: null, setpointUnknown: true }, 'VT-PP-11301');
+  ok('вибрация VT- нет в таблице — уставки нет', none === null);
+}
+
 console.log('');
 if (failed) {
   console.log('ПРОВАЛ: ' + failed);
