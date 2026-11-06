@@ -88,6 +88,15 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 .lv .row b{font-family:ui-monospace,Menlo,Consolas,monospace}
 .lv .row b.ok{color:var(--ok)}
 .lv .row b.bad{color:var(--bad)}
+.vessels{display:flex;flex-direction:column;gap:3px;margin:8px 0}
+.vrow{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:baseline;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);font-size:12.5px}
+.vrow .vn{color:var(--ink2)}
+.vrow .vl{font-family:ui-monospace,Menlo,Consolas,monospace}
+.vrow .vs{font-size:11px;color:var(--ink3)}
+.vrow.bad{border-color:var(--bad)}
+.vrow.bad .vs{color:var(--bad)}
+.vrow.sel{cursor:pointer}
+.vrow.sel:hover{border-color:var(--accent)}
 </style>
 </head>
 <body>
@@ -112,6 +121,13 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
     <div class="lv" id="levelBox"></div>
     <div class="btns"><button type="button" id="bAdvance">прокрутить 1 ч</button></div>
     <p class="note" id="meltNote">Уровень в чане фильтрации меняется во времени: приход от плавления минус расход на горелку. Уставки LL 500 / H 2200 мм — из таблицы DCS.</p>
+
+    <h2 id="vesselTitle" style="margin-top:14px">Уровни аппаратов</h2>
+    <div id="vessels" class="vessels"></div>
+    <div class="ctl" id="vset" style="display:none"><div class="row"><label for="v-level" id="v-lbl"></label>
+      <output id="v-val"></output></div>
+      <input type="range" id="v-level" min="0" max="2200" step="50"></div>
+    <p class="note" id="vesselNote">Чаны фильтрации считаются моделью (приход минус расход). Остальные — по прибору из таблицы DCS: уровень задаётся вручную, блокировка работает по уставке.</p>
   </div>
 
   <div>
@@ -167,6 +183,7 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 <script src="twin/temps.js"></script>
 <script src="twin/melt.js"></script>
 <script src="twin/tank.js"></script>
+<script src="twin/vessels.js"></script>
 <script>
 (function(){
 'use strict';
@@ -220,6 +237,9 @@ const TXT = {
     meltLevel: 'Уровень в чане', meltNet: 'Приход − расход', meltHeat: 'Тепло на плавление',
     meltSteam: 'Пар 0,8 МПа', meltAshOut: 'Зола после 2-й ступени', meltLoad: 'Нагрузка плавления',
     autoConv: 'конверсия из равновесия (ползунки не действуют)',
+    vesselTitle: 'Уровни аппаратов',
+    vesselNote: 'Чаны фильтрации считаются моделью (приход минус расход). Остальные — по прибору из таблицы DCS: уровень задаётся вручную, блокировка работает по уставке.',
+    vesselCalc: 'модель', vesselManual: 'вручную', vesselSet: 'Уровень, мм',
     meltAdvance: 'прокрутить 1 ч', meltAuto: 'автомат уровня (двигает клапан)', meltSp: 'Задание уровня, мм', meltValve: 'Клапан на горелку',
     badStopped: 'Горение остановлено блокировкой',
     heatTitle: 'Тепло и пар',
@@ -227,7 +247,7 @@ const TXT = {
     heatPower: 'Тепло реакций',
     heatTurbine: 'Турбина (оценка)',
     heatExtraction: 'Отбор 0,8 МПа',
-    heatNote: 'Пар считается из тепла реакций горения и конверсии; КПД котла подобран по проектному балансу. Мощность турбины — оценка по допущению КПД, в балансе её нет.',
+    heatNote: 'Пар считается из тепла реакций горения и конверсии; КПД котла подобран по проектному балансу. Турбина: отбор 0,8 МПа на плавление и обогрев, остальное в конденсатор; КПД турбины подобран по проектным 19,1 МВт при 81,8 т/ч.',
     tempTitle: 'Температуры газа',
     tempPoint: 'Точка', tempCalc: 'Расчёт', tempDesign: 'Проект', tempDev: 'Откл.',
     tempNote: 'Печь и ступени считаются из тепла реакций и теплоёмкости газа; входы ступеней — уставки. 4-я ступень в проектном балансе не сходится: рост 311 → 415 °C теплом конверсии не объясняется.',
@@ -278,6 +298,9 @@ const TXT = {
     meltLevel: 'Chandagi sath', meltNet: 'Kelish − sarf', meltHeat: 'Eritishga issiqlik',
     meltSteam: 'Bug‘ 0,8 MPa', meltAshOut: '2-bosqichdan keyingi kul', meltLoad: 'Eritish yuklamasi',
     autoConv: 'konversiya muvozanatdan (polzunkilar ishlamaydi)',
+    vesselTitle: 'Apparatlar sathi',
+    vesselNote: 'Filtr chanlari model bo‘yicha hisoblanadi. Qolganlari — DCS jadvalidagi asbob bo‘yicha: sath qo‘lda beriladi, blokirovka ustavka bo‘yicha ishlaydi.',
+    vesselCalc: 'model', vesselManual: 'qo‘lda', vesselSet: 'Sath, mm',
     meltAdvance: '1 soat oldinga', meltAuto: 'sath avtomati (klapanni yuritadi)', meltSp: 'Sath topshirig‘i, mm', meltValve: 'Pechga klapan',
     badStopped: 'Yonish blokirovka bilan to‘xtatildi',
     heatTitle: 'Issiqlik va bug‘',
@@ -285,7 +308,7 @@ const TXT = {
     heatPower: 'Reaksiya issiqligi',
     heatTurbine: 'Turbina (taxmin)',
     heatExtraction: 'Olib tashlash 0,8 MPa',
-    heatNote: 'Bug‘ yonish va konversiya reaksiyalari issiqligidan hisoblanadi; qozon FIK loyihaviy balans bo‘yicha tanlangan. Turbina quvvati — FIK taxmini bo‘yicha baho, balansda u yo‘q.',
+    heatNote: 'Bug‘ yonish va konversiya issiqligidan hisoblanadi; qozon FIK loyihaviy balans bo‘yicha tanlangan. Turbina: 0,8 MPa olib tashlash, qolgani kondensatorga; turbina FIK loyihaviy 19,1 MVt bo‘yicha tanlangan.',
     tempTitle: 'Gaz temperaturalari',
     tempPoint: 'Nuqta', tempCalc: 'Hisob', tempDesign: 'Loyiha', tempDev: 'Farq',
     tempNote: 'Pech va bosqichlar reaksiya issiqligi va gaz issiqlik sig‘imidan hisoblanadi; bosqich kirishlari — ustavkalar. 4-bosqich loyihaviy balansda mos kelmaydi.',
@@ -332,6 +355,7 @@ SIG.forEach((s) => { sig[s.k] = s.def; });
 // Плавление: уровень в чане — первая величина, которая зависит от времени.
 const MELT = { sulfur: 20.48, ash: 120 };
 const LVL = { level: 1500, area: 5, LL: 500, H: 2200, sp: 1500, auto: true };
+let vsel = null;   // выбранный аппарат для ручного уровня
 
 /** Расход серы на горелку из положения клапана, т/ч. */
 function burnFlow() { return (state.valve / 100) * VALVE_MAX_T_H; }
@@ -440,8 +464,49 @@ function paintStatic() {
     const burn = burnFlow();
     LVL.level = TwinTank.step({ level: LVL.level, area_m2: LVL.area, LL: LVL.LL, H: LVL.H },
       { qIn_t_h: MELT.sulfur, qOut_t_h: burn }, 60).level;
+    if (window.TwinVessels) TwinVessels.advance({ melt_t_h: MELT.sulfur, burn_t_h: burn }, 60);
     render();
   };
+}
+
+/** Панель уровней: аппараты, уставки из DCS, кто считается, кто вручную. */
+function paintVessels(L) {
+  if (!window.TwinVessels) { $('vessels').innerHTML = ''; return; }
+  $('vesselTitle').textContent = L.vesselTitle;
+  $('vesselNote').textContent = L.vesselNote;
+  const rows = TwinVessels.list({}, lang);
+  const bad = (r) => r.status === 'low' || r.status === 'high' || r.status === 'high-high';
+  const txt = (r) => r.status === 'normal' ? (r.mode === 'calc' ? L.vesselCalc : L.vesselManual)
+    : r.status === 'low' ? '↓ LL ' + (r.sp.LL ?? r.sp.L)
+      : r.status === 'high-high' ? '↑ HH ' + r.sp.HH
+        : '↑ H ' + r.sp.H;
+  $('vessels').innerHTML = rows.map((r) =>
+    '<div class="vrow' + (bad(r) ? ' bad' : '') + (r.mode === 'manual' ? ' sel' : '')
+    + '" data-tag="' + esc(r.tag) + '" data-max="' + (r.sp.range ? r.sp.range[1] : 2500) + '">'
+    + '<span class="vn">' + esc(r.name) + '</span>'
+    + '<span class="vl">' + (r.level == null ? '—' : f(r.level, 0) + ' мм') + '</span>'
+    + '<span class="vs">' + esc(txt(r)) + '</span></div>').join('');
+
+  $('vessels').querySelectorAll('.vrow[data-tag]').forEach((el) => {
+    el.onclick = () => {
+      const row = rows.find((x) => x.tag === el.dataset.tag);
+      if (!row || row.mode !== 'manual') return;
+      vsel = row;
+      const box = $('vset');
+      box.style.display = 'block';
+      $('v-lbl').textContent = L.vesselSet + ' — ' + row.name;
+      const max = row.sp.range ? row.sp.range[1] : 2500;
+      const el2 = $('v-level');
+      el2.max = String(max);
+      el2.value = String(row.level || 0);
+      $('v-val').textContent = f(row.level || 0, 0);
+      el2.oninput = (e) => {
+        TwinVessels.setLevel(row.tag, parseFloat(e.target.value));
+        $('v-val').textContent = f(parseFloat(e.target.value), 0);
+        render();
+      };
+    };
+  });
 }
 
 /** Плавление и уровень: тепло, пар, зола и что с уровнем за час. */
@@ -585,7 +650,9 @@ function render() {
     'YL-PP-11302': sig.p302,
     'YL-PP-11303': sig.p303,
     'PP-11302': sig.p302,
-    // уровень в чане фильтрации — считается моделью ёмкости, а не руками
+    // уровни всех аппаратов: часть считается моделью, часть задаётся вручную
+    ...(window.TwinVessels ? TwinVessels.forState() : {}),
+    // уровень в чане фильтрации — из модели ёмкости, перекрывает статичное значение
     'LT-11101': LVL.level,
     'LIAS-11101': LVL.level,
   });
@@ -622,6 +689,7 @@ function render() {
   paintHeat(L, cur);
   paintTemps(L, cur);
   paintMelt(L, plain.sulfur_t_h || 0);
+  paintVessels(L);
   if (cur.error) {
     $('alert').innerHTML = '<div class="alert bad">' + esc(cur.error) + '</div>';
   } else {
