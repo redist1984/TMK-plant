@@ -112,6 +112,36 @@ function ok(name, cond, extra) {
   ok('покрытие сигналов посчитано', cov.needed.length > 50, cov.needed.length + ' тегов, нет сигнала у ' + cov.missing.length);
 }
 
+// --- 8. Цепочка с расчётом: останов насоса 2-й абсорбции глушит воздуходувку
+{
+  const A = require('./apply.js');
+  const m0 = solve({});
+  // сигналы: насос 2-й абсорбции остановлен
+  const st = build(m0, { 'YL-PP-11303': false });
+  const r = evaluate(DATA, st, makeMemory());
+  const proc = r.list.find((x) => x.id === 'B-PROC');
+  ok('B-PROC срабатывает при останове PP-11303', proc.fired === true, 'статус ' + proc.status);
+
+  const cons = A.constraints(r.effects);
+  ok('следствие дошло до модели: горение снято', cons.noCombustion === true);
+  const stoppedModel = A.run({}, cons);
+  ok('останов воздуходувки даёт 0 кислоты', stoppedModel.acid.product_t_h === 0);
+  ok('останов воздуходувки даёт 0 выброса', stoppedModel.stack.so2_mg === 0);
+
+  // без блокировки цепочки нет
+  const ok1 = evaluate(DATA, build(m0, { 'YL-PP-11303': true }), makeMemory()).list.find((x) => x.id === 'B-PROC');
+  ok('при работающем PP-11303 блокировка не срабатывает', ok1.fired === false, 'статус ' + ok1.status);
+}
+
+// --- 9. Останов 2-й абсорбции без воздуходувки: SO3 уходит в трубу
+{
+  const A = require('./apply.js');
+  const m = A.run({}, { noAbsorb1: false, noAbsorb2: true, notes: [] });
+  const base = solve({});
+  ok('без 2-й абсорбции SO3 в трубе растёт', m.stack.so3_mg > base.stack.so3_mg * 10, `было ${base.stack.so3_mg}, стало ${m.stack.so3_mg} мг/нм³`);
+  ok('без 2-й абсорбции кислота падает', m.acid.h2so4_100_t_h < base.acid.h2so4_100_t_h);
+}
+
 console.log('');
 if (failed) {
   console.log('ПРОВАЛ: ' + failed);

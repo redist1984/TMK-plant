@@ -58,6 +58,29 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 .alert.warn{background:color-mix(in srgb,var(--warn) 14%,transparent);border-color:var(--warn);color:var(--warn)}
 .note{font-size:12px;color:var(--ink3);margin-top:10px}
 .muted{color:var(--ink3)}
+/* сигналы оборудования */
+.sig{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--line);font-size:13px}
+.sig:first-child{border-top:0}
+.sig input{accent-color:var(--accent);width:16px;height:16px}
+.sig .nm{flex:1}
+.sig .tg{font:11px ui-monospace,Menlo,Consolas,monospace;color:var(--ink3)}
+/* блокировки */
+.ilkcounts{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}
+.ilkcounts span{font-size:12px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 9px}
+.ilkcounts b{font-family:ui-monospace,Menlo,Consolas,monospace}
+.ilkcounts .bad{border-color:var(--bad);color:var(--bad)}
+.ilkcounts .warn{border-color:var(--warn);color:var(--warn)}
+.ilktoggle{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2);margin-bottom:8px}
+.ilklist{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow:auto}
+.ilki{border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:12.5px}
+.ilki.fired{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,transparent)}
+.ilki.unknown{opacity:.75}
+.ilki .hd{display:flex;gap:7px;align-items:baseline;flex-wrap:wrap}
+.ilki .id{font:11px ui-monospace,Menlo,Consolas,monospace;color:var(--ink3)}
+.ilki .eff{color:var(--ink2);margin-top:3px}
+.ilki .acts{display:flex;gap:6px;margin-top:5px}
+.ilki .acts button{font-size:11.5px;padding:3px 8px}
+.ilki .cause{color:var(--ink3);margin-top:2px}
 </style>
 </head>
 <body>
@@ -72,10 +95,15 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
     <div id="ctls"></div>
     <div class="btns" id="scen"></div>
     <p class="note" id="ctlNote">Проектные значения — 100 %.</p>
+
+    <h2 id="sigTitle" style="margin-top:14px">Сигналы оборудования</h2>
+    <div id="sigs"></div>
+    <p class="note" id="sigNote">Останов насоса 2-й абсорбции запускает цепочку блокировок вплоть до останова воздуходувки.</p>
   </div>
 
   <div>
     <div id="alert"></div>
+    <div id="ilkAlert"></div>
     <div class="kpis" id="kpis"></div>
     <div class="card">
       <h2 id="deltaTitle">Что изменилось относительно проекта</h2>
@@ -85,12 +113,23 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
       </table>
       <p class="note" id="footNote">Модель стационарная: показывает установившееся состояние, а не переходный процесс.</p>
     </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2 id="ilkTitle">Блокировки</h2>
+      <div id="ilkCounts" class="ilkcounts"></div>
+      <label class="ilktoggle"><input type="checkbox" id="ilkUse" checked> <span id="ilkUseLbl">учитывать блокировки в расчёте</span></label>
+      <div id="ilkList" class="ilklist"></div>
+    </div>
   </div>
 </div>
 
 <script src="lang.js"></script>
 <script src="theme.js"></script>
 <script src="twin/model.js"></script>
+<script src="twin/state.js"></script>
+<script src="twin/interlocks.data.js"></script>
+<script src="twin/logic.js"></script>
+<script src="twin/apply.js"></script>
 <script>
 (function(){
 'use strict';
@@ -129,6 +168,16 @@ const TXT = {
     scen: { reset: 'Проект', low: 'Нагрузка 70 %', air80: 'Воздух 80 %', stop: 'Стоп серы' },
     rows: { sulfur: 'Сера', so2: 'SO₂ в газе печи', o2: 'O₂ в газе печи', conv: 'Общая конверсия', acid: 'Кислота 100 %', prod: 'Товарная кислота', stack: 'SO₂ в трубе' },
     of: 'из',
+    sigTitle: 'Сигналы оборудования',
+    sigNote: 'Останов насоса 2-й абсорбции запускает цепочку блокировок вплоть до останова воздуходувки.',
+    ilkTitle: 'Блокировки',
+    ilkUseLbl: 'учитывать блокировки в расчёте',
+    ilkFired: 'сработало', ilkUnknown: 'без сигнала', ilkBypassed: 'отключено', ilkIdle: 'в норме',
+    ilkChain: 'Блокировка изменила расчёт',
+    ilkNone: 'Нет сработавших блокировок. Остальные ждут сигналов, которых модель пока не знает.',
+    ilkReset: 'Сброс', ilkResetAll: 'Сбросить все сработавшие', ilkBypass: 'Отключить', ilkUnbypass: 'Включить', ilkSheet: 'лист',
+    ilkNoSignal: 'нет сигнала', ilkYes: 'да', ilkNo: 'нет',
+    badStopped: 'Горение остановлено блокировкой',
   },
   uz: {
     eb: 'Egizak · oltingugurt liniyasi',
@@ -159,6 +208,16 @@ const TXT = {
     scen: { reset: 'Loyiha', low: 'Yuklama 70 %', air80: 'Havo 80 %', stop: 'Oltingugurtni to‘xtatish' },
     rows: { sulfur: 'Oltingugurt', so2: 'Pech gazidagi SO₂', o2: 'Pech gazidagi O₂', conv: 'Umumiy konversiya', acid: 'Kislota 100 %', prod: 'Tovar kislotasi', stack: 'Quvurdagi SO₂' },
     of: '/',
+    sigTitle: 'Jihoz signallari',
+    sigNote: '2-absorbsiya nasosining to‘xtashi blokirovkalar zanjirini ishga tushiradi, shu jumladan havo puflagichning to‘xtashigacha.',
+    ilkTitle: 'Blokirovkalar',
+    ilkUseLbl: 'hisobda blokirovkalarni hisobga olish',
+    ilkFired: 'ishladi', ilkUnknown: 'signalsiz', ilkBypassed: 'o‘chirilgan', ilkIdle: 'me’yorda',
+    ilkChain: 'Blokirovka hisobni o‘zgartirdi',
+    ilkNone: 'Ishlagan blokirovkalar yo‘q. Qolganlari model hali bilmaydigan signallarni kutmoqda.',
+    ilkReset: 'Qayta ishga tushirish', ilkResetAll: 'Barchasini qayta ishga tushirish', ilkBypass: 'O‘chirish', ilkUnbypass: 'Yoqish', ilkSheet: 'varaq',
+    ilkNoSignal: 'signal yo‘q', ilkYes: 'ha', ilkNo: 'yo‘q',
+    badStopped: 'Yonish blokirovka bilan to‘xtatildi',
   }
 };
 let lang = 'ru';
@@ -178,6 +237,21 @@ const CTL = [
 ];
 const state = {};
 CTL.forEach((c) => { state[c.k] = c.def; });
+
+// Сигналы оборудования: то, что оператор может включить и выключить.
+// Останов PP-11303 запускает B-PROC («остановлен») → аварийный останов
+// воздуходувки → горение прекращается. Это реальная цепочка из схем АСУТП.
+const SIG = [
+  { k: 'p301', tag: 'YL-PP-11301', def: true, ru: 'Насос сушильной башни', uz: 'Quritish minorasi nasosi' },
+  { k: 'p302', tag: 'YL-PP-11302', def: true, ru: 'Насос 1-й абсорбции', uz: '1-absorbsiya nasosi' },
+  { k: 'p303', tag: 'YL-PP-11303', def: true, ru: 'Насос 2-й абсорбции', uz: '2-absorbsiya nasosi' },
+];
+const sig = {};
+SIG.forEach((s) => { sig[s.k] = s.def; });
+
+const ILK = window.TWIN_ILK;
+const mem = window.TwinLogic.makeMemory();
+let useIlk = true;
 
 function controls() {
   const c = {};
@@ -217,6 +291,20 @@ function paintStatic() {
   $('scen').querySelectorAll('[data-sc]').forEach((b) => {
     b.onclick = () => applyScenario(b.dataset.sc);
   });
+
+  // сигналы оборудования
+  $('sigTitle').textContent = L.sigTitle; $('sigNote').textContent = L.sigNote;
+  $('sigs').innerHTML = SIG.map((s) => '<label class="sig"><input type="checkbox" data-sig="' + s.k + '"' + (sig[s.k] ? ' checked' : '') + '>'
+    + '<span class="nm">' + esc(lang === 'uz' ? s.uz : s.ru) + '</span><span class="tg">' + esc(s.tag) + '</span></label>').join('');
+  $('sigs').querySelectorAll('[data-sig]').forEach((el) => {
+    el.onchange = () => { sig[el.dataset.sig] = el.checked; render(); };
+  });
+
+  // блокировки: заголовки и переключатель
+  $('ilkTitle').textContent = L.ilkTitle;
+  $('ilkUseLbl').textContent = L.ilkUseLbl;
+  $('ilkUse').checked = useIlk;
+  $('ilkUse').onchange = () => { useIlk = $('ilkUse').checked; render(); };
 }
 
 function applyScenario(s) {
@@ -227,18 +315,99 @@ function applyScenario(s) {
   paintStatic(); render();
 }
 
+/** Панель блокировок: что сработало, почему и что с этим делать. */
+function paintInterlocks(L, ilk, cons) {
+  const c = ilk.counts;
+  const fired = c.active + c.latched;
+  $('ilkCounts').innerHTML =
+    '<span class="' + (fired ? 'bad' : '') + '">' + esc(L.ilkFired) + ' <b>' + fired + '</b></span>'
+    + '<span class="' + (c.unknown ? 'warn' : '') + '">' + esc(L.ilkUnknown) + ' <b>' + c.unknown + '</b></span>'
+    + '<span>' + esc(L.ilkBypassed) + ' <b>' + c.bypassed + '</b></span>'
+    + '<span>' + esc(L.ilkIdle) + ' <b>' + c.idle + '</b></span>';
+
+  // предупреждение о последствиях, которые дошли до расчёта
+  const modelled = (cons.notes || []).filter((n) => n.modelled);
+  if (modelled.length) {
+    $('ilkAlert').innerHTML = '<div class="alert bad">' + esc(L.ilkChain) + ': '
+      + modelled.map((n) => esc(n.tag + ' — ' + n.text)).join('; ') + '</div>';
+  } else {
+    $('ilkAlert').innerHTML = '';
+  }
+
+  const shown = ilk.list.filter((x) => x.status === 'active' || x.status === 'latched' || x.status === 'bypassed');
+  if (!shown.length) {
+    $('ilkList').innerHTML = '<div class="muted" style="font-size:12.5px">' + esc(L.ilkNone) + '</div>';
+    return;
+  }
+  const anyLatched = ilk.list.some((x) => x.status === 'latched' && x.reset);
+  const head = anyLatched
+    ? '<div class="acts" style="margin-bottom:6px"><button type="button" data-rst-all="1">' + esc(L.ilkResetAll) + '</button></div>'
+    : '';
+  $('ilkList').innerHTML = head + shown.map((x) => {
+    const causes = x.causes.map((k) => {
+      const s = k.ok === null ? L.ilkNoSignal : (k.ok ? L.ilkYes : L.ilkNo);
+      return esc(k.tag + ': ' + (k.text || '') + ' — ' + s);
+    }).join('<br>');
+    const eff = x.effects.length
+      ? '<div class="eff">→ ' + x.effects.map((e) => esc(e.tag + ': ' + (e.text || e.action))).join('<br>→ ') + '</div>'
+      : '';
+    const btns = [];
+    if (x.status === 'latched' && x.reset) btns.push('<button type="button" data-rst="' + esc(x.id) + '">' + esc(L.ilkReset) + '</button>');
+    if (x.status !== 'bypassed') btns.push('<button type="button" data-byp="' + esc(x.id) + '">' + esc(L.ilkBypass) + '</button>');
+    else btns.push('<button type="button" data-unb="' + esc(x.id) + '">' + esc(L.ilkUnbypass) + '</button>');
+    return '<div class="ilki ' + (x.status === 'bypassed' ? '' : 'fired') + '">'
+      + '<div class="hd"><span class="id">' + esc(x.id) + '</span><b>' + esc(x.title || '') + '</b>'
+      + '<span class="id">' + esc(L.ilkSheet) + ' ' + esc(x.sheet || '') + '</span></div>'
+      + '<div class="cause">' + causes + '</div>' + eff
+      + '<div class="acts">' + btns.join('') + '</div></div>';
+  }).join('');
+
+  $('ilkList').querySelectorAll('[data-rst]').forEach((b) => {
+    b.onclick = () => { TwinLogic.reset(mem, b.dataset.rst); render(); };
+  });
+  $('ilkList').querySelectorAll('[data-rst-all]').forEach((b) => {
+    b.onclick = () => { TwinLogic.reset(mem); render(); };
+  });
+  $('ilkList').querySelectorAll('[data-byp]').forEach((b) => {
+    b.onclick = () => { TwinLogic.bypass(mem, b.dataset.byp, true); render(); };
+  });
+  $('ilkList').querySelectorAll('[data-unb]').forEach((b) => {
+    b.onclick = () => { TwinLogic.bypass(mem, b.dataset.unb, false); render(); };
+  });
+}
+
 function render() {
   const L = t();
-  const cur = T.solve(controls());
+  const ctl = controls();
   const base = T.designPoint();
 
+  // 1. базовый расчёт и состояние сигналов
+  const plain = T.solve(ctl);
+  const st = TwinState.build(plain, {
+    'YL-PP-11301': sig.p301,
+    'YL-PP-11302': sig.p302,
+    'YL-PP-11303': sig.p303,
+    'PP-11302': sig.p302,
+  });
+
+  // 2. блокировки
+  const ilk = TwinLogic.evaluate(ILK, st, mem, { honourBypass: true });
+
+  // 3. ограничения от блокировок → расчёт
+  const cons = useIlk
+    ? TwinApply.constraints(ilk.effects)
+    : { noCombustion: false, noAbsorb1: false, noAbsorb2: false, notes: [] };
+  const cur = useIlk ? TwinApply.run(ctl, cons) : plain;
+
+  paintInterlocks(L, ilk, cons);
   if (cur.error) {
     $('alert').innerHTML = '<div class="alert bad">' + esc(cur.error) + '</div>';
   } else {
     const msgs = [];
+    if (cur.stopped) msgs.push(L.badStopped);
     if (!cur.limits.stack_ok) msgs.push(L.badStack);
-    if (!cur.limits.conversion_ok) msgs.push(L.badConv);
-    if (!cur.limits.load_ok) msgs.push(L.badLoad);
+    if (!cur.limits.conversion_ok && !cur.stopped) msgs.push(L.badConv);
+    if (!cur.limits.load_ok && !cur.stopped) msgs.push(L.badLoad);
     $('alert').innerHTML = msgs.length
       ? '<div class="alert bad">' + msgs.map(esc).join(' · ') + '</div>'
       : '<div class="alert ok">' + esc(L.ok) + '</div>';

@@ -1,4 +1,7 @@
 'use strict';
+// Оборачиваем в IIFE: файл подключается и как модуль Node, и как
+// обычный <script>, а классические скрипты делят глобальную область.
+(function () {
 /*
  * Состояние процесса для проверки блокировок.
  *
@@ -61,3 +64,4 @@ function coverage(data, state) {
 const API = { build, expandTag, coverage };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 else self.TwinState = API;
+})();

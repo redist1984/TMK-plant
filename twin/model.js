@@ -1,4 +1,7 @@
 'use strict';
+// Оборачиваем в IIFE: файл подключается и как модуль Node, и как
+// обычный <script>, а классические скрипты делят глобальную область.
+(function () {
 /*
  * Стационарная модель линии серы: сера → сжигание → конверсия → абсорбция.
  *
@@ -112,7 +115,9 @@ function solve(c = {}) {
   const h2o = (c.stack_h2o_nm3 ?? DESIGN.stack_h2o_nm3) * load;
   const wet = (s2 + s3 + o2 + nN2) * NM3 + h2o;
   const so2Mass = (s2 * M.SO2);
+  const so3Mass = (s3 * M.SO3);
   const stack_so2 = wet > 1 ? (so2Mass * 1e6) / wet : 0;    // мг/нм³
+  const stack_so3 = wet > 1 ? (so3Mass * 1e6) / wet : 0;    // мг/нм³ (унос после 2-й абсорбции)
   const conversion = (nSO2_0 - s2) / (nSO2_0 || 1);
 
   const out = {
@@ -129,6 +134,8 @@ function solve(c = {}) {
     stack: {
       so2_nm3: num(s2 * NM3, 1),
       so2_mg: num(stack_so2, 0),
+      so3_nm3: num(s3 * NM3, 1),
+      so3_mg: num(stack_so3, 0),
       wet_nm3: num(wet, 0),
       o2_pct: num((o2 / (s2 + s3 + o2 + nN2)) * 100, 1),
     },
@@ -179,3 +186,4 @@ function delta(a, b = designPoint()) {
 const API = { solve, designPoint, delta, DESIGN, M, NM3 };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 else self.TwinModel = API;
+})();
