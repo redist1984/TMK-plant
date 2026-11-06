@@ -42,3 +42,7 @@ jobs:
       # Логика блокировок: условия, связки or/and/2oo3, латчи, BYPASS.
       - name: Проверка вычислителя блокировок
         run: node twin/interlocks.selftest.js
+
+      # Тепловой блок: пар и питательная вода должны совпасть с листом 2.
+      - name: Проверка теплового блока
+        run: node twin/heat.selftest.js
