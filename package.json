@@ -17,6 +17,7 @@
     "twin:heat": "node twin/heat.selftest.js",
     "twin:temps": "node twin/temps.selftest.js",
     "twin:melt": "node twin/melt.selftest.js",
+    "twin:vessels": "node twin/vessels.selftest.js",
     "twin:gen": "node twin/gen-interlocks.js",
     "flow-labels": "node tools/check-flow-labels.js"
   },
