@@ -174,4 +174,8 @@ function delta(a, b = designPoint()) {
   return rows;
 }
 
-module.exports = { solve, designPoint, delta, DESIGN, M, NM3 };
+// В Node — обычный модуль; в браузере (вкладка «Двойник») тот же файл
+// подключается через <script>, поэтому API уходит в глобальную область.
+const API = { solve, designPoint, delta, DESIGN, M, NM3 };
+if (typeof module !== 'undefined' && module.exports) module.exports = API;
+else self.TwinModel = API;

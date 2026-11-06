@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<link rel="icon" href="icon-192.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Двойник — линия серы</title>
+<script>try{var __t=localStorage.getItem('tmk_theme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
+  --line:#CBD5D2; --accent:#0B6E66; --accent-ink:#FFFFFF;
+  --ok:#23873A; --warn:#C79A00; --bad:#C9302A;
+  --shadow:0 10px 30px rgba(20,32,29,.16);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#0F1614; --ok:#4CC46A; --warn:#E0B32E; --bad:#F0665C; --shadow:0 10px 30px rgba(0,0,0,.5); }
+}
+:root[data-theme="dark"]{ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#0F1614; --ok:#4CC46A; --warn:#E0B32E; --bad:#F0665C; --shadow:0 10px 30px rgba(0,0,0,.5); }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:16px 16px 40px}
+h1{font-size:20px;margin:6px 0 4px}
+.sub{color:var(--ink2);margin:0 0 16px;max-width:82ch}
+.eyebrow{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.wrap{display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:14px;align-items:start}
+@media (max-width:860px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+.card h2{font-size:13px;margin:0 0 10px;color:var(--ink2);font-weight:600;letter-spacing:.02em;text-transform:uppercase}
+.ctl{display:flex;flex-direction:column;gap:3px;margin-bottom:11px}
+.ctl .row{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.ctl label{font-size:13px;color:var(--ink)}
+.ctl output{font:600 13px ui-monospace,Menlo,Consolas,monospace;color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.hint2{font-size:11.5px;color:var(--ink3)}
+.btns{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+button{font:13px system-ui,sans-serif;background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  color:var(--ink);padding:7px 11px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.kpi .k{font-size:11.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.kpi .v{font:600 22px/1.2 ui-monospace,Menlo,Consolas,monospace;margin-top:3px}
+.kpi .u{font-size:12px;color:var(--ink2);margin-left:3px}
+.kpi.bad{border-color:var(--bad)} .kpi.bad .v{color:var(--bad)}
+.kpi.ok .v{color:var(--ok)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{font-size:11.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+td.num{font-family:ui-monospace,Menlo,Consolas,monospace;text-align:right;white-space:nowrap}
+td.up{color:var(--ok)} td.down{color:var(--bad)}
+.alert{border-radius:10px;padding:9px 12px;font-size:13px;margin-bottom:10px;border:1px solid}
+.alert.bad{background:color-mix(in srgb,var(--bad) 12%,transparent);border-color:var(--bad);color:var(--bad)}
+.alert.ok{background:color-mix(in srgb,var(--ok) 10%,transparent);border-color:var(--ok);color:var(--ok)}
+.alert.warn{background:color-mix(in srgb,var(--warn) 14%,transparent);border-color:var(--warn);color:var(--warn)}
+.note{font-size:12px;color:var(--ink3);margin-top:10px}
+.muted{color:var(--ink3)}
+</style>
+</head>
+<body>
+
+<div class="eyebrow" id="eb">Двойник · линия серы</div>
+<h1 id="h1">Двойник: сера → кислота</h1>
+<p class="sub" id="sub">Стационарная модель участка: сжигание серы, конверсия в четыре ступени, абсорбция. Двигайте управления — параметры пересчитываются по стехиометрии. Отсчёт — проектный режим 1500 т/сут.</p>
+
+<div class="wrap">
+  <div class="card">
+    <h2 id="ctlTitle">Управления</h2>
+    <div id="ctls"></div>
+    <div class="btns" id="scen"></div>
+    <p class="note" id="ctlNote">Проектные значения — 100 %.</p>
+  </div>
+
+  <div>
+    <div id="alert"></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="card">
+      <h2 id="deltaTitle">Что изменилось относительно проекта</h2>
+      <table>
+        <thead><tr><th id="thParam">Параметр</th><th id="thWas">Проект</th><th id="thNow">Сейчас</th><th id="thDelta">Изменение</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <p class="note" id="footNote">Модель стационарная: показывает установившееся состояние, а не переходный процесс.</p>
+    </div>
+  </div>
+</div>
+
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script src="twin/model.js"></script>
+<script>
+(function(){
+'use strict';
+const T = window.TwinModel;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const f = (v, d = 1) => (v == null || Number.isNaN(v)) ? '—' : Number(v).toLocaleString('ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d });
+
+const TXT = {
+  ru: {
+    eb: 'Двойник · линия серы',
+    h1: 'Двойник: сера → кислота',
+    sub: 'Стационарная модель участка: сжигание серы, конверсия в четыре ступени, абсорбция. Двигайте управления — параметры пересчитываются по стехиометрии. Отсчёт — проектный режим 1500 т/сут.',
+    ctlTitle: 'Управления',
+    deltaTitle: 'Что изменилось относительно проекта',
+    thParam: 'Параметр', thWas: 'Проект', thNow: 'Сейчас', thDelta: 'Изменение',
+    ctlNote: 'Проектные значения — 100 %.',
+    footNote: 'Модель стационарная: показывает установившееся состояние, а не переходный процесс.',
+    params: {
+      load: ['Нагрузка по сере', '%', 'сколько серы подаётся от проектного расхода'],
+      air: ['Избыток воздуха', '%', 'расход воздуха относительно проекта'],
+      conv1: ['Конверсия 1-й ступени', '%', 'доля SO₂, превращённая в SO₃'],
+      conv2: ['Конверсия 2-й ступени', '%', ''],
+      conv3: ['Конверсия 3-й ступени', '%', ''],
+      conv4: ['Конверсия 4-й ступени', '%', 'после первой абсорбции'],
+      scrub: ['Щелочная промывка', '%', 'снятие остатка SO₂ перед трубой'],
+      conc: ['Концентрация кислоты', '%', 'товарная кислота'],
+    },
+    kpi: { acid: 'Товарная кислота', conv: 'Общая конверсия', stack: 'SO₂ в трубе', o2: 'O₂ в газе печи' },
+    units: { th: 'т/ч', pct: '%', mg: 'мг/нм³' },
+    ok: 'Все параметры в норме',
+    badStack: 'Выброс SO₂ выше нормы 300 мг/нм³',
+    badConv: 'Конверсия ниже гарантированной 99,8 %',
+    badLoad: 'Нагрузка вне диапазона 70–110 %',
+    empty: 'Изменений нет',
+    scen: { reset: 'Проект', low: 'Нагрузка 70 %', air80: 'Воздух 80 %', stop: 'Стоп серы' },
+    rows: { sulfur: 'Сера', so2: 'SO₂ в газе печи', o2: 'O₂ в газе печи', conv: 'Общая конверсия', acid: 'Кислота 100 %', prod: 'Товарная кислота', stack: 'SO₂ в трубе' },
+    of: 'из',
+  },
+  uz: {
+    eb: 'Egizak · oltingugurt liniyasi',
+    h1: 'Egizak: oltingugurt → kislota',
+    sub: 'Uchastkaning statsionar modeli: oltingugurtni yoqish, to‘rt bosqichli konversiya, absorbsiya. Boshqaruvlarni o‘zgartiring — parametrlar stexiometriya bo‘yicha qayta hisoblanadi. Boshlang‘ich nuqta — loyihaviy 1500 t/sutka.',
+    ctlTitle: 'Boshqaruvlar',
+    deltaTitle: 'Loyihaga nisbatan nima o‘zgardi',
+    thParam: 'Parametr', thWas: 'Loyiha', thNow: 'Hozir', thDelta: 'O‘zgarish',
+    ctlNote: 'Loyihaviy qiymatlar — 100 %.',
+    footNote: 'Model statsionar: barqaror holatni ko‘rsatadi, o‘tish jarayonini emas.',
+    params: {
+      load: ['Oltingugurt bo‘yicha yuklama', '%', 'loyihaviy sarfga nisbatan'],
+      air: ['Ortiqcha havo', '%', 'loyihaga nisbatan havo sarfi'],
+      conv1: ['1-bosqich konversiyasi', '%', 'SO₂ ning SO₃ ga aylanish ulushi'],
+      conv2: ['2-bosqich konversiyasi', '%', ''],
+      conv3: ['3-bosqich konversiyasi', '%', ''],
+      conv4: ['4-bosqich konversiyasi', '%', 'birinchi absorbsiyadan keyin'],
+      scrub: ['Ishqoriy yuvish', '%', 'quvur oldidan SO₂ ni ushlash'],
+      conc: ['Kislota konsentratsiyasi', '%', 'tovar kislotasi'],
+    },
+    kpi: { acid: 'Tovar kislotasi', conv: 'Umumiy konversiya', stack: 'Quvurdagi SO₂', o2: 'Pech gazidagi O₂' },
+    units: { th: 't/soat', pct: '%', mg: 'mg/nm³' },
+    ok: 'Barcha parametrlar me’yorda',
+    badStack: 'SO₂ chiqindisi 300 mg/nm³ normasidan yuqori',
+    badConv: 'Konversiya kafolatlangan 99,8 % dan past',
+    badLoad: 'Yuklama 70–110 % oralig‘idan tashqarida',
+    empty: 'O‘zgarish yo‘q',
+    scen: { reset: 'Loyiha', low: 'Yuklama 70 %', air80: 'Havo 80 %', stop: 'Oltingugurtni to‘xtatish' },
+    rows: { sulfur: 'Oltingugurt', so2: 'Pech gazidagi SO₂', o2: 'Pech gazidagi O₂', conv: 'Umumiy konversiya', acid: 'Kislota 100 %', prod: 'Tovar kislotasi', stack: 'Quvurdagi SO₂' },
+    of: '/',
+  }
+};
+let lang = 'ru';
+const t = () => TXT[lang] || TXT.ru;
+
+// управления: ключ -> [мин, макс, шаг, значение по проекту, что это в модели]
+const D = T.DESIGN;
+const CTL = [
+  { k: 'load', min: 10, max: 110, step: 1, def: 100, to: (v) => ({ load: v / 100 }) },
+  { k: 'air', min: 70, max: 130, step: 1, def: 100, to: (v) => ({ air_excess: v / 100 }) },
+  { k: 'conv1', min: 50, max: 75, step: 0.5, def: +(D.conv1 * 100).toFixed(1), to: (v) => ({ conv1: v / 100 }) },
+  { k: 'conv2', min: 50, max: 75, step: 0.5, def: +(D.conv2 * 100).toFixed(1), to: (v) => ({ conv2: v / 100 }) },
+  { k: 'conv3', min: 40, max: 70, step: 0.5, def: +(D.conv3 * 100).toFixed(1), to: (v) => ({ conv3: v / 100 }) },
+  { k: 'conv4', min: 90, max: 99.5, step: 0.1, def: +(D.conv4 * 100).toFixed(1), to: (v) => ({ conv4: v / 100 }) },
+  { k: 'scrub', min: 30, max: 99, step: 1, def: +(D.scrubber * 100).toFixed(0), to: (v) => ({ scrubber: v / 100 }) },
+  { k: 'conc', min: 92, max: 99, step: 0.1, def: 98.5, to: (v) => ({ acid_conc: v }) },
+];
+const state = {};
+CTL.forEach((c) => { state[c.k] = c.def; });
+
+function controls() {
+  const c = {};
+  CTL.forEach((x) => Object.assign(c, x.to(state[x.k])));
+  return c;
+}
+
+function paintStatic() {
+  const L = t();
+  $('eb').textContent = L.eb; $('h1').textContent = L.h1; $('sub').textContent = L.sub;
+  $('ctlTitle').textContent = L.ctlTitle; $('deltaTitle').textContent = L.deltaTitle;
+  $('thParam').textContent = L.thParam; $('thWas').textContent = L.thWas;
+  $('thNow').textContent = L.thNow; $('thDelta').textContent = L.thDelta;
+  $('ctlNote').textContent = L.ctlNote; $('footNote').textContent = L.footNote;
+
+  $('ctls').innerHTML = CTL.map((x) => {
+    const p = L.params[x.k];
+    return '<div class="ctl"><div class="row"><label for="c-' + x.k + '">' + esc(p[0]) + '</label>'
+      + '<output id="o-' + x.k + '">' + f(state[x.k], x.step < 1 ? 1 : 0) + '</output></div>'
+      + '<input type="range" id="c-' + x.k + '" min="' + x.min + '" max="' + x.max + '" step="' + x.step + '" value="' + state[x.k] + '">'
+      + (p[2] ? '<span class="hint2">' + esc(p[2]) + '</span>' : '')
+      + '</div>';
+  }).join('');
+  CTL.forEach((x) => {
+    const el = $('c-' + x.k);
+    el.addEventListener('input', () => {
+      state[x.k] = parseFloat(el.value);
+      $('o-' + x.k).textContent = f(state[x.k], x.step < 1 ? 1 : 0);
+      render();
+    });
+  });
+
+  $('scen').innerHTML = '<button type="button" class="primary" data-sc="reset">' + esc(L.scen.reset) + '</button>'
+    + '<button type="button" data-sc="low">' + esc(L.scen.low) + '</button>'
+    + '<button type="button" data-sc="air80">' + esc(L.scen.air80) + '</button>'
+    + '<button type="button" data-sc="stop">' + esc(L.scen.stop) + '</button>';
+  $('scen').querySelectorAll('[data-sc]').forEach((b) => {
+    b.onclick = () => applyScenario(b.dataset.sc);
+  });
+}
+
+function applyScenario(s) {
+  if (s === 'reset') CTL.forEach((x) => { state[x.k] = x.def; });
+  if (s === 'low') state.load = 70;
+  if (s === 'air80') state.air = 80;
+  if (s === 'stop') state.load = 10;   // подача серы почти перекрыта: модель считает и такой режим, но помечает его вне проектного диапазона
+  paintStatic(); render();
+}
+
+function render() {
+  const L = t();
+  const cur = T.solve(controls());
+  const base = T.designPoint();
+
+  if (cur.error) {
+    $('alert').innerHTML = '<div class="alert bad">' + esc(cur.error) + '</div>';
+  } else {
+    const msgs = [];
+    if (!cur.limits.stack_ok) msgs.push(L.badStack);
+    if (!cur.limits.conversion_ok) msgs.push(L.badConv);
+    if (!cur.limits.load_ok) msgs.push(L.badLoad);
+    $('alert').innerHTML = msgs.length
+      ? '<div class="alert bad">' + msgs.map(esc).join(' · ') + '</div>'
+      : '<div class="alert ok">' + esc(L.ok) + '</div>';
+  }
+  if (cur.error) { $('kpis').innerHTML = ''; $('tbody').innerHTML = ''; return; }
+
+  const kpi = (name, val, unit, cls) => '<div class="kpi ' + (cls || '') + '"><div class="k">' + esc(name) + '</div>'
+    + '<div class="v">' + val + '<span class="u">' + esc(unit) + '</span></div></div>';
+
+  $('kpis').innerHTML =
+    kpi(L.kpi.acid, f(cur.acid.product_t_h, 1), L.units.th, '') +
+    kpi(L.kpi.conv, f(cur.conversion, 2), L.units.pct, cur.limits.conversion_ok ? 'ok' : 'bad') +
+    kpi(L.kpi.stack, f(cur.stack.so2_mg, 0), L.units.mg, cur.limits.stack_ok ? 'ok' : 'bad') +
+    kpi(L.kpi.o2, f(cur.gas.o2_dry_pct, 1), L.units.pct, '');
+
+  const rows = T.delta(cur, base);
+  const map = { 'Сера': 'sulfur', 'SO₂ в газе печи': 'so2', 'O₂ в газе печи': 'o2', 'Общая конверсия': 'conv', 'Кислота 100 %': 'acid', 'Товарная кислота': 'prod', 'SO₂ в трубе': 'stack' };
+  // знаков после запятой — по единице измерения, иначе в таблице «13 939,00 нм³/ч»
+  const dig = (u) => (u === 'нм³/ч' || u === 'мг/нм³') ? 0 : (u === '%' ? 2 : 2);
+  if (!rows.length) {
+    $('tbody').innerHTML = '<tr><td colspan="4" class="muted">' + esc(L.empty) + '</td></tr>';
+  } else {
+    $('tbody').innerHTML = rows.map((r) => {
+      const nm = L.rows[map[r.name] || ''] || r.name;
+      const d = dig(r.unit);
+      const cls = r.delta > 0 ? 'up' : 'down';
+      const sign = r.delta > 0 ? '+' : '';
+      return '<tr><td>' + esc(nm) + '</td><td class="num">' + f(r.before, d) + ' ' + esc(r.unit) + '</td>'
+        + '<td class="num">' + f(r.after, d) + ' ' + esc(r.unit) + '</td>'
+        + '<td class="num ' + cls + '">' + sign + f(r.delta, d) + '</td></tr>';
+    }).join('');
+  }
+}
+
+function paint(l) { lang = (l === 'uz') ? 'uz' : 'ru'; paintStatic(); render(); }
+try { TmkLang.initChild(paint); TmkTheme.initChild(function () {}); } catch (e) { paintStatic(); render(); }
+paint((window.TmkLang && TmkLang.getLang) ? TmkLang.getLang() : 'ru');
+try { window.parent.postMessage({ __tmkReady: 'twin' }, '*'); } catch (e) {}
+})();
+</script>
+</body>
+</html>
