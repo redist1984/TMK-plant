@@ -90,7 +90,98 @@ function checkSyntax() {
 }
 
 // ---------------------------------------------------------------------------
-// 2. Service worker
+// 2. Область видимости скриптов страниц
+//
+// Классические <script src> делят одну глобальную область. Два файла, каждый из
+// которых объявляет на верхнем уровне `const API`, роняют страницу с
+// "Identifier 'API' has already been declared" — при этом в Node всё работает,
+// потому что там модули изолированы. Ошибка уже случалась дважды, поэтому она
+// проверяется, а не запоминается.
+//
+// Правила:
+//   - один и тот же верхний уровень объявлен в двух подключаемых файлах — ошибка;
+//   - файл, который умеет быть и модулем (есть module.exports), и скриптом,
+//     обязан быть обёрнут в IIFE — иначе его имена утекают в общую область.
+// ---------------------------------------------------------------------------
+function scriptRefs() {
+  // какие js-файлы реально подключаются тегом <script src> со страниц
+  const out = new Map();      // rel-путь → список страниц
+  for (const h of htmlFiles) {
+    const src = readText(P(h));
+    const re = /<script[^>]*\bsrc="([^":]+\.js)"/gi;
+    let m;
+    while ((m = re.exec(src))) {
+      const relPath = m[1].replace(/^\.\//, '');
+      if (!out.has(relPath)) out.set(relPath, []);
+      out.get(relPath).push(h);
+    }
+  }
+  return out;
+}
+
+function topLevelNames(src) {
+  const names = new Set();
+  const lines = src.split('\n');
+  for (const line of lines) {
+    if (/^\s/.test(line)) continue;                        // объявление внутри функции/блока
+    const t = line.trim();
+    if (!t || t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) continue;
+    let m;
+    if ((m = t.match(/^(?:const|let|var)\s+([A-Za-z_$][\w$]*)/))) names.add(m[1]);
+    else if ((m = t.match(/^(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/))) names.add(m[1]);
+    else if ((m = t.match(/^class\s+([A-Za-z_$][\w$]*)/))) names.add(m[1]);
+  }
+  return names;
+}
+
+function isWrapped(src) {
+  const strip = (s) => s
+    .replace(/^\s*(?:\/\/[^\n]*\n|\/\*[\s\S]*?\*\/\s*)*/, '')   // ведущие комментарии
+    .replace(/^\s*['"]use strict['"];\s*/, '')                  // «use strict» перед обёрткой
+    .replace(/^\s*(?:\/\/[^\n]*\n|\/\*[\s\S]*?\*\/\s*)*/, '');
+  const s = strip(src);
+  return /^\(\s*function\b/.test(s) || /^\(\s*\(\s*\)\s*=>/.test(s);
+}
+
+function checkScriptScope() {
+  const refs = scriptRefs();
+  const declared = new Map();      // имя → список файлов
+
+  for (const [file, pages] of refs) {
+    const abs = P(file);
+    if (!fs.existsSync(abs)) continue;                     // битые ссылки ловит другая проверка
+    const src = readText(abs);
+    const wrapped = isWrapped(src);
+
+    // В IIFE всё внутреннее: имена наружу не утекают. Файл без обёртки, наоборот,
+    // объявляет в общей области — именно такие и сравниваем между собой.
+    if (!wrapped) {
+      for (const name of topLevelNames(src)) {
+        if (!declared.has(name)) declared.set(name, []);
+        declared.get(name).push(file);
+      }
+    }
+
+    // модуль, подключаемый тегом, обязан быть в IIFE
+    if (/module\.exports/.test(src) && !wrapped) {
+      fail('scope', `${file}: подключается как <script src> (${pages.join(', ')}), но не обёрнут в IIFE — ` +
+        'объявления утекут в общую область и столкнутся с другим файлом. ' +
+        'Оберните: (function () { ... })();');
+    }
+  }
+
+  for (const [name, files] of declared) {
+    const uniq = [...new Set(files)];
+    if (uniq.length > 1) {
+      fail('scope', `имя «${name}» объявлено на верхнем уровне в ${uniq.length} подключаемых файлах: ` +
+        `${uniq.join(', ')} — страница упадёт с "Identifier already declared". ` +
+        'Оберните файлы в IIFE или переименуйте.');
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 3. Service worker
 // ---------------------------------------------------------------------------
 function parseServiceWorker() {
   const file = P('service-worker.js');
@@ -364,6 +455,7 @@ function checkAndroid() {
 // Запуск
 // ---------------------------------------------------------------------------
 checkSyntax();
+checkScriptScope();
 const sw = parseServiceWorker();
 checkPrecache(sw);
 checkDocs();
@@ -373,7 +465,7 @@ checkRulesets();
 checkSecrets();
 checkAndroid();
 
-const checks = ['syntax', 'sw', 'precache', 'docs', 'links', 'img', 'ruleset', 'secret', 'android'];
+const checks = ['syntax', 'scope', 'sw', 'precache', 'docs', 'links', 'img', 'ruleset', 'secret', 'android'];
 const byCheck = Object.fromEntries(checks.map((c) => [c, 0]));
 for (const e of errors) {
   const key = e.slice(1, e.indexOf(']'));
