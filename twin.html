@@ -81,6 +81,13 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 .ilki .acts{display:flex;gap:6px;margin-top:5px}
 .ilki .acts button{font-size:11.5px;padding:3px 8px}
 .ilki .cause{color:var(--ink3);margin-top:2px}
+/* плавление и уровень */
+.lv{display:flex;flex-direction:column;gap:4px;margin:8px 0;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2)}
+.lv .row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px}
+.lv .row span{color:var(--ink2)}
+.lv .row b{font-family:ui-monospace,Menlo,Consolas,monospace}
+.lv .row b.ok{color:var(--ok)}
+.lv .row b.bad{color:var(--bad)}
 </style>
 </head>
 <body>
@@ -99,6 +106,12 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
     <h2 id="sigTitle" style="margin-top:14px">Сигналы оборудования</h2>
     <div id="sigs"></div>
     <p class="note" id="sigNote">Останов насоса 2-й абсорбции запускает цепочку блокировок вплоть до останова воздуходувки.</p>
+
+    <h2 id="meltTitle" style="margin-top:14px">Плавление серы</h2>
+    <div id="melts"></div>
+    <div class="lv" id="levelBox"></div>
+    <div class="btns"><button type="button" id="bAdvance">прокрутить 1 ч</button></div>
+    <p class="note" id="meltNote">Уровень в чане фильтрации меняется во времени: приход от плавления минус расход на горелку. Уставки LL 500 / H 2200 мм — из таблицы DCS.</p>
   </div>
 
   <div>
@@ -150,6 +163,8 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 <script src="twin/heat.js"></script>
 <script src="twin/heatcap.js"></script>
 <script src="twin/temps.js"></script>
+<script src="twin/melt.js"></script>
+<script src="twin/tank.js"></script>
 <script>
 (function(){
 'use strict';
@@ -197,6 +212,12 @@ const TXT = {
     ilkNone: 'Нет сработавших блокировок. Остальные ждут сигналов, которых модель пока не знает.',
     ilkReset: 'Сброс', ilkResetAll: 'Сбросить все сработавшие', ilkBypass: 'Отключить', ilkUnbypass: 'Включить', ilkSheet: 'лист',
     ilkNoSignal: 'нет сигнала', ilkYes: 'да', ilkNo: 'нет', ilkFromDcs: 'уставка из DCS',
+    meltTitle: 'Плавление серы',
+    meltNote: 'Уровень в чане фильтрации меняется во времени: приход от плавления минус расход на горелку. Уставки LL 500 / H 2200 мм — из таблицы DCS.',
+    meltSulfur: 'Твёрдая сера', meltAsh: 'Зольность исходной серы, ppm',
+    meltLevel: 'Уровень в чане', meltNet: 'Приход − расход', meltHeat: 'Тепло на плавление',
+    meltSteam: 'Пар 0,8 МПа', meltAshOut: 'Зола после 2-й ступени', meltLoad: 'Нагрузка плавления',
+    meltAdvance: 'прокрутить 1 ч',
     badStopped: 'Горение остановлено блокировкой',
     heatTitle: 'Тепло и пар',
     heatSteam: 'Пар 6,4 МПа / 450 °C',
@@ -247,6 +268,12 @@ const TXT = {
     ilkNone: 'Ishlagan blokirovkalar yo‘q. Qolganlari model hali bilmaydigan signallarni kutmoqda.',
     ilkReset: 'Qayta ishga tushirish', ilkResetAll: 'Barchasini qayta ishga tushirish', ilkBypass: 'O‘chirish', ilkUnbypass: 'Yoqish', ilkSheet: 'varaq',
     ilkNoSignal: 'signal yo‘q', ilkYes: 'ha', ilkNo: 'yo‘q', ilkFromDcs: 'ustavka DCS dan',
+    meltTitle: 'Oltingugurtni eritish',
+    meltNote: 'Filtr chanidagi sath vaqt bo‘yicha o‘zgaradi: eritishdan kelishi minus pechga sarfi. LL 500 / H 2200 mm ustavkalari DCS jadvalidan.',
+    meltSulfur: 'Qattiq oltingugurt', meltAsh: 'Boshlang‘ich oltingugurt kuli, ppm',
+    meltLevel: 'Chandagi sath', meltNet: 'Kelish − sarf', meltHeat: 'Eritishga issiqlik',
+    meltSteam: 'Bug‘ 0,8 MPa', meltAshOut: '2-bosqichdan keyingi kul', meltLoad: 'Eritish yuklamasi',
+    meltAdvance: '1 soat oldinga',
     badStopped: 'Yonish blokirovka bilan to‘xtatildi',
     heatTitle: 'Issiqlik va bug‘',
     heatSteam: 'Bug‘ 6,4 MPa / 450 °C',
@@ -288,6 +315,10 @@ const SIG = [
 ];
 const sig = {};
 SIG.forEach((s) => { sig[s.k] = s.def; });
+
+// Плавление: уровень в чане — первая величина, которая зависит от времени.
+const MELT = { sulfur: 20.48, ash: 120 };
+const LVL = { level: 1500, area: 5, LL: 500, H: 2200 };
 
 const ILK = window.TWIN_ILK;
 const mem = window.TwinLogic.makeMemory();
@@ -345,6 +376,42 @@ function paintStatic() {
   $('ilkUseLbl').textContent = L.ilkUseLbl;
   $('ilkUse').checked = useIlk;
   $('ilkUse').onchange = () => { useIlk = $('ilkUse').checked; render(); };
+
+  // плавление серы
+  $('meltTitle').textContent = L.meltTitle;
+  $('meltNote').textContent = L.meltNote;
+  $('melts').innerHTML =
+    '<div class="ctl"><div class="row"><label for="m-sulfur">' + esc(L.meltSulfur) + '</label>'
+    + '<output id="mo-sulfur">' + f(MELT.sulfur, 1) + '</output></div>'
+    + '<input type="range" id="m-sulfur" min="5" max="45" step="0.5" value="' + MELT.sulfur + '"></div>'
+    + '<div class="ctl"><div class="row"><label for="m-ash">' + esc(L.meltAsh) + '</label>'
+    + '<output id="mo-ash">' + f(MELT.ash, 0) + '</output></div>'
+    + '<input type="range" id="m-ash" min="20" max="400" step="10" value="' + MELT.ash + '"></div>';
+  $('m-sulfur').oninput = (e) => { MELT.sulfur = parseFloat(e.target.value); $('mo-sulfur').textContent = f(MELT.sulfur, 1); render(); };
+  $('m-ash').oninput = (e) => { MELT.ash = parseFloat(e.target.value); $('mo-ash').textContent = f(MELT.ash, 0); render(); };
+  $('bAdvance').textContent = L.meltAdvance;
+  $('bAdvance').onclick = () => {
+    const burn = T.solve(controls()).sulfur_t_h || 0;
+    LVL.level = TwinTank.step({ level: LVL.level, area_m2: LVL.area, LL: LVL.LL, H: LVL.H },
+      { qIn_t_h: MELT.sulfur, qOut_t_h: burn }, 60).level;
+    render();
+  };
+}
+
+/** Плавление и уровень: тепло, пар, зола и что с уровнем за час. */
+function paintMelt(L, burn_t_h) {
+  if (!window.TwinMelt) { $('levelBox').innerHTML = ''; return; }
+  const m = TwinMelt.solve({ sulfur_t_h: MELT.sulfur, ashFeed: MELT.ash });
+  const lv = TwinTank.step({ level: LVL.level, area_m2: LVL.area, LL: LVL.LL, H: LVL.H },
+    { qIn_t_h: MELT.sulfur, qOut_t_h: burn_t_h }, 0);
+  const cls = lv.status === 'normal' ? 'ok' : 'bad';
+  $('levelBox').innerHTML =
+    '<div class="row"><span>' + esc(L.meltLevel) + '</span><b class="' + cls + '">' + f(LVL.level, 0) + ' мм</b></div>'
+    + '<div class="row"><span>' + esc(L.meltNet) + '</span><b>' + (lv.net_t_h > 0 ? '+' : '') + f(lv.net_t_h, 2) + ' т/ч · ' + (lv.rate_mm_h > 0 ? '+' : '') + f(lv.rate_mm_h, 1) + ' мм/ч</b></div>'
+    + '<div class="row"><span>' + esc(L.meltHeat) + '</span><b>' + f(m.heat.totalKw, 0) + ' кВт</b></div>'
+    + '<div class="row"><span>' + esc(L.meltSteam) + '</span><b>' + f(m.steam08_t_h, 2) + ' т/ч</b></div>'
+    + '<div class="row"><span>' + esc(L.meltAshOut) + '</span><b class="' + (m.ash.ok ? 'ok' : 'bad') + '">' + f(m.ash.after2Ppm, 0) + ' ppm</b></div>'
+    + '<div class="row"><span>' + esc(L.meltLoad) + '</span><b class="' + (m.limits.capacityOk ? 'ok' : 'bad') + '">' + f(m.loadPct, 0) + ' %</b></div>';
 }
 
 function applyScenario(s) {
@@ -470,6 +537,9 @@ function render() {
     'YL-PP-11302': sig.p302,
     'YL-PP-11303': sig.p303,
     'PP-11302': sig.p302,
+    // уровень в чане фильтрации — считается моделью ёмкости, а не руками
+    'LT-11101': LVL.level,
+    'LIAS-11101': LVL.level,
   });
 
   // 2. блокировки
@@ -484,6 +554,7 @@ function render() {
   paintInterlocks(L, ilk, cons);
   paintHeat(L, cur);
   paintTemps(L, cur);
+  paintMelt(L, plain.sulfur_t_h || 0);
   if (cur.error) {
     $('alert').innerHTML = '<div class="alert bad">' + esc(cur.error) + '</div>';
   } else {
