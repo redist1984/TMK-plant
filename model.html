@@ -101,6 +101,20 @@ aside.detail.closed{transform:translateX(calc(100% + 24px));opacity:0;pointer-ev
 .cutrow-obj{flex-direction:column;align-items:stretch}
 .cutrow-obj .eyebrow{align-self:flex-start}
 .cutsearch{font:13px var(--sans);color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 9px;width:100%}
+/* Поиск по модели: плавающее поле над сценой, результаты — выпадающим списком */
+.gsearch{position:absolute;left:14px;top:14px;z-index:6;width:min(340px,calc(100% - 28px))}
+.gsearch input{width:100%;font:13px var(--sans);color:var(--ink);background:var(--panel);border:1px solid var(--line);
+  border-radius:9px;padding:8px 11px;box-shadow:var(--shadow)}
+.gsearch input::placeholder{color:var(--ink2)}
+.gres{position:absolute;left:0;right:0;top:calc(100% + 6px);max-height:56vh;overflow:auto;
+  background:var(--panel);border:1px solid var(--line);border-radius:9px;box-shadow:var(--shadow);z-index:7}
+.gres button{display:block;width:100%;text-align:left;background:none;border:0;cursor:pointer;
+  color:var(--ink);font:13px var(--sans);padding:7px 10px;border-bottom:1px solid var(--line)}
+.gres button:last-child{border-bottom:0}
+.gres button.on,.gres button:hover{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.gres .tg{font:12px var(--mono);color:var(--accent);margin-right:6px}
+.gres .sec{font:11px var(--mono);color:var(--ink2);margin-left:6px}
+.gres .empty{padding:8px 10px;font:13px var(--sans);color:var(--ink2)}
 .cutrow-mode{justify-content:space-between}
 .cutrow-slider input[type=range]{flex:1;min-width:0}
 .rotate-fab{position:absolute;right:14px;bottom:14px;z-index:4;width:52px;height:52px;border-radius:50%;
@@ -276,6 +290,10 @@ body.fs-mode .suinfo{width:min(340px,calc(100% - 80px))}
 <div class="stage" id="stage">
   <div id="view"></div>
   <div class="labels" id="labels"></div>
+  <div class="gsearch" id="gsearch">
+    <input type="search" id="gq" placeholder="Найти аппарат, здание, отделение…" aria-label="Поиск по модели" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="gres">
+    <div class="gres" id="gres" role="listbox" hidden></div>
+  </div>
   <button class="fsmenu-fab" type="button" id="bFsMenu" aria-expanded="true" aria-controls="fsPanel" title="Панель управления">☰</button>
   <div class="fspanel" id="fsPanel"></div>
   <div class="walkpad" id="walkPad" hidden>
@@ -429,6 +447,7 @@ const UI = {
     rotateOn:'Выключить вращение (вернуть перемещение пальцем)', rotateOff:'Включить вращение пальцем (иначе палец перемещает камеру)',
     cutEyebrow:'Разрез', cutOnly:'только объект', cutOff:'Нет', cutNS:'С–Ю', cutEW:'З–В', cutPlan:'План', cutFlipTitle:'Показать другую сторону',
     cutSearchPh:'Поиск аппарата или здания…',
+    searchPh:'Найти аппарат, здание, отделение…', searchNothing:'Ничего не найдено',
     lbClose:'Закрыть', streamsLbl:'Потоки', allFlows:'Все потоки',
     lbHint:'Двойное касание или сведение пальцев — увеличить, перетащите — посмотреть деталь',
     helpTitle:'Подсказка', helpH3:'Управление сценой', fullHelpBtn:'Подробная справка по приложению →',
@@ -463,6 +482,7 @@ const UI = {
     rotateOn:'Aylantirishni o‘chirish (barmoq bilan siljitishga qaytish)', rotateOff:'Barmoq bilan aylantirishni yoqish (aks holda barmoq kamerani siljitadi)',
     cutEyebrow:'Kesim', cutOnly:'faqat obyekt', cutOff:'Yo‘q', cutNS:'Sh–J', cutEW:'G‘–Sh', cutPlan:'Reja', cutFlipTitle:'Boshqa tomonni ko‘rsatish',
     cutSearchPh:'Apparat yoki bino qidirish…',
+    searchPh:'Apparat, bino, bo‘limni topish…', searchNothing:'Hech narsa topilmadi',
     lbClose:'Yopish', streamsLbl:'Oqimlar', allFlows:'Barcha oqimlar',
     lbHint:'Ikki marta bosing yoki barmoqlarni siqing — kattalashtirish, surish — detalni ko‘rish',
     helpTitle:'Yordam', helpH3:'Sahnani boshqarish', fullHelpBtn:'Ilova bo‘yicha batafsil yordam →',
@@ -4378,6 +4398,66 @@ E.forEach(o=>{const sec=eqSec(o.t)||'G112';const g=build(o);if(!g)return;if(o.ba
  function openInfoFor(o){const u=o.userData;lockedTag=u.tag;select(u.tag);lockCameraOn(u.tag);
    if(u.info.kind==='bldg')showBldg(u.info.b);else if(u.info.kind==='ct')showCT();else showEq(u.tag,u.info.o)
    updateCutForNewSelection()}
+
+  // ---------- Поиск по модели -------------------------------------------------
+  // Ищет по тегу и названию (рус/узб) среди оборудования, зданий и отделений.
+  // Найденное открывается так же, как при клике по объекту: выделение, подлёт
+  // камеры, карточка. Для отделения — переход к нему целиком.
+  const GS=[];                                   // индекс: {kind,tag,name,nameu,sec}
+  (DATA.eq||[]).forEach(e=>GS.push({kind:'eq',tag:e.t,name:e.n||'',nameu:e.nu||'',sec:e.s}));
+  (typeof BLD!=='undefined'?BLD:[]).forEach(b=>GS.push({kind:'bldg',tag:b.id,name:(b.code||'')+' · '+(b.name||''),nameu:b.nameu||'',sec:b.sec}));
+  Object.entries(DATA.sections||{}).forEach(([k,s])=>GS.push({kind:'sec',tag:k,name:(s.code||'')+' · '+(s.name||''),nameu:s.nameu||'',sec:k}));
+  const gq=$('gq'), gres=$('gres');
+  let gItems=[],gOn=-1;
+  const gnorm=(s)=>String(s||'').toLowerCase().replace(/ё/g,'е').replace(/\s+/g,' ').trim();
+  function gscore(it,q){
+    const t=gnorm(it.tag), n=gnorm(it.name), u=gnorm(it.nameu);
+    if(t===q)return 0;                 // точный тег
+    if(t.startsWith(q))return 1;       // тег с начала
+    if(t.includes(q))return 2;         // тег внутри
+    if(n.startsWith(q)||u.startsWith(q))return 3;
+    if(n.includes(q)||u.includes(q))return 4;
+    // основы слов: «деминерализация» должно находить «деминерализации»
+    if(q.length>=5){const st=q.slice(0,Math.max(4,q.length-2));
+      if(n.includes(st)||u.includes(st))return 5}
+    return -1;
+  }
+  function gfind(v){
+    const q=gnorm(v); if(!q)return [];
+    const out=[];
+    for(const it of GS){const s=gscore(it,q);if(s>=0)out.push([s,it])}
+    out.sort((a,b)=>a[0]-b[0]||a[1].tag.localeCompare(b[1].tag));
+    return out.slice(0,12).map(x=>x[1]);
+  }
+  function gclose(){gres.hidden=true;gres.innerHTML='';gItems=[];gOn=-1;gq.setAttribute('aria-expanded','false')}
+  function gpaint(){
+    if(!gItems.length){gres.innerHTML='<div class="empty">'+esc(L().searchNothing)+'</div>';gres.hidden=false;gq.setAttribute('aria-expanded','true');return}
+    gres.innerHTML=gItems.map((it,i)=>{
+      const nm=(currentLang==='uz'&&it.nameu)?it.nameu:it.name;
+      const sec=(DATA.sections[it.sec]||{}).code||'';
+      return '<button type="button" role="option" data-i="'+i+'" class="'+(i===gOn?'on':'')+'">'
+        +'<span class="tg">'+esc(it.tag)+'</span>'+esc(nm)+(sec?'<span class="sec">'+esc(sec)+'</span>':'')+'</button>';
+    }).join('');
+    gres.hidden=false;gq.setAttribute('aria-expanded','true');
+  }
+  function gchoose(i){
+    const it=gItems[i]; if(!it)return;
+    gclose(); gq.value='';
+    if(it.kind==='sec'){focusSec(it.tag);return}
+    const objs=byTag[it.tag];
+    if(objs&&objs.length){openInfoFor(objs[0]);return}
+    if(it.kind==='eq'&&EQINFO[it.tag]){showEq(it.tag,EQINFO[it.tag])}   // есть в перечне, но не на сцене
+  }
+  gq.addEventListener('input',()=>{gItems=gfind(gq.value);gOn=gItems.length?0:-1;gpaint()});
+  gq.addEventListener('keydown',(ev)=>{
+    if(ev.key==='ArrowDown'){if(!gItems.length)return;ev.preventDefault();gOn=(gOn+1)%gItems.length;gpaint()}
+    else if(ev.key==='ArrowUp'){if(!gItems.length)return;ev.preventDefault();gOn=(gOn-1+gItems.length)%gItems.length;gpaint()}
+    else if(ev.key==='Enter'){if(gOn>=0){ev.preventDefault();gchoose(gOn)}}
+    else if(ev.key==='Escape'){gclose();gq.blur()}
+  });
+  gres.addEventListener('click',(ev)=>{const b=ev.target.closest('button[data-i]');if(b)gchoose(+b.dataset.i)});
+  document.addEventListener('pointerdown',(ev)=>{if(!$('gsearch').contains(ev.target))gclose()});
+  gq.addEventListener('focus',()=>{if(gq.value.trim()){gItems=gfind(gq.value);gOn=0;gpaint()}});
  function tapLockToggle(ev){const o=pick(ev);const wasLocked=lockedTag;closeD();
    if(!o)return;
    const u=o.userData;
@@ -6066,6 +6146,7 @@ $('suMode').onchange=e=>{suSetMode(e.target.value);SU.t=0;SU.fc=null;SU.lastFo=n
    cutFlip.title=T.cutFlipTitle; cutFlip.textContent=T.cutFlipBtn;
    cutObj.setAttribute('aria-label',T.cutObjLabel);
    cutObjSearch.placeholder=T.cutSearchPh;
+   $('gq').placeholder=T.searchPh;
    $('lb').setAttribute('aria-label',T.drawingLbl);
    $('lbX').textContent=T.lbClose;
    $('lbHint').textContent=T.lbHint;
