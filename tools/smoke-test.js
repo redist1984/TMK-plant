@@ -65,6 +65,7 @@ const TABS = [
   { name: 'analyses', iframe: 'f-anl', expr: "document.querySelectorAll('li, tr').length", min: 15, what: 'точек анализов' },
   { name: 'kip', iframe: 'f-kip', expr: "document.querySelectorAll('li, tr').length", min: 100, what: 'строк КИП' },
   { name: 'docs', iframe: 'f-docs', expr: "document.querySelectorAll('a[href^=\"docs_pdf/\"]').length", min: 100, what: 'ссылок на PDF' },
+  { name: 'mnemo', iframe: 'f-mnemo', expr: "document.querySelectorAll('.chip').length", min: 3, what: 'чипов значений' },
   { name: 'twin', iframe: 'f-twin', expr: "document.querySelectorAll('input[type=range]').length", min: 6, what: 'ползунков управления' },
   { name: 'settings', iframe: 'f-settings', expr: null },
   { name: 'help', iframe: 'f-help', expr: null },
@@ -121,7 +122,7 @@ const TABS = [
   const failures = [];
   const tabCount = await page.evaluate(() => document.querySelectorAll('#tabs button').length);
   console.log('вкладок в оболочке: ' + tabCount);
-  if (tabCount !== 10) failures.push('вкладок ' + tabCount + ', ожидалось 10');
+  if (tabCount !== 11) failures.push('вкладок ' + tabCount + ', ожидалось 11');
 
   for (const t of TABS) {
     const clicked = await page.evaluate((n) => {

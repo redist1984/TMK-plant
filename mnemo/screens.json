@@ -1,0 +1,108 @@
+{
+ "screens": [
+  {
+   "id": "sklad",
+   "file": "mnemo/01-sklad.jpg",
+   "title": {
+    "ru": "Склад серы и подача серы",
+    "uz": "Oltingugurt ombori va berish"
+   },
+   "chips": [
+    {
+     "x": 49.2,
+     "y": 41.2,
+     "cap": "подача серы",
+     "val": "melt.sulfur",
+     "unit": "т/ч"
+    },
+    {
+     "x": 72.3,
+     "y": 40.1,
+     "cap": "весы ленты",
+     "val": "melt.sulfur",
+     "unit": "т/ч"
+    },
+    {
+     "x": 77.8,
+     "y": 46.5,
+     "cap": "TK-11101AB",
+     "val": "melt.tMelt",
+     "unit": "°C"
+    }
+   ]
+  },
+  {
+   "id": "plavlenie",
+   "file": "mnemo/02-plavlenie.jpg",
+   "title": {
+    "ru": "Система плавления серы",
+    "uz": "Oltingugurt eritish tizimi"
+   },
+   "chips": [
+    {
+     "x": 10.2,
+     "y": 61.4,
+     "cap": "TK-11101A",
+     "val": "melt.tMelt",
+     "unit": "°C"
+    },
+    {
+     "x": 20.7,
+     "y": 61.4,
+     "cap": "TK-11101B",
+     "val": "melt.tMelt",
+     "unit": "°C"
+    },
+    {
+     "x": 32.0,
+     "y": 7.1,
+     "cap": "FR-11101A",
+     "val": "melt.sulfur",
+     "unit": "т/ч"
+    },
+    {
+     "x": 57.8,
+     "y": 7.1,
+     "cap": "FR-11101B",
+     "val": "melt.sulfur",
+     "unit": "т/ч"
+    },
+    {
+     "x": 83.2,
+     "y": 7.1,
+     "cap": "FR-11102",
+     "val": "melt.sulfur",
+     "unit": "т/ч"
+    },
+    {
+     "x": 30.5,
+     "y": 80.5,
+     "cap": "LT-11102",
+     "val": "level:LT-11102",
+     "unit": "мм"
+    },
+    {
+     "x": 44.5,
+     "y": 80.5,
+     "cap": "LT-11103",
+     "val": "level:LT-11103",
+     "unit": "мм"
+    },
+    {
+     "x": 67.2,
+     "y": 79.5,
+     "cap": "LT-11104",
+     "val": "level:LT-11104",
+     "unit": "мм"
+    },
+    {
+     "x": 86.7,
+     "y": 79.5,
+     "cap": "LT-11105",
+     "val": "level:LT-11105",
+     "unit": "мм"
+    }
+   ]
+  }
+ ]
+}

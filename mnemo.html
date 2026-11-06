@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Мнемосхемы — TMK</title>
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#111821; --panel2:#0e141b; --line:#1e2833;
+    --ink:#e8eef5; --ink2:#a8b7c7; --ink3:#6f8093;
+    --accent:#2fbf9a; --ok:#2fbf9a; --bad:#e05561; --warn:#d8a13a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+    font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+  header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  header b{font-size:15px}
+  header .sub{color:var(--ink3);font-size:12px}
+  .wrap{display:flex;flex-direction:column;height:calc(100% - 52px)}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel2)}
+  .bar button{background:transparent;border:1px solid var(--line);color:var(--ink2);
+    padding:6px 12px;border-radius:9px;font:inherit;font-size:12.5px;cursor:pointer}
+  .bar button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#06130f;font-weight:600}
+  .bar label{display:flex;gap:6px;align-items:center;color:var(--ink2);font-size:12.5px;margin-left:auto}
+  .stage{position:relative;flex:1;overflow:auto;background:#05080b}
+  .frame{position:relative;margin:0 auto;max-width:1600px}
+  .frame img{display:block;width:100%;height:auto}
+  .chip{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;
+    align-items:center;pointer-events:none}
+  .chip .v{background:rgba(6,14,20,.86);border:1px solid #2a3a4a;border-radius:7px;
+    padding:2px 7px;font:600 13px/1.25 ui-monospace,Menlo,Consolas,monospace;color:#f2f7fb;
+    white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+  .chip .c{font-size:10.5px;color:#93a6b8;margin-top:2px;white-space:nowrap;
+    background:rgba(6,14,20,.7);border-radius:5px;padding:0 4px}
+  .chip.bad .v{color:#ffb3b8;border-color:#6b2a30}
+  .chip.ok .v{color:#b8ffe6}
+  .hidden .chip{display:none}
+  .note{padding:8px 14px;border-top:1px solid var(--line);color:var(--ink3);font-size:12px;background:var(--panel)}
+</style>
+</head>
+<body>
+<header>
+  <b id="h1">Мнемосхемы</b>
+  <span class="sub" id="sub">расчётные значения поверх экранов АСУТП</span>
+</header>
+<div class="wrap">
+  <div class="bar" id="bar"></div>
+  <div class="stage" id="stage"><div class="frame" id="frame"><img id="img" alt=""><div id="chips"></div></div></div>
+  <p class="note" id="note">Значения считает модель двойника; исходные цифры на скриншотах АСУТП нулевые — они перекрыты нашими чипами.</p>
+</div>
+
+<!-- модули двойника: порядок важен -->
+<script src="twin/heatcap.js"></script>
+<script src="twin/converter.js"></script>
+<script src="twin/model.js"></script>
+<script src="twin/dcs-signals.data.js"></script>
+<script src="twin/tank.js"></script>
+<script src="twin/vessels.js"></script>
+<script src="twin/melt.js"></script>
+
+<script src="lang.js"></script>
+<script>
+'use strict';
+const TXT = {
+  ru: { h1: 'Мнемосхемы', sub: 'расчётные значения поверх экранов АСУТП', show: 'показать значения',
+        note: 'Значения считает модель двойника; исходные цифры на скриншотах АСУТП нулевые — они перекрыты нашими чипами.' },
+  uz: { h1: 'Mnemoyxemalar', sub: 'АSU TP ekranlari ustida hisobiy qiymatlar', show: 'qiymatlarni ko‘rsatish',
+        note: 'Qiymatlarni egizak modeli hisoblaydi; АSU TP skrinshotlaridagi asl raqamlar nol — ular bizning chiplar bilan yopilgan.' }
+};
+let lang = 'ru';
+const L = () => TXT[lang] || TXT.ru;
+
+let SCREENS = [];
+let cur = 0;
+let showValues = true;
+
+/** Значения из модели: ключ "melt.*" или "level:TAG". */
+function valueOf(key) {
+  const T = self.TwinModel, M = self.TwinMelt, V = self.TwinVessels;
+  const melt = M ? M.solve({ sulfur_t_h: 20.48, ashFeed: 120 }) : null;
+  if (key.startsWith('level:')) {
+    const tag = key.slice(6);
+    const row = V ? V.list({}, lang).find((x) => x.tag === tag) : null;
+    return row ? { v: row.level, bad: row.status !== 'normal' && row.status !== 'none' } : { v: null };
+  }
+  if (key === 'melt.sulfur') return { v: melt ? melt.sulfur_t_h : null };
+  if (key === 'melt.tMelt') return { v: melt ? melt.tMelt : null };
+  if (key === 'melt.steam08') return { v: melt ? melt.steam08_t_h : null };
+  return { v: null };
+}
+
+const fmt = (v) => v == null ? '—' : (Math.round(v * 10) / 10).toString().replace('.', ',');
+
+function paint() {
+  const t = L();
+  document.getElementById('h1').textContent = t.h1;
+  document.getElementById('sub').textContent = t.sub;
+  document.getElementById('note').textContent = t.note;
+
+  const bar = document.getElementById('bar');
+  bar.innerHTML = SCREENS.map((s, i) =>
+    '<button type="button" data-i="' + i + '" aria-pressed="' + (i === cur) + '">'
+    + (s.title[lang] || s.title.ru) + '</button>').join('')
+    + '<label><input type="checkbox" id="show"' + (showValues ? ' checked' : '') + '>' + t.show + '</label>';
+  bar.querySelectorAll('button[data-i]').forEach((b) => {
+    b.onclick = () => { cur = +b.dataset.i; paint(); };
+  });
+  document.getElementById('show').onchange = (e) => {
+    showValues = e.target.checked;
+    document.getElementById('frame').classList.toggle('hidden', !showValues);
+  };
+
+  const s = SCREENS[cur];
+  if (!s) return;
+  document.getElementById('img').src = s.file;
+  document.getElementById('frame').classList.toggle('hidden', !showValues);
+
+  document.getElementById('chips').innerHTML = (s.chips || []).map((c) => {
+    const r = valueOf(c.val);
+    const cls = r.bad ? ' bad' : ' ok';
+    return '<div class="chip' + cls + '" style="left:' + c.x + '%;top:' + c.y + '%">'
+      + '<span class="v">' + fmt(r.v) + ' ' + (c.unit || '') + '</span>'
+      + '<span class="c">' + c.cap + '</span></div>';
+  }).join('');
+}
+
+fetch('mnemo/screens.json').then((r) => r.json()).then((d) => {
+  SCREENS = d.screens || [];
+  paint();
+}).catch(() => {
+  document.getElementById('stage').innerHTML = '<p class="note">Не удалось загрузить mnemo/screens.json</p>';
+});
+
+// язык приходит от оболочки
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (d && d.__tmkLangChange) { lang = d.lang === 'uz' ? 'uz' : 'ru'; paint(); }
+});
+try {
+  if (self.TmkLang && self.TmkLang.initChild) {
+    self.TmkLang.initChild((lg) => { lang = lg === 'uz' ? 'uz' : 'ru'; paint(); });
+  }
+} catch (e) {}
+</script>
+</body>
+</html>
