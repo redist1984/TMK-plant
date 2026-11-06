@@ -59,7 +59,7 @@ jobs:
         run: npm ci
 
       - name: Собрать офлайн-версию
-        run: npm run offline -- --out dist-offline --name TMK-plant-offline-lite
+        run: npm run offline -- --out dist-offline --name TMK-plant-offline-lite.html
 
       - name: Дымовой тест офлайн-сборки
         run: node tools/smoke-test.js --offline dist-offline/TMK-plant-offline-lite.html
