@@ -1,4 +1,4 @@
-const CACHE = 'tmk-plant-v148';
+const CACHE = 'tmk-plant-v149';
 const ASSETS = [
   "logo.png",
   "twin.html",
@@ -12,6 +12,8 @@ const ASSETS = [
   "twin/heat.js",
   "twin/heatcap.js",
   "twin/temps.js",
+  "twin/melt.js",
+  "twin/tank.js",
   "fonts/fonts.css",
   "fonts/GolosText-400-cyrillic.woff2",
   "fonts/GolosText-400-latin.woff2",
