@@ -13,6 +13,8 @@
     "geometry:baseline": "node tools/geometry/run.js --update-baseline",
     "audit": "node tools/audit-model.js",
     "twin": "node twin/selftest.js",
+    "twin:ilk": "node twin/interlocks.selftest.js",
+    "twin:gen": "node twin/gen-interlocks.js",
     "flow-labels": "node tools/check-flow-labels.js"
   },
   "devDependencies": {
