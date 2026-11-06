@@ -1,4 +1,7 @@
 'use strict';
+// Оборачиваем в IIFE: файл подключается и как модуль Node, и как
+// обычный <script>, а классические скрипты делят глобальную область.
+(function () {
 /*
  * Вычислитель блокировок: условие → связка → латч → действие.
  *
@@ -173,3 +176,4 @@ function bypass(mem, id, on) {
 const API = { evaluate, checkCause, combine, makeMemory, reset, bypass };
 if (typeof module !== 'undefined' && module.exports) module.exports = API;
 else self.TwinLogic = API;
+})();
