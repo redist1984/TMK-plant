@@ -112,7 +112,7 @@ function paint() {
 
   const s = SCREENS[cur];
   if (!s) return;
-  document.getElementById('img').src = s.file;
+  document.getElementById('img').src = assetUrl(s.file);
   document.getElementById('frame').classList.toggle('hidden', !showValues);
 
   document.getElementById('chips').innerHTML = (s.chips || []).map((c) => {
@@ -124,7 +124,12 @@ function paint() {
   }).join('');
 }
 
-fetch('mnemo/screens.json').then((r) => r.json()).then((d) => {
+// в офлайн-файле ресурсы лежат в base64 и отдаются через parent.__tmkAsset
+function assetUrl(p) {
+  try { return self.A ? self.A(p) : p; } catch (e) { return p; }
+}
+
+fetch(assetUrl('mnemo/screens.json')).then((r) => r.json()).then((d) => {
   SCREENS = d.screens || [];
   paint();
 }).catch(() => {
