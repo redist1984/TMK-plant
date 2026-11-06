@@ -23,6 +23,17 @@ const NM3 = 22.414;            // нм³ в кмоль
 const N2_PER_O2 = 102942 / 27278;
 
 // Проектные коэффициенты (получены из баланса листа 3, см. balance.json)
+// Конверсия из равновесия: вход ступеней, давления и степень приближения.
+// Подходы откалиброваны по проектным степеням (64,0 / 65,7 / 58,3 / 97,0 %).
+const CONV_IN = {
+  T_IN: [410, 445, 435, 311],        // °C, вход ступеней (уставки)
+  P_IN: [1.39, 1.30, 1.26, 1.15],    // атм абсолютных
+  APPROACH: [0.952, 0.916, 0.785, 0.971],
+};
+const CONV = (typeof module !== 'undefined' && module.exports)
+  ? require('./converter.js')
+  : self.TwinConverter;
+
 const DESIGN = {
   load: 1.0,
   sulfur_t_h: 20.48,
@@ -72,9 +83,16 @@ function solve(c = {}) {
   const stages = [];
   let s2 = nSO2_0, s3 = nSO3_0, o2 = nO2_0;
   const conv = [c.conv1 ?? DESIGN.conv1, c.conv2 ?? DESIGN.conv2, c.conv3 ?? DESIGN.conv3, c.conv4 ?? DESIGN.conv4];
+  // c.autoConv !== false — считать конверсию из равновесия, а не по ползункам
+  const autoConv = c.autoConv !== false && !!CONV;
 
   function stage(i, absorbBefore) {
-    const cIn = conv[i];
+    let cIn = conv[i];
+    if (autoConv) {
+      const st = CONV.stage({ SO2: s2, SO3: s3, O2: o2, N2: nAirN2 },
+        CONV_IN.T_IN[i], CONV_IN.P_IN[i], CONV_IN.APPROACH[i]);
+      cIn = st.X;
+    }
     const cut = s2 * clamp(cIn, 0, 1);
     s2 -= cut;
     s3 += cut;
@@ -148,6 +166,8 @@ function solve(c = {}) {
       product_t_day: num(product_t_h * 24, 0),
       conc,
     },
+    stagesConv: stages.map((x) => num(x.conv * 100, 2)),
+    autoConv,
     conversion: num(conversion * 100, 2),
     limits: {
       stack_ok: stack_so2 <= 300,
