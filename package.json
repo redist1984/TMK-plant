@@ -14,6 +14,8 @@
     "audit": "node tools/audit-model.js",
     "twin": "node twin/selftest.js",
     "twin:ilk": "node twin/interlocks.selftest.js",
+    "twin:heat": "node twin/heat.selftest.js",
+    "twin:temps": "node twin/temps.selftest.js",
     "twin:gen": "node twin/gen-interlocks.js",
     "flow-labels": "node tools/check-flow-labels.js"
   },
