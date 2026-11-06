@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<link rel="icon" href="icon-192.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мнемосхемы DCS</title>
+<script>try{var __t=localStorage.getItem('tmk_theme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+<style>
+:root{
+  --bg:#EEF2F1; --panel:#FFFFFF; --panel2:#F6F8F8; --ink:#14201D; --ink2:#4A5A55; --ink3:#72827D;
+  --line:#CBD5D2; --accent:#0B6E66; --accent-ink:#FFFFFF;
+  --shadow:0 10px 30px rgba(20,32,29,.16);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#0F1614; --shadow:0 10px 30px rgba(0,0,0,.5); }
+}
+:root[data-theme="dark"]{ color-scheme:dark; --bg:#0F1614; --panel:#16201D; --panel2:#1B2623; --ink:#E3ECE9; --ink2:#A9B8B3; --ink3:#7F908B; --line:#2C3A36; --accent:#3FC1B3; --accent-ink:#0F1614; --shadow:0 10px 30px rgba(0,0,0,.5); }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding:16px 16px 40px}
+h1{font-size:20px;margin:6px 0 4px}
+.sub{color:var(--ink2);margin:0 0 16px;max-width:78ch}
+.eyebrow{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+input[type=search]{flex:1 1 220px;min-width:0;font:13px system-ui,sans-serif;color:var(--ink);background:var(--panel);
+  border:1px solid var(--line);border-radius:9px;padding:8px 11px}
+.chip{font:13px system-ui,sans-serif;background:var(--panel);border:1px solid var(--line);border-radius:999px;
+  color:var(--ink2);padding:6px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:zoom-in;
+  display:flex;flex-direction:column;transition:transform .12s ease,box-shadow .12s ease}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.card img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#0b0f0e}
+.card .cap{padding:9px 11px 11px;display:flex;flex-direction:column;gap:4px}
+.card .cap b{font:600 13px system-ui,sans-serif;line-height:1.35}
+.card .cap span{font:11px ui-monospace,Menlo,Consolas,monospace;color:var(--ink3)}
+.empty{padding:18px;color:var(--ink2)}
+.lb{position:fixed;inset:0;background:rgba(6,10,9,.94);z-index:50;display:flex;flex-direction:column}
+.lb[hidden]{display:none}
+.lb .top{display:flex;gap:10px;align-items:center;padding:10px 12px;color:#EAF2F0}
+.lb .top b{font:600 13px system-ui,sans-serif;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb button{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#EAF2F0;border-radius:8px;
+  font:13px system-ui,sans-serif;padding:6px 11px;cursor:pointer}
+.lb .stage{flex:1;overflow:hidden;position:relative;cursor:grab}
+.lb .stage.drag{cursor:grabbing}
+.lb img{position:absolute;left:50%;top:50%;transform-origin:center;max-width:none;user-select:none;-webkit-user-drag:none}
+.hint{color:#93a5a0;font:12px system-ui,sans-serif;padding:0 12px 10px}
+</style>
+</head>
+<body>
+
+<div class="eyebrow">DCS · ES130</div>
+<h1 id="h1">Мнемосхемы и блокировки DCS</h1>
+<p class="sub" id="sub">Снимки экранов АСУТП с действующей станции: технологические мнемосхемы отделений и схемы блокировок. Нажмите на снимок — откроется целиком, с увеличением колесом или двумя пальцами.</p>
+
+<div class="bar">
+  <input type="search" id="q" placeholder="Поиск по названию или тегу…" autocomplete="off" aria-label="Поиск снимка">
+  <div id="grp"></div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="empty" id="none" hidden></div>
+
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Просмотр снимка">
+  <div class="top">
+    <b id="lbCap"></b>
+    <button type="button" id="lbPrev" aria-label="Предыдущий">←</button>
+    <button type="button" id="lbNext" aria-label="Следующий">→</button>
+    <button type="button" id="lbClose" aria-label="Закрыть">✕</button>
+  </div>
+  <div class="stage" id="lbStage"><img id="lbImg" alt=""></div>
+  <div class="hint" id="lbHint">Колесо или два пальца — масштаб · перетаскивание — сдвиг · ← → — соседний снимок · Esc — закрыть</div>
+</div>
+
+<script src="lang.js"></script>
+<script src="theme.js"></script>
+<script>
+(function(){
+'use strict';
+// Снимки DCS: названия взяты с самих экранов.
+const D=[
+ {k:'mnemo',f:'dcs/mnemo-01.jpg',t:'Склад серы и система подачи серы',s:'5Hg121'},
+ {k:'mnemo',f:'dcs/mnemo-02.jpg',t:'Система плавления серы',s:'5G111'},
+ {k:'mnemo',f:'dcs/mnemo-03.jpg',t:'Система сжигания серы и конверсии',s:'5G112'},
+ {k:'mnemo',f:'dcs/mnemo-04.jpg',t:'Процесс сухой абсорбции',s:'5G113'},
+ {k:'mnemo',f:'dcs/mnemo-05.jpg',t:'Система промывки выхлопных газов',s:'5G113'},
+ {k:'mnemo',f:'dcs/mnemo-06.jpg',t:'Паровая система',s:'5R114'},
+ {k:'mnemo',f:'dcs/mnemo-07.jpg',t:'Пусковой котёл',s:'5R135'},
+ {k:'mnemo',f:'dcs/mnemo-08.jpg',t:'Система деаэрированной воды',s:'5R114.1'},
+ {k:'mnemo',f:'dcs/mnemo-09.jpg',t:'Система пароводяного тракта турбины',s:'5R115'},
+ {k:'mnemo',f:'dcs/mnemo-10.jpg',t:'Масляная система паровой турбины',s:'5R115'},
+ {k:'mnemo',f:'dcs/mnemo-11.jpg',t:'Резервуар для хранения жидкой серы',s:'5G122'},
+ {k:'mnemo',f:'dcs/mnemo-12.jpg',t:'Зона резервуара для серной кислоты с продуктом',s:'5G123'},
+ {k:'ilk',f:'dcs/ilk-01.jpg',t:'Блокировка циркуляционного насоса кислоты 1-й абсорбционной башни',s:'PP-11302'},
+ {k:'ilk',f:'dcs/ilk-02.jpg',t:'Циркуляционный насос кислоты 2-й абсорбционной башни',s:'PP-11302'},
+ {k:'ilk',f:'dcs/ilk-03.jpg',t:'Блокировка РК конденсата плавления серы',s:'5G111'},
+ {k:'ilk',f:'dcs/ilk-04.jpg',t:'Блокировка ЭК подвода сырой воды',s:'5S131'},
+ {k:'ilk',f:'dcs/ilk-05.jpg',t:'Блокировка ЭК подпитки циркуляционной воды электростанции',s:'5S134'},
+ {k:'ilk',f:'dcs/ilk-06.jpg',t:'Блокировка включения резервного масляного насоса',s:'5R115'},
+ {k:'ilk',f:'dcs/ilk-07.jpg',t:'Блокировка насоса циркуляционной кислоты сушильной башни',s:'PP-11301'},
+ {k:'ilk',f:'dcs/ilk-08.jpg',t:'Блок электропривода клапана подпитки оборотной воды серной кислоты',s:'5S133'},
+ {k:'ilk',f:'dcs/ilk-09.jpg',t:'Блокировка запрета включения масляного подогревателя',s:'5R115'},
+ {k:'ilk',f:'dcs/ilk-10.jpg',t:'Блокировка остановки воздушного вентилятора',s:'5R115'},
+ {k:'ilk',f:'dcs/ilk-11.jpg',t:'Блокировка остановки воздушного вентилятора (второй экран)',s:'5G113'},
+ {k:'ilk',f:'dcs/ilk-12.jpg',t:'Блокировка остановки насоса чистого серы',s:'5G111'}
+];
+
+const TXT={
+ ru:{h1:'Мнемосхемы и блокировки DCS',
+     sub:'Снимки экранов АСУТП с действующей станции: технологические мнемосхемы отделений и схемы блокировок. Нажмите на снимок — откроется целиком, с увеличением колесом или двумя пальцами.',
+     ph:'Поиск по названию или тегу…', all:'Все', mnemo:'Мнемосхемы', ilk:'Блокировки',
+     none:'Ничего не найдено', hint:'Колесо или два пальца — масштаб · перетаскивание — сдвиг · ← → — соседний снимок · Esc — закрыть',
+     of:'из'},
+ uz:{h1:'DCS mnemosxemalari va blokirovkalari',
+     sub:'Ishlayotgan stansiyadan olingan ASUTP ekranlari: bo‘limlarning texnologik mnemosxemalari va blokirovka sxemalari. Rasmni bosing — to‘liq ochiladi, g‘ildirak yoki ikki barmoq bilan kattalashtiriladi.',
+     ph:'Nomi yoki tegi bo‘yicha qidirish…', all:'Hammasi', mnemo:'Mnemosxemalar', ilk:'Blokirovkalar',
+     none:'Hech narsa topilmadi', hint:'G‘ildirak yoki ikki barmoq — masshtab · sudrash — siljitish · ← → — qo‘shni rasm · Esc — yopish',
+     of:'/'}
+};
+let lang='ru', grp='all', query='', view=[], cur=-1;
+const t=()=>TXT[lang];
+const $=(id)=>document.getElementById(id);
+const esc=(s)=>String(s).replace(/[&<>"]/g,(c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// В офлайн-сборке файлы вложены в документ, и путь надо разрешить через parent.__tmkAsset
+const src=(p)=>{try{return (window.A?window.A(p):p)}catch(e){return p}};
+
+function fill(){
+  const T=t();
+  $('h1').textContent=T.h1; $('sub').textContent=T.sub; $('q').placeholder=T.ph; $('lbHint').textContent=T.hint;
+  $('grp').innerHTML=[['all',T.all],['mnemo',T.mnemo],['ilk',T.ilk]]
+    .map(([k,l])=>'<button type="button" class="chip" data-g="'+k+'" aria-pressed="'+(grp===k)+'">'+esc(l)+'</button>').join('');
+  $('grp').querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{grp=b.dataset.g;fill();render()});
+}
+
+function render(){
+  const q=query.trim().toLowerCase();
+  view=D.filter(d=>(grp==='all'||d.k===grp)&&(!q||d.t.toLowerCase().includes(q)||d.s.toLowerCase().includes(q)));
+  $('none').hidden=view.length>0;
+  $('none').textContent=view.length?'':t().none;
+  $('grid').innerHTML=view.map((d,i)=>
+    '<div class="card" data-i="'+i+'" role="button" tabindex="0">'
+    +'<img loading="lazy" src="'+esc(src(d.f))+'" alt="'+esc(d.t)+'">'
+    +'<div class="cap"><b>'+esc(d.t)+'</b><span>'+esc(d.s)+'</span></div></div>').join('');
+  $('grid').querySelectorAll('.card').forEach(c=>{
+    const open=()=>openLb(+c.dataset.i);
+    c.onclick=open;
+    c.onkeydown=(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}};
+  });
+}
+
+// --- просмотр снимка ---------------------------------------------------
+let zoom=1,panX=0,panY=0,drag=null;
+function applyView(){
+  const im=$('lbImg');
+  im.style.width='100%'; im.style.height='100%';
+  im.style.objectFit='contain';
+  im.style.transform='translate(-50%,-50%) translate('+panX+'px,'+panY+'px) scale('+zoom+')';
+}
+function openLb(i){
+  cur=i; const d=view[i]; if(!d)return;
+  $('lb').hidden=false;
+  $('lbImg').src=src(d.f); $('lbImg').alt=d.t;
+  $('lbCap').textContent=d.t+' · '+d.s+'  ('+(i+1)+' '+t().of+' '+view.length+')';
+  zoom=1;panX=0;panY=0;applyView();
+  document.body.style.overflow='hidden';
+}
+function closeLb(){$('lb').hidden=true;document.body.style.overflow='';cur=-1}
+function step(d){
+  if(cur<0||!view.length)return;
+  openLb((cur+d+view.length)%view.length);
+}
+$('lbClose').onclick=closeLb;
+$('lbPrev').onclick=()=>step(-1);
+$('lbNext').onclick=()=>step(1);
+$('lb').onclick=(e)=>{if(e.target===$('lb'))closeLb()};
+$('lbStage').addEventListener('wheel',(e)=>{
+  if($('lb').hidden)return; e.preventDefault();
+  zoom=Math.min(6,Math.max(1,zoom*(e.deltaY<0?1.15:1/1.15)));
+  if(zoom===1){panX=0;panY=0}
+  applyView();
+},{passive:false});
+$('lbStage').addEventListener('pointerdown',(e)=>{if($('lb').hidden)return;drag={x:e.clientX,y:e.clientY,px:panX,py:panY};$('lbStage').classList.add('drag')});
+window.addEventListener('pointermove',(e)=>{if(!drag)return;panX=drag.px+(e.clientX-drag.x);panY=drag.py+(e.clientY-drag.y);applyView()});
+window.addEventListener('pointerup',()=>{drag=null;$('lbStage').classList.remove('drag')});
+window.addEventListener('keydown',(e)=>{
+  if($('lb').hidden)return;
+  if(e.key==='Escape')closeLb();
+  else if(e.key==='ArrowLeft')step(-1);
+  else if(e.key==='ArrowRight')step(1);
+});
+// двойное касание — сброс масштаба
+$('lbStage').addEventListener('dblclick',()=>{zoom=1;panX=0;panY=0;applyView()});
+
+$('q').addEventListener('input',(e)=>{query=e.target.value;render()});
+
+function paint(l){lang=(l==='uz')?'uz':'ru';fill();render()}
+try{TmkLang.initChild(paint);TmkTheme.initChild(function(){})}catch(e){fill();render()}
+paint((window.TmkLang&&TmkLang.getLang)?TmkLang.getLang():'ru');
+try{window.parent.postMessage({__tmkReady:'dcs'},'*')}catch(e){}
+})();
+</script>
+</body>
+</html>

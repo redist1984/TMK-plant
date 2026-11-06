@@ -41,10 +41,10 @@ const OUT = path.resolve(arg('--out', P('dist-offline')));
 const NAME = arg('--name', 'TMK-plant-offline.html');
 const WITH_PDF = flag('--with-pdf');
 
-const PAGES = ['model', 'flow', 'pfd', 'interlocks', 'analyses', 'kip', 'docs', 'settings', 'help'];
+const PAGES = ['model', 'flow', 'pfd', 'interlocks', 'analyses', 'kip', 'docs', 'dcs', 'settings', 'help'];
 const IDS = {
   model: 'f-model', flow: 'f-flow', pfd: 'f-pfd', interlocks: 'f-ilk', analyses: 'f-anl',
-  kip: 'f-kip', docs: 'f-docs', settings: 'f-settings', help: 'f-help',
+  kip: 'f-kip', docs: 'f-docs', dcs: 'f-dcs', settings: 'f-settings', help: 'f-help',
 };
 
 // --- шрифты -> data URI ------------------------------------------------
@@ -106,7 +106,7 @@ async function optimizeJpeg(buf) {
 }
 
 async function collectAssets() {
-  for (const dir of ['sec_img', 'pfd/scan']) {
+  for (const dir of ['sec_img', 'pfd/scan', 'dcs']) {
     const abs = P(dir);
     if (!fs.existsSync(abs)) continue;
     for (const f of fs.readdirSync(abs).sort()) {
