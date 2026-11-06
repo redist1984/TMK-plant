@@ -1,10 +1,12 @@
-const CACHE = 'tmk-plant-v147';
+const CACHE = 'tmk-plant-v148';
 const ASSETS = [
   "logo.png",
   "twin.html",
   "twin/model.js",
   "twin/state.js",
   "twin/interlocks.data.js",
+  "twin/dcs-signals.data.js",
+  "twin/signals.js",
   "twin/logic.js",
   "twin/apply.js",
   "twin/heat.js",

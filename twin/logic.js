@@ -21,6 +21,11 @@ const expandTag = (typeof module !== 'undefined' && module.exports)
   ? require('./state.js').expandTag
   : (self.TwinState ? self.TwinState.expandTag : (t) => [t]);
 
+// Уставки из таблицы мониторинга DCS: закрытые в схемах (**) значения ищем там.
+const SIGNALS = (typeof module !== 'undefined' && module.exports)
+  ? require('./signals.js')
+  : (self.TwinSignals || null);
+
 const OPS = {
   '<': (a, b) => a < b,
   '<=': (a, b) => a <= b,
@@ -42,15 +47,24 @@ function cmpValue(op, a, b) {
 
 /** Проверка одной причины. Возвращает {ok, why, unknown}. */
 function checkCause(cause, state) {
-  const cond = cause.cond || {};
+  let cond = cause.cond || {};
+  let setpointFrom = cond.setpointUnknown ? null : 'scheme';
+
+  // Уставка закрыта в схеме (**): пробуем взять её из таблицы DCS.
   if (cond.setpointUnknown) {
-    return { ok: null, unknown: true, why: 'уставка в исходнике закрыта: ' + cond.text };
+    const sp = SIGNALS ? SIGNALS.setpoint(cond, cause.tag) : null;
+    if (sp) {
+      cond = Object.assign({}, cond, { op: sp.op, value: sp.value, unit: sp.unit, setpointUnknown: false });
+      setpointFrom = 'dcs';
+    } else {
+      return { ok: null, unknown: true, why: 'уставка закрыта в исходнике и не найдена в таблице DCS', setpointFrom: null };
+    }
   }
   const tags = expandTag(cause.tag);
   const values = tags.map((t) => state[t]);
   const missing = tags.filter((t, i) => values[i] === undefined);
   if (missing.length === tags.length) {
-    return { ok: null, unknown: true, why: 'нет сигнала ' + tags.join(', ') };
+    return { ok: null, unknown: true, why: 'нет сигнала ' + tags.join(', '), setpointFrom };
   }
 
   if (cond.type === 'analog') {
@@ -60,7 +74,7 @@ function checkCause(cause, state) {
       return cmpValue(cond.op, Number(v), cond.value);
     });
     const known = hit.filter((h) => h !== null);
-    if (!known.length) return { ok: null, unknown: true, why: 'нет числового сигнала ' + tags.join(', ') };
+    if (!known.length) return { ok: null, unknown: true, why: 'нет числового сигнала ' + tags.join(', '), setpointFrom };
     // голосование «2 из 3» — внутри одной причины по группе датчиков
     if (cond.voting) {
       const need = cond.voting.k;
@@ -69,16 +83,22 @@ function checkCause(cause, state) {
         ok: yes >= need,
         unknown: known.length < cond.voting.n,
         why: `${yes} из ${known.length} ${cond.op} ${cond.value} ${cond.unit || ''}`.trim(),
+        setpointFrom,
       };
     }
-    return { ok: known.some(Boolean), unknown: false, why: `${cond.op} ${cond.value} ${cond.unit || ''}`.trim() };
+    return {
+      ok: known.some(Boolean),
+      unknown: false,
+      why: `${cond.op} ${cond.value} ${cond.unit || ''}`.trim(),
+      setpointFrom,
+    };
   }
 
   // качественное условие
   const txt = String(cond.text || '');
   const want = NEGATIVE.test(txt) ? false : POSITIVE.test(txt) ? true : true;
   const hits = values.map((v) => (typeof v === 'boolean' ? v === want : Boolean(v) === want));
-  return { ok: hits.some(Boolean), unknown: false, why: txt || 'состояние' };
+  return { ok: hits.some(Boolean), unknown: false, why: txt || 'состояние', setpointFrom };
 }
 
 /** Объединение причин связкой. */

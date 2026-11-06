@@ -143,6 +143,8 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 <script src="twin/model.js"></script>
 <script src="twin/state.js"></script>
 <script src="twin/interlocks.data.js"></script>
+<script src="twin/dcs-signals.data.js"></script>
+<script src="twin/signals.js"></script>
 <script src="twin/logic.js"></script>
 <script src="twin/apply.js"></script>
 <script src="twin/heat.js"></script>
@@ -194,7 +196,7 @@ const TXT = {
     ilkChain: 'Блокировка изменила расчёт',
     ilkNone: 'Нет сработавших блокировок. Остальные ждут сигналов, которых модель пока не знает.',
     ilkReset: 'Сброс', ilkResetAll: 'Сбросить все сработавшие', ilkBypass: 'Отключить', ilkUnbypass: 'Включить', ilkSheet: 'лист',
-    ilkNoSignal: 'нет сигнала', ilkYes: 'да', ilkNo: 'нет',
+    ilkNoSignal: 'нет сигнала', ilkYes: 'да', ilkNo: 'нет', ilkFromDcs: 'уставка из DCS',
     badStopped: 'Горение остановлено блокировкой',
     heatTitle: 'Тепло и пар',
     heatSteam: 'Пар 6,4 МПа / 450 °C',
@@ -244,7 +246,7 @@ const TXT = {
     ilkChain: 'Blokirovka hisobni o‘zgartirdi',
     ilkNone: 'Ishlagan blokirovkalar yo‘q. Qolganlari model hali bilmaydigan signallarni kutmoqda.',
     ilkReset: 'Qayta ishga tushirish', ilkResetAll: 'Barchasini qayta ishga tushirish', ilkBypass: 'O‘chirish', ilkUnbypass: 'Yoqish', ilkSheet: 'varaq',
-    ilkNoSignal: 'signal yo‘q', ilkYes: 'ha', ilkNo: 'yo‘q',
+    ilkNoSignal: 'signal yo‘q', ilkYes: 'ha', ilkNo: 'yo‘q', ilkFromDcs: 'ustavka DCS dan',
     badStopped: 'Yonish blokirovka bilan to‘xtatildi',
     heatTitle: 'Issiqlik va bug‘',
     heatSteam: 'Bug‘ 6,4 MPa / 450 °C',
@@ -384,7 +386,8 @@ function paintInterlocks(L, ilk, cons) {
   $('ilkList').innerHTML = head + shown.map((x) => {
     const causes = x.causes.map((k) => {
       const s = k.ok === null ? L.ilkNoSignal : (k.ok ? L.ilkYes : L.ilkNo);
-      return esc(k.tag + ': ' + (k.text || '') + ' — ' + s);
+      const src = k.setpointFrom === 'dcs' ? ' · ' + L.ilkFromDcs : '';
+      return esc(k.tag + ': ' + (k.text || '') + ' — ' + s + src);
     }).join('<br>');
     const eff = x.effects.length
       ? '<div class="eff">→ ' + x.effects.map((e) => esc(e.tag + ': ' + (e.text || e.action))).join('<br>→ ') + '</div>'
