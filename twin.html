@@ -184,7 +184,7 @@ const TXT = {
     ctlNote: 'Проектные значения — 100 %.',
     footNote: 'Модель стационарная: показывает установившееся состояние, а не переходный процесс.',
     params: {
-      load: ['Нагрузка по сере', '%', 'сколько серы подаётся от проектного расхода'],
+      valve: ['Клапан на горелку', '%', 'расход серы на горение от 45 т/ч; нагрузка завода следует за ним'],
       air: ['Избыток воздуха', '%', 'расход воздуха относительно проекта'],
       conv1: ['Конверсия 1-й ступени', '%', 'доля SO₂, превращённая в SO₃'],
       conv2: ['Конверсия 2-й ступени', '%', ''],
@@ -217,7 +217,7 @@ const TXT = {
     meltSulfur: 'Твёрдая сера', meltAsh: 'Зольность исходной серы, ppm',
     meltLevel: 'Уровень в чане', meltNet: 'Приход − расход', meltHeat: 'Тепло на плавление',
     meltSteam: 'Пар 0,8 МПа', meltAshOut: 'Зола после 2-й ступени', meltLoad: 'Нагрузка плавления',
-    meltAdvance: 'прокрутить 1 ч',
+    meltAdvance: 'прокрутить 1 ч', meltAuto: 'автомат уровня (двигает клапан)', meltSp: 'Задание уровня, мм', meltValve: 'Клапан на горелку',
     badStopped: 'Горение остановлено блокировкой',
     heatTitle: 'Тепло и пар',
     heatSteam: 'Пар 6,4 МПа / 450 °C',
@@ -241,7 +241,7 @@ const TXT = {
     ctlNote: 'Loyihaviy qiymatlar — 100 %.',
     footNote: 'Model statsionar: barqaror holatni ko‘rsatadi, o‘tish jarayonini emas.',
     params: {
-      load: ['Oltingugurt bo‘yicha yuklama', '%', 'loyihaviy sarfga nisbatan'],
+      valve: ['Pechga klapan', '%', 'yonishga oltingugurt sarfi 45 t/soatdan; zavod yuklamasi shundan'],
       air: ['Ortiqcha havo', '%', 'loyihaga nisbatan havo sarfi'],
       conv1: ['1-bosqich konversiyasi', '%', 'SO₂ ning SO₃ ga aylanish ulushi'],
       conv2: ['2-bosqich konversiyasi', '%', ''],
@@ -274,7 +274,7 @@ const TXT = {
     meltSulfur: 'Qattiq oltingugurt', meltAsh: 'Boshlang‘ich oltingugurt kuli, ppm',
     meltLevel: 'Chandagi sath', meltNet: 'Kelish − sarf', meltHeat: 'Eritishga issiqlik',
     meltSteam: 'Bug‘ 0,8 MPa', meltAshOut: '2-bosqichdan keyingi kul', meltLoad: 'Eritish yuklamasi',
-    meltAdvance: '1 soat oldinga',
+    meltAdvance: '1 soat oldinga', meltAuto: 'sath avtomati (klapanni yuritadi)', meltSp: 'Sath topshirig‘i, mm', meltValve: 'Pechga klapan',
     badStopped: 'Yonish blokirovka bilan to‘xtatildi',
     heatTitle: 'Issiqlik va bug‘',
     heatSteam: 'Bug‘ 6,4 MPa / 450 °C',
@@ -294,8 +294,13 @@ const t = () => TXT[lang] || TXT.ru;
 
 // управления: ключ -> [мин, макс, шаг, значение по проекту, что это в модели]
 const D = T.DESIGN;
+// Клапан на горелку: 100 % = проектная производительность плавления 45 т/ч.
+// Расход на горение отсюда, а нагрузка завода считается как обычно:
+// load = расход / 20,48 — так контур «уровень → клапан → горелка» замкнут.
+const VALVE_MAX_T_H = 45;
+const NOMINAL_S_T_H = 20.48;
 const CTL = [
-  { k: 'load', min: 10, max: 110, step: 1, def: 100, to: (v) => ({ load: v / 100 }) },
+  { k: 'valve', min: 0, max: 100, step: 1, def: +((NOMINAL_S_T_H / VALVE_MAX_T_H) * 100).toFixed(1), to: () => ({}) },
   { k: 'air', min: 70, max: 130, step: 1, def: 100, to: (v) => ({ air_excess: v / 100 }) },
   { k: 'conv1', min: 50, max: 75, step: 0.5, def: +(D.conv1 * 100).toFixed(1), to: (v) => ({ conv1: v / 100 }) },
   { k: 'conv2', min: 50, max: 75, step: 0.5, def: +(D.conv2 * 100).toFixed(1), to: (v) => ({ conv2: v / 100 }) },
@@ -320,7 +325,10 @@ SIG.forEach((s) => { sig[s.k] = s.def; });
 
 // Плавление: уровень в чане — первая величина, которая зависит от времени.
 const MELT = { sulfur: 20.48, ash: 120 };
-const LVL = { level: 1500, area: 5, LL: 500, H: 2200 };
+const LVL = { level: 1500, area: 5, LL: 500, H: 2200, sp: 1500, auto: true };
+
+/** Расход серы на горелку из положения клапана, т/ч. */
+function burnFlow() { return (state.valve / 100) * VALVE_MAX_T_H; }
 
 const ILK = window.TWIN_ILK;
 const mem = window.TwinLogic.makeMemory();
@@ -329,6 +337,8 @@ let useIlk = true;
 function controls() {
   const c = {};
   CTL.forEach((x) => Object.assign(c, x.to(state[x.k])));
+  // нагрузка завода следует из расхода серы через клапан: контур замкнут
+  c.load = burnFlow() / NOMINAL_S_T_H;
   return c;
 }
 
@@ -388,12 +398,26 @@ function paintStatic() {
     + '<input type="range" id="m-sulfur" min="5" max="45" step="0.5" value="' + MELT.sulfur + '"></div>'
     + '<div class="ctl"><div class="row"><label for="m-ash">' + esc(L.meltAsh) + '</label>'
     + '<output id="mo-ash">' + f(MELT.ash, 0) + '</output></div>'
-    + '<input type="range" id="m-ash" min="20" max="400" step="10" value="' + MELT.ash + '"></div>';
+    + '<input type="range" id="m-ash" min="20" max="400" step="10" value="' + MELT.ash + '"></div>'
+    + '<label class="sig"><input type="checkbox" id="m-auto"' + (LVL.auto ? ' checked' : '') + '>'
+    + '<span class="nm">' + esc(L.meltAuto) + '</span></label>'
+    + '<div class="ctl"><div class="row"><label for="m-sp">' + esc(L.meltSp) + '</label>'
+    + '<output id="mo-sp">' + f(LVL.sp, 0) + '</output></div>'
+    + '<input type="range" id="m-sp" min="700" max="2000" step="50" value="' + LVL.sp + '"' + (LVL.auto ? '' : ' disabled') + '></div>';
   $('m-sulfur').oninput = (e) => { MELT.sulfur = parseFloat(e.target.value); $('mo-sulfur').textContent = f(MELT.sulfur, 1); render(); };
   $('m-ash').oninput = (e) => { MELT.ash = parseFloat(e.target.value); $('mo-ash').textContent = f(MELT.ash, 0); render(); };
+  $('m-auto').onchange = (e) => { LVL.auto = e.target.checked; paintStatic(); render(); };
+  $('m-sp').oninput = (e) => { LVL.sp = parseFloat(e.target.value); $('mo-sp').textContent = f(LVL.sp, 0); };
   $('bAdvance').textContent = L.meltAdvance;
   $('bAdvance').onclick = () => {
-    const burn = T.solve(controls()).sulfur_t_h || 0;
+    // Контур: регулятор держит уровень, двигая клапан на горелку
+    if (LVL.auto) {
+      const err = LVL.sp - LVL.level;          // мм
+      state.valve = Math.min(100, Math.max(0, state.valve + err * 0.02));   // 100 мм -> 2 %
+      const el = $('c-valve');
+      if (el) { el.value = state.valve.toFixed(1); $('o-valve').textContent = f(state.valve, 1); }
+    }
+    const burn = burnFlow();
     LVL.level = TwinTank.step({ level: LVL.level, area_m2: LVL.area, LL: LVL.LL, H: LVL.H },
       { qIn_t_h: MELT.sulfur, qOut_t_h: burn }, 60).level;
     render();
@@ -410,6 +434,7 @@ function paintMelt(L, burn_t_h) {
   $('levelBox').innerHTML =
     '<div class="row"><span>' + esc(L.meltLevel) + '</span><b class="' + cls + '">' + f(LVL.level, 0) + ' мм</b></div>'
     + '<div class="row"><span>' + esc(L.meltNet) + '</span><b>' + (lv.net_t_h > 0 ? '+' : '') + f(lv.net_t_h, 2) + ' т/ч · ' + (lv.rate_mm_h > 0 ? '+' : '') + f(lv.rate_mm_h, 1) + ' мм/ч</b></div>'
+    + '<div class="row"><span>' + esc(L.meltValve) + '</span><b>' + f(state.valve, 1) + ' % · ' + f(burn_t_h, 2) + ' т/ч</b></div>'
     + '<div class="row"><span>' + esc(L.meltHeat) + '</span><b>' + f(m.heat.totalKw, 0) + ' кВт</b></div>'
     + '<div class="row"><span>' + esc(L.meltSteam) + '</span><b>' + f(m.steam08_t_h, 2) + ' т/ч</b></div>'
     + '<div class="row"><span>' + esc(L.meltAshOut) + '</span><b class="' + (m.ash.ok ? 'ok' : 'bad') + '">' + f(m.ash.after2Ppm, 0) + ' ppm</b></div>'
@@ -418,9 +443,9 @@ function paintMelt(L, burn_t_h) {
 
 function applyScenario(s) {
   if (s === 'reset') CTL.forEach((x) => { state[x.k] = x.def; });
-  if (s === 'low') state.load = 70;
+  if (s === 'low') state.valve = +((0.70 * NOMINAL_S_T_H / VALVE_MAX_T_H) * 100).toFixed(1);
   if (s === 'air80') state.air = 80;
-  if (s === 'stop') state.load = 10;   // подача серы почти перекрыта: модель считает и такой режим, но помечает его вне проектного диапазона
+  if (s === 'stop') state.valve = +((0.10 * NOMINAL_S_T_H / VALVE_MAX_T_H) * 100).toFixed(1);   // подача почти перекрыта
   paintStatic(); render();
 }
 
