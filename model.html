@@ -1550,10 +1550,13 @@ function start(){
  // «не показан в 3D» и не выбирался. regSub привязывает тег к уже построенной
  // детали: геометрия не меняется, меняется только адресуемость.
  const EQINFO={}; (DATA.eq||[]).forEach(e=>{EQINFO[e.t]=e});
- function regSub(obj,tag){
-   const info=EQINFO[tag];
-   if(!obj||!info||byTag[tag])return obj;      // не дублируем, если тег уже построен отдельно
-   reg(obj,tag,eqSec(tag)||info.s,{kind:'eq',o:info});
+ // Соответствия «родитель → позиция внутри него»: мешалка принадлежит конкретному баку.
+ const AGIT={'TK-11101A/B':'AG-11101A/B','TK-11102':'AG-11102','TK-11104':'AG-11103'};
+ function regSub(obj,tag,force){
+   const info=tag&&EQINFO[tag];
+   if(!obj||!info)return obj;
+   if(!force&&byTag[tag])return obj;            // не дублируем, если тег уже построен отдельно
+   reg(obj,tag,eqSec(tag)||info.s,{kind:'eq',o:info,sub:1});
    return obj;
  }
  function edges(mesh){const e=new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry,30),edgeMat);mesh.add(e);return e}
@@ -2656,7 +2659,7 @@ function start(){
        for(let a=0;a<360;a+=30){const [x,z]=pol(2.15,a);coil(x,z)}
        [45,135,225].forEach(a=>{const [x,z]=pol(1.45,a);coil(x,z)});
        // agitator d Ø1900: flange, lantern, gearbox, motor up to EL+7.200
-       C(1.9,.12,0,top+.12,0); C(.7,.7,0,top+.53,0); B(.9,.55,.9,0,top+1.15,0,mat); C(.55,.75,0,top+1.8,0,mat,20); C(.6,.06,0,top+2.2,0);
+       C(1.9,.12,0,top+.12,0); C(.7,.7,0,top+.53,0); regSub(B(.9,.55,.9,0,top+1.15,0,mat),AGIT[o.t],true); C(.55,.75,0,top+1.8,0,mat,20); C(.6,.06,0,top+2.2,0);
        const sh=C(.14,H-.6,0,y0+H/2+.25,0); [1.3,2.6].forEach(h=>{const bl=B(1.6,.1,.3,0,y0+h,0);bl.rotation.y=h});
        { const [x,z]=pol(1.25,90); nzV(x,top+.06,z,.62,.35)}                                  // a: manhole DN600
        { const [x,z]=pol(1.25,270); nzV(x,top+.06,z,.42,.5)}                                  // c: vent 300×400
@@ -2685,7 +2688,7 @@ function start(){
        nzV(-1.75,top+.004,0,.62,.3);                                                                 // a: manhole DN600
        nzV(-1.9,top+.004,-.9,.26,.4); nzV(1.9,top+.004,.9,.18,.35);                                       // c: vent 200×250, p: level gauge
        [[.25,-1.1],[.25,1.1]].forEach(([x,z])=>nzV(x,top+.004,z,.06,.25));                           // j: thermowells
-       if(o.drive){B(1.17,.14,1.6,0,top+.075,0);C(.6,.55,0,top+.42,0);B(.8,.5,.8,0,top+.95,0,mat);C(.5,.7,0,top+1.55,0,mat,20)}  // d: agitator 1170×1600
+       if(o.drive){B(1.17,.14,1.6,0,top+.075,0);C(.6,.55,0,top+.42,0);regSub(B(.8,.5,.8,0,top+.95,0,mat),AGIT[o.t]);C(.5,.7,0,top+1.55,0,mat,20)}  // d: agitator 1170×1600
        const sb=new THREE.Mesh(new THREE.BoxGeometry(.5,.62,.72),M.steelDark);sb.position.set(W/2+.26,y0+.45,.3);g.add(sb);   // b: jacketed slag outlet 600×700 (east)
        B(.12,.82,.92,W/2+.57,y0+.45,.3);
        const ei=C(.28,.35,-W/2-.17,top-.35,.6);ei.rotation.z=Math.PI/2;                         // e: sulfur inlet (west)
@@ -3764,7 +3767,7 @@ function start(){
      sq(ox,ox,sp,top-o.h-sp/2,M.steelDark);
      if(W>2){for(let i=-15;i<=15;i+=3){const b1=new THREE.Mesh(new THREE.BoxGeometry(.02,.15,W-.1),M.steelDark);b1.position.set(i*.11,top+col-.08,0);g.add(b1);const b2=b1.clone();b2.rotation.y=Math.PI/2;b2.position.set(0,top+col-.075,i*.11);b2.scale.y=.93;g.add(b2)}
        [-1.2,0,1.2].forEach(u=>[1,-1].forEach(sg=>{const l1=new THREE.Mesh(new THREE.BoxGeometry(.24,.3,.22),M.steelDark);l1.position.set(u,top+.08,sg*(W/2+.11));g.add(l1);const l2=l1.clone();l2.rotation.y=Math.PI/2;l2.position.set(sg*(W/2+.11),top+.08,u);g.add(l2)}));
-       [-1.2,0,1.2].forEach(u=>{const v=new THREE.Mesh(new THREE.BoxGeometry(.3,.38,.06),M.steelDark);v.position.set(u,top+col*.45,W/2+.03);g.add(v)})}
+       [-1.2,0,1.2].forEach(u=>{const v=new THREE.Mesh(new THREE.BoxGeometry(.3,.38,.06),M.steelDark);v.position.set(u,top+col*.45,W/2+.03);g.add(v);regSub(v,'MR-12101ABCD',true)})}
      const ly=top-o.h,lw=Math.max(W*.4,.35);[[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([a,b])=>{const l=new THREE.Mesh(new THREE.BoxGeometry(.2,ly+(W>2?.1:o.h*.5),.2),M.steelDark);l.position.set(a*lw,(ly+(W>2?.1:o.h*.5))/2,b*lw);g.add(l)});
      g.position.copy(P(o.X,o.Y,0))}
    else return null;

@@ -88,9 +88,10 @@ const inScene = new Set();
 for (const m of outsideData.matchAll(/\bt\s*:\s*['"]([^'"]+)['"]/g)) {
   inScene.add(m[1]);
 }
-// regSub(mesh,'TAG') — привязка тега к детали, построенной внутри родителя
-// (патронный фильтр и насос ВД на раме обратного осмоса). Скобки в аргументах
-// вложенные, поэтому ищем парную закрывающую скобку, а тег берём последним.
+// regSub(mesh,'TAG') / regSub(mesh,AGIT[o.t],true) — привязка тега к детали,
+// построенной внутри родителя (патронный фильтр, насос ВД, мешалки, вибраторы).
+// Скобки в аргументах вложенные, поэтому ищем парную закрывающую скобку, а тег
+// берём последней строковой константой в вызове.
 for (let i = outsideData.indexOf('regSub('); i >= 0; i = outsideData.indexOf('regSub(', i + 1)) {
   let depth = 0;
   let end = -1;
@@ -104,8 +105,16 @@ for (let i = outsideData.indexOf('regSub('); i >= 0; i = outsideData.indexOf('re
   }
   if (end < 0) continue;
   const args = outsideData.slice(i, end);
-  const tail = args.match(/,\s*['"]([^'"]+)['"]\s*$/);
-  if (tail) inScene.add(tail[1]);
+  const quoted = [...args.matchAll(/['"]([^'"]+)['"]/g)].map((m) => m[1]);
+  if (quoted.length) inScene.add(quoted[quoted.length - 1]);
+}
+
+// Карта «родитель → позиция внутри него»: значения AGIT — это тоже теги.
+const agit = outsideData.match(/const AGIT=\{([^}]*)\}/);
+if (agit) {
+  for (const m of agit[1].matchAll(/['"]([^'"]+)['"]\s*:\s*['"]([^'"]+)['"]/g)) {
+    inScene.add(m[2]);
+  }
 }
 
 const rows = [];
