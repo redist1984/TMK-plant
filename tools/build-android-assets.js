@@ -22,7 +22,7 @@ const DEST = path.join(ROOT, 'android', 'app', 'src', 'main', 'assets', 'www');
 const P = (...p) => path.join(ROOT, ...p);
 
 // Каталоги, которые целиком уходят в приложение.
-const DIRS = ['vendor', 'sec_img', 'pfd', 'docs_pdf', 'fonts'];
+const DIRS = ['vendor', 'sec_img', 'pfd', 'dcs', 'docs_pdf', 'fonts'];
 
 // Файлы в корне, которые нужны приложению.
 const FILES = ['manifest.json', 'service-worker.js', 'logo.png', 'icon-192.png', 'icon-512.png'];
