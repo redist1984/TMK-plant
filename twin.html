@@ -115,6 +115,12 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
     </div>
 
     <div class="card" style="margin-top:12px">
+      <h2 id="heatTitle">Тепло и пар</h2>
+      <div class="kpis" id="heatKpis"></div>
+      <p class="note" id="heatNote">Пар считается из тепла реакций горения и конверсии; КПД котла подобран по проектному балансу.</p>
+    </div>
+
+    <div class="card" style="margin-top:12px">
       <h2 id="ilkTitle">Блокировки</h2>
       <div id="ilkCounts" class="ilkcounts"></div>
       <label class="ilktoggle"><input type="checkbox" id="ilkUse" checked> <span id="ilkUseLbl">учитывать блокировки в расчёте</span></label>
@@ -130,6 +136,7 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 <script src="twin/interlocks.data.js"></script>
 <script src="twin/logic.js"></script>
 <script src="twin/apply.js"></script>
+<script src="twin/heat.js"></script>
 <script>
 (function(){
 'use strict';
@@ -159,7 +166,7 @@ const TXT = {
       conc: ['Концентрация кислоты', '%', 'товарная кислота'],
     },
     kpi: { acid: 'Товарная кислота', conv: 'Общая конверсия', stack: 'SO₂ в трубе', o2: 'O₂ в газе печи' },
-    units: { th: 'т/ч', pct: '%', mg: 'мг/нм³' },
+    units: { th: 'т/ч', pct: '%', mg: 'мг/нм³', mw: 'МВт' },
     ok: 'Все параметры в норме',
     badStack: 'Выброс SO₂ выше нормы 300 мг/нм³',
     badConv: 'Конверсия ниже гарантированной 99,8 %',
@@ -178,6 +185,11 @@ const TXT = {
     ilkReset: 'Сброс', ilkResetAll: 'Сбросить все сработавшие', ilkBypass: 'Отключить', ilkUnbypass: 'Включить', ilkSheet: 'лист',
     ilkNoSignal: 'нет сигнала', ilkYes: 'да', ilkNo: 'нет',
     badStopped: 'Горение остановлено блокировкой',
+    heatTitle: 'Тепло и пар',
+    heatSteam: 'Пар 6,4 МПа / 450 °C',
+    heatPower: 'Тепло реакций',
+    heatTurbine: 'Турбина (оценка)',
+    heatNote: 'Пар считается из тепла реакций горения и конверсии; КПД котла подобран по проектному балансу. Мощность турбины — оценка по допущению КПД, в балансе её нет.',
   },
   uz: {
     eb: 'Egizak · oltingugurt liniyasi',
@@ -199,7 +211,7 @@ const TXT = {
       conc: ['Kislota konsentratsiyasi', '%', 'tovar kislotasi'],
     },
     kpi: { acid: 'Tovar kislotasi', conv: 'Umumiy konversiya', stack: 'Quvurdagi SO₂', o2: 'Pech gazidagi O₂' },
-    units: { th: 't/soat', pct: '%', mg: 'mg/nm³' },
+    units: { th: 't/soat', pct: '%', mg: 'mg/nm³', mw: 'MVt' },
     ok: 'Barcha parametrlar me’yorda',
     badStack: 'SO₂ chiqindisi 300 mg/nm³ normasidan yuqori',
     badConv: 'Konversiya kafolatlangan 99,8 % dan past',
@@ -218,6 +230,11 @@ const TXT = {
     ilkReset: 'Qayta ishga tushirish', ilkResetAll: 'Barchasini qayta ishga tushirish', ilkBypass: 'O‘chirish', ilkUnbypass: 'Yoqish', ilkSheet: 'varaq',
     ilkNoSignal: 'signal yo‘q', ilkYes: 'ha', ilkNo: 'yo‘q',
     badStopped: 'Yonish blokirovka bilan to‘xtatildi',
+    heatTitle: 'Issiqlik va bug‘',
+    heatSteam: 'Bug‘ 6,4 MPa / 450 °C',
+    heatPower: 'Reaksiya issiqligi',
+    heatTurbine: 'Turbina (taxmin)',
+    heatNote: 'Bug‘ yonish va konversiya reaksiyalari issiqligidan hisoblanadi; qozon FIK loyihaviy balans bo‘yicha tanlangan. Turbina quvvati — FIK taxmini bo‘yicha baho, balansda u yo‘q.',
   }
 };
 let lang = 'ru';
@@ -376,6 +393,21 @@ function paintInterlocks(L, ilk, cons) {
   });
 }
 
+/** Тепло и пар: считается из тепла реакций, сверяется с проектным балансом. */
+function paintHeat(L, model) {
+  $('heatTitle').textContent = L.heatTitle;
+  $('heatNote').textContent = L.heatNote;
+  if (!window.TwinHeat) { $('heatKpis').innerHTML = ''; return; }
+  const h = TwinHeat.solve(model);
+  const design = 85.1;
+  const dev = h.steam_t_h - design;
+  const cls = Math.abs(dev) < 0.5 ? 'ok' : '';
+  $('heatKpis').innerHTML =
+    '<div class="kpi ' + cls + '"><div class="k">' + esc(L.heatSteam) + '</div><div class="v">' + f(h.steam_t_h, 1) + '<span class="u">' + esc(L.units.th) + '</span></div></div>'
+    + '<div class="kpi"><div class="k">' + esc(L.heatPower) + '</div><div class="v">' + f(h.heatMw, 1) + '<span class="u">' + esc(L.units.mw) + '</span></div></div>'
+    + '<div class="kpi"><div class="k">' + esc(L.heatTurbine) + '</div><div class="v">' + f(h.turbinePowerMw, 1) + '<span class="u">' + esc(L.units.mw) + '</span></div></div>';
+}
+
 function render() {
   const L = t();
   const ctl = controls();
@@ -400,6 +432,7 @@ function render() {
   const cur = useIlk ? TwinApply.run(ctl, cons) : plain;
 
   paintInterlocks(L, ilk, cons);
+  paintHeat(L, cur);
   if (cur.error) {
     $('alert').innerHTML = '<div class="alert bad">' + esc(cur.error) + '</div>';
   } else {
