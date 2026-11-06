@@ -34,11 +34,39 @@ checks.push(row('SO2 в трубе', r.stack.so2_nm3, g['24'].SO2, 'нм3/ч', 2
 checks.push(row('SO2 в трубе', r.stack.so2_mg, 287, 'мг/нм3', 5));
 
 const bad = checks.filter((c) => !c.ok);
-checks.forEach((c) => console.log(c.s));
 console.log('');
 console.log('общая конверсия:', r.conversion, '% (проект 99,8)');
 console.log('пределы:', JSON.stringify(r.limits));
-if (bad.length) {
+
+// --- конверсия из равновесия
+const designConv = [64.0, 65.7, 58.3, 97.0];
+const convOk = r.stagesConv.every((v, i) => Math.abs(v - designConv[i]) < 1.0);
+console.log('');
+console.log('конверсии по ступеням:', r.stagesConv.join(' / '), '(проект ' + designConv.join(' / ') + ')');
+checks.push({ ok: convOk, s: (convOk ? 'OK  ' : 'ПЛОХО') + ' конверсия из равновесия совпала с проектом (±1 п.п.)' });
+
+const moreAir = solve({ air_excess: 1.3 });
+checks.push({
+  ok: moreAir.stagesConv[0] > r.stagesConv[0],
+  s: 'OK  больше воздуха — выше конверсия: ' + moreAir.stagesConv[0] + ' % против ' + r.stagesConv[0] + ' %',
+});
+const lessAir = solve({ air_excess: 0.8 });
+checks.push({
+  ok: lessAir.stagesConv[0] < r.stagesConv[0],
+  s: 'OK  меньше воздуха — ниже конверсия: ' + lessAir.stagesConv[0] + ' %',
+});
+const manual = solve({ autoConv: false, conv1: 0.5 });
+checks.push({
+  ok: Math.abs(manual.stagesConv[0] - 50) < 0.5 && manual.autoConv === false,
+  s: 'OK  при autoConv=false работает ползунок: ' + manual.stagesConv[0] + ' %',
+});
+
+checks.forEach((c) => console.log(c.s));
+
+if (checks.some((c) => !c.ok)) {
+  console.log('\nПРОВАЛ: ' + checks.filter((c) => !c.ok).length);
+  process.exit(1);
+}if (bad.length) {
   console.log('\nПРОВАЛ: %d проверок', bad.length);
   process.exit(1);
 }

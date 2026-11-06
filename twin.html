@@ -153,6 +153,9 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 
 <script src="lang.js"></script>
 <script src="theme.js"></script>
+<!-- порядок важен: каждый модуль берёт зависимости из self при загрузке -->
+<script src="twin/heatcap.js"></script>
+<script src="twin/converter.js"></script>
 <script src="twin/model.js"></script>
 <script src="twin/state.js"></script>
 <script src="twin/interlocks.data.js"></script>
@@ -161,7 +164,6 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 <script src="twin/logic.js"></script>
 <script src="twin/apply.js"></script>
 <script src="twin/heat.js"></script>
-<script src="twin/heatcap.js"></script>
 <script src="twin/temps.js"></script>
 <script src="twin/melt.js"></script>
 <script src="twin/tank.js"></script>
@@ -217,6 +219,7 @@ const TXT = {
     meltSulfur: 'Твёрдая сера', meltAsh: 'Зольность исходной серы, ppm',
     meltLevel: 'Уровень в чане', meltNet: 'Приход − расход', meltHeat: 'Тепло на плавление',
     meltSteam: 'Пар 0,8 МПа', meltAshOut: 'Зола после 2-й ступени', meltLoad: 'Нагрузка плавления',
+    autoConv: 'конверсия из равновесия (ползунки не действуют)',
     meltAdvance: 'прокрутить 1 ч', meltAuto: 'автомат уровня (двигает клапан)', meltSp: 'Задание уровня, мм', meltValve: 'Клапан на горелку',
     badStopped: 'Горение остановлено блокировкой',
     heatTitle: 'Тепло и пар',
@@ -274,6 +277,7 @@ const TXT = {
     meltSulfur: 'Qattiq oltingugurt', meltAsh: 'Boshlang‘ich oltingugurt kuli, ppm',
     meltLevel: 'Chandagi sath', meltNet: 'Kelish − sarf', meltHeat: 'Eritishga issiqlik',
     meltSteam: 'Bug‘ 0,8 MPa', meltAshOut: '2-bosqichdan keyingi kul', meltLoad: 'Eritish yuklamasi',
+    autoConv: 'konversiya muvozanatdan (polzunkilar ishlamaydi)',
     meltAdvance: '1 soat oldinga', meltAuto: 'sath avtomati (klapanni yuritadi)', meltSp: 'Sath topshirig‘i, mm', meltValve: 'Pechga klapan',
     badStopped: 'Yonish blokirovka bilan to‘xtatildi',
     heatTitle: 'Issiqlik va bug‘',
@@ -311,6 +315,8 @@ const CTL = [
 ];
 const state = {};
 CTL.forEach((c) => { state[c.k] = c.def; });
+// Конверсия: из равновесия (по умолчанию) или вручную ползунками
+const AUTO = { conv: true };
 
 // Сигналы оборудования: то, что оператор может включить и выключить.
 // Останов PP-11303 запускает B-PROC («остановлен») → аварийный останов
@@ -339,6 +345,7 @@ function controls() {
   CTL.forEach((x) => Object.assign(c, x.to(state[x.k])));
   // нагрузка завода следует из расхода серы через клапан: контур замкнут
   c.load = burnFlow() / NOMINAL_S_T_H;
+  c.autoConv = AUTO.conv;
   return c;
 }
 
@@ -374,6 +381,19 @@ function paintStatic() {
   $('scen').querySelectorAll('[data-sc]').forEach((b) => {
     b.onclick = () => applyScenario(b.dataset.sc);
   });
+
+  // конверсия: из равновесия или вручную
+  const autoBox = document.getElementById('autoConv');
+  if (!autoBox) {
+    const wrap = document.createElement('label');
+    wrap.className = 'sig';
+    wrap.style.marginTop = '8px';
+    wrap.innerHTML = '<input type="checkbox" id="autoConv"><span class="nm" id="autoConvLbl"></span>';
+    $('scen').parentNode.insertBefore(wrap, $('scen').nextSibling);
+    $('autoConv').onchange = (e) => { AUTO.conv = e.target.checked; paintStatic(); render(); };
+  }
+  $('autoConvLbl').textContent = L.autoConv;
+  $('autoConv').checked = AUTO.conv;
 
   // сигналы оборудования
   $('sigTitle').textContent = L.sigTitle; $('sigNote').textContent = L.sigNote;
@@ -578,6 +598,25 @@ function render() {
     ? TwinApply.constraints(ilk.effects)
     : { noCombustion: false, noAbsorb1: false, noAbsorb2: false, notes: [] };
   const cur = useIlk ? TwinApply.run(ctl, cons) : plain;
+
+  // при автомате конверсии ползунки показывают расчётное значение и не крутятся
+  if (AUTO.conv && plain.stagesConv) {
+    ['conv1', 'conv2', 'conv3', 'conv4'].forEach((k, i) => {
+      const el = $('c-' + k); const out = $('o-' + k);
+      if (!el || plain.stagesConv[i] == null) return;
+      el.value = plain.stagesConv[i].toFixed(1);
+      el.disabled = true;
+      el.style.opacity = '.55';
+      if (out) out.textContent = f(plain.stagesConv[i], 1);
+    });
+  } else {
+    ['conv1', 'conv2', 'conv3', 'conv4'].forEach((k) => {
+      const el = $('c-' + k);
+      if (!el) return;
+      el.disabled = false;
+      el.style.opacity = '1';
+    });
+  }
 
   paintInterlocks(L, ilk, cons);
   paintHeat(L, cur);
