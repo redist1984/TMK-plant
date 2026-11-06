@@ -3,106 +3,304 @@
   {
    "id": "sklad",
    "file": "mnemo/01-sklad.jpg",
+   "dept": "Склад серы",
    "title": {
-    "ru": "Склад серы и подача серы",
-    "uz": "Oltingugurt ombori va berish"
+    "ru": "Склад серы и система подачи серы",
+    "uz": "Oltingugurt ombori va berish tizimi"
    },
    "chips": [
     {
-     "x": 49.2,
-     "y": 41.2,
-     "cap": "подача серы",
-     "val": "melt.sulfur",
-     "unit": "т/ч"
+     "id": "mr-a",
+     "x": 94.4,
+     "y": 6.3,
+     "w": 6.0,
+     "h": 1.6,
+     "val": "speed:8:4",
+     "unit": "%",
+     "cap": "MR-12101A"
     },
     {
-     "x": 72.3,
-     "y": 40.1,
-     "cap": "весы ленты",
-     "val": "melt.sulfur",
-     "unit": "т/ч"
+     "id": "mr-b",
+     "x": 94.4,
+     "y": 10.16,
+     "w": 6.0,
+     "h": 1.6,
+     "val": "speed:8:4",
+     "unit": "%",
+     "cap": "MR-12101B"
     },
     {
-     "x": 77.8,
-     "y": 46.5,
-     "cap": "TK-11101AB",
-     "val": "melt.tMelt",
-     "unit": "°C"
+     "id": "mr-c",
+     "x": 94.4,
+     "y": 14.01,
+     "w": 6.0,
+     "h": 1.6,
+     "val": "speed:8:4",
+     "unit": "%",
+     "cap": "MR-12101C"
+    },
+    {
+     "id": "mr-d",
+     "x": 94.4,
+     "y": 17.86,
+     "w": 6.0,
+     "h": 1.6,
+     "val": "speed:8:4",
+     "unit": "%",
+     "cap": "MR-12101D"
+    },
+    {
+     "id": "cvt-a",
+     "x": 94.4,
+     "y": 21.72,
+     "w": 6.0,
+     "h": 1.6,
+     "val": "valve",
+     "unit": "%",
+     "cap": "CV-12101A"
+    },
+    {
+     "id": "cvt-b",
+     "x": 94.4,
+     "y": 25.57,
+     "w": 6.0,
+     "h": 1.6,
+     "val": "valve",
+     "unit": "%",
+     "cap": "CV-12101B"
+    },
+    {
+     "id": "wt-a",
+     "x": 72.2,
+     "y": 47.8,
+     "w": 5.4,
+     "h": 1.5,
+     "val": "melt.sulfur",
+     "unit": "т/ч",
+     "cap": "WT-12101A"
+    },
+    {
+     "id": "wt-b",
+     "x": 72.2,
+     "y": 51.3,
+     "w": 5.4,
+     "h": 1.5,
+     "val": "melt.sulfur",
+     "unit": "т/ч",
+     "cap": "WT-12101B"
+    },
+    {
+     "id": "tk",
+     "x": 78.0,
+     "y": 52.0,
+     "w": 6.0,
+     "h": 1.7,
+     "val": "level:LT-11104",
+     "unit": "мм",
+     "cap": "TK-11101AB"
+    },
+    {
+     "id": "cvd-a",
+     "x": 49.0,
+     "y": 72.8,
+     "w": 4.4,
+     "h": 1.7,
+     "val": "valve",
+     "unit": "%",
+     "cap": "CV-12101A"
+    },
+    {
+     "id": "cvd-b",
+     "x": 49.0,
+     "y": 75.0,
+     "w": 4.4,
+     "h": 1.7,
+     "val": "valve",
+     "unit": "%",
+     "cap": "CV-12101B"
+    },
+    {
+     "id": "ve",
+     "x": 44.6,
+     "y": 45.6,
+     "w": 6.0,
+     "h": 1.7,
+     "val": "melt.sulfur",
+     "unit": "т/ч",
+     "cap": "VE-12101AB"
     }
    ]
   },
   {
    "id": "plavlenie",
    "file": "mnemo/02-plavlenie.jpg",
+   "dept": "СПС",
    "title": {
     "ru": "Система плавления серы",
     "uz": "Oltingugurt eritish tizimi"
    },
    "chips": [
     {
-     "x": 10.2,
-     "y": 61.4,
-     "cap": "TK-11101A",
+     "id": "tk-a",
+     "x": 10.4,
+     "y": 64.8,
+     "w": 4.8,
+     "h": 1.7,
      "val": "melt.tMelt",
-     "unit": "°C"
+     "unit": "°C",
+     "cap": "TK-11101A"
     },
     {
-     "x": 20.7,
-     "y": 61.4,
-     "cap": "TK-11101B",
+     "id": "tk-b",
+     "x": 20.3,
+     "y": 64.8,
+     "w": 4.8,
+     "h": 1.7,
      "val": "melt.tMelt",
-     "unit": "°C"
+     "unit": "°C",
+     "cap": "TK-11101B"
     },
     {
-     "x": 32.0,
-     "y": 7.1,
-     "cap": "FR-11101A",
-     "val": "melt.sulfur",
-     "unit": "т/ч"
+     "id": "ag1a",
+     "x": 10.9,
+     "y": 57.9,
+     "w": 4.4,
+     "h": 1.6,
+     "val": "speed",
+     "unit": "%",
+     "cap": "AG-11101A"
     },
     {
-     "x": 57.8,
-     "y": 7.1,
-     "cap": "FR-11101B",
-     "val": "melt.sulfur",
-     "unit": "т/ч"
+     "id": "ag1b",
+     "x": 20.9,
+     "y": 57.9,
+     "w": 4.4,
+     "h": 1.6,
+     "val": "speed",
+     "unit": "%",
+     "cap": "AG-11101B"
     },
     {
-     "x": 83.2,
-     "y": 7.1,
-     "cap": "FR-11102",
-     "val": "melt.sulfur",
-     "unit": "т/ч"
-    },
-    {
+     "id": "ag2",
      "x": 30.5,
-     "y": 80.5,
-     "cap": "LT-11102",
-     "val": "level:LT-11102",
-     "unit": "мм"
+     "y": 72.5,
+     "w": 4.4,
+     "h": 1.6,
+     "val": "speed",
+     "unit": "%",
+     "cap": "AG-11102"
     },
     {
-     "x": 44.5,
-     "y": 80.5,
-     "cap": "LT-11103",
-     "val": "level:LT-11103",
-     "unit": "мм"
+     "id": "ag3",
+     "x": 47.5,
+     "y": 73.0,
+     "w": 4.4,
+     "h": 1.6,
+     "val": "speed",
+     "unit": "%",
+     "cap": "AG-11103"
     },
     {
-     "x": 67.2,
-     "y": 79.5,
-     "cap": "LT-11104",
-     "val": "level:LT-11104",
-     "unit": "мм"
+     "id": "fir",
+     "x": 4.9,
+     "y": 44.5,
+     "w": 5.0,
+     "h": 1.7,
+     "val": "flow.m3",
+     "unit": "м³/ч",
+     "cap": "FIR-11101"
     },
     {
-     "x": 86.7,
-     "y": 79.5,
-     "cap": "LT-11105",
-     "val": "level:LT-11105",
-     "unit": "мм"
+     "id": "pir",
+     "x": 8.3,
+     "y": 44.5,
+     "w": 5.4,
+     "h": 1.7,
+     "val": "const:0.8",
+     "unit": "МПа",
+     "cap": "PIR-11104"
+    },
+    {
+     "id": "fr1a",
+     "x": 33.0,
+     "y": 19.6,
+     "w": 5.4,
+     "h": 1.8,
+     "val": "melt.sulfur",
+     "unit": "т/ч",
+     "cap": "FR-11101A"
+    },
+    {
+     "id": "fr1b",
+     "x": 57.5,
+     "y": 20.6,
+     "w": 5.4,
+     "h": 1.8,
+     "val": "melt.sulfur",
+     "unit": "т/ч",
+     "cap": "FR-11101B"
+    },
+    {
+     "id": "fr2",
+     "x": 82.5,
+     "y": 20.6,
+     "w": 5.4,
+     "h": 1.8,
+     "val": "melt.sulfur",
+     "unit": "т/ч",
+     "cap": "FR-11102"
     }
    ]
+  }
+ ],
+ "tabs": [
+  {
+   "name": "Склад серы",
+   "screen": "sklad"
+  },
+  {
+   "name": "Резервуарный",
+   "screen": null
+  },
+  {
+   "name": "СПС",
+   "screen": "plavlenie"
+  },
+  {
+   "name": "СПОГС",
+   "screen": null
+  },
+  {
+   "name": "ССК",
+   "screen": null
+  },
+  {
+   "name": "Котел-утилизатор",
+   "screen": null
+  },
+  {
+   "name": "ДВ",
+   "screen": null
+  },
+  {
+   "name": "НТР",
+   "screen": null
+  },
+  {
+   "name": "ОА",
+   "screen": null
+  },
+  {
+   "name": "СГП",
+   "screen": null
+  },
+  {
+   "name": "СМТ",
+   "screen": null
+  },
+  {
+   "name": "РПТК",
+   "screen": null
   }
  ]
 }

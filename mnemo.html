@@ -8,45 +8,61 @@
   :root{
     --bg:#0b0f14; --panel:#111821; --panel2:#0e141b; --line:#1e2833;
     --ink:#e8eef5; --ink2:#a8b7c7; --ink3:#6f8093;
-    --accent:#2fbf9a; --ok:#2fbf9a; --bad:#e05561; --warn:#d8a13a;
+    --accent:#2fbf9a; --ok:#2fbf9a; --bad:#e05561;
   }
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
     font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-  header{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  header{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
   header b{font-size:15px}
   header .sub{color:var(--ink3);font-size:12px}
-  .wrap{display:flex;flex-direction:column;height:calc(100% - 52px)}
-  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel2)}
-  .bar button{background:transparent;border:1px solid var(--line);color:var(--ink2);
-    padding:6px 12px;border-radius:9px;font:inherit;font-size:12.5px;cursor:pointer}
-  .bar button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#06130f;font-weight:600}
-  .bar label{display:flex;gap:6px;align-items:center;color:var(--ink2);font-size:12.5px;margin-left:auto}
-  .stage{position:relative;flex:1;overflow:auto;background:#05080b}
-  .frame{position:relative;margin:0 auto;max-width:1600px}
+  header .right{margin-left:auto;display:flex;gap:8px;align-items:center;color:var(--ink2);font-size:12.5px}
+  .wrap{display:flex;flex-direction:column;height:calc(100% - 48px)}
+  .stage{position:relative;flex:1;overflow:auto;background:#05080b;padding-bottom:34px}
+  .frame{position:relative;margin:0 auto}
   .frame img{display:block;width:100%;height:auto}
-  .chip{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;
-    align-items:center;pointer-events:none}
-  .chip .v{background:rgba(6,14,20,.86);border:1px solid #2a3a4a;border-radius:7px;
-    padding:2px 7px;font:600 13px/1.25 ui-monospace,Menlo,Consolas,monospace;color:#f2f7fb;
-    white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.5)}
-  .chip .c{font-size:10.5px;color:#93a6b8;margin-top:2px;white-space:nowrap;
-    background:rgba(6,14,20,.7);border-radius:5px;padding:0 4px}
-  .chip.bad .v{color:#ffb3b8;border-color:#6b2a30}
-  .chip.ok .v{color:#b8ffe6}
   .hidden .chip{display:none}
-  .note{padding:8px 14px;border-top:1px solid var(--line);color:var(--ink3);font-size:12px;background:var(--panel)}
+
+  /* чип ложится поверх поля значения в схеме и закрывает исходные нули */
+  .chip{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;
+    background:#060d13;border:1px solid #2f4356;border-radius:2px;padding:1px 2px;min-width:34px;
+    font:600 11.5px/1 ui-monospace,Menlo,Consolas,monospace;color:#eaf4ff;white-space:nowrap;overflow:hidden}
+  .chip.ok{color:#c8ffe9}
+  .chip.bad{color:#ffb3b8;border-color:#7a2f36;background:#1a0b0e}
+  /* подпись тега видна только по наведению: на экране он и так подписан */
+
+  /* нижняя панель как в АСУТП: вкладки отделений */
+  .deptbar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:1px;
+    background:#dfe3e8;padding:1px;height:28px;align-items:stretch;overflow-x:auto}
+  .deptbar button{flex:1 0 auto;border:0;background:#eceff3;color:#2b3947;
+    font:400 11.5px/1 system-ui,sans-serif;padding:0 10px;cursor:pointer;white-space:nowrap;
+    border-right:1px solid #c9cfd6}
+  .deptbar button.here{background:#fff;color:#0b7a63;font-weight:700;box-shadow:inset 0 -2px 0 #0b7a63}
+  .deptbar button[disabled]{color:#8d99a6;cursor:default}
+  header .hint{color:var(--ink3);font-size:11.5px}
+  /* режим разметки: ?grid=1 — сетка 5% для расстановки чипов */
+  .frame.grid::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
+    background:
+      repeating-linear-gradient(to right, rgba(255,0,0,.55) 0 1px, transparent 1px 5%),
+      repeating-linear-gradient(to bottom, rgba(255,0,0,.55) 0 1px, transparent 1px 5%),
+      repeating-linear-gradient(to right, rgba(255,255,0,.9) 0 1px, transparent 1px 10%)}
 </style>
 </head>
 <body>
 <header>
   <b id="h1">Мнемосхемы</b>
-  <span class="sub" id="sub">расчётные значения поверх экранов АСУТП</span>
+  <span class="sub" id="sub">расчётные значения на экранах АСУТП</span>
+  <span class="hint" id="note"></span>
+  <span class="right"><label><input type="checkbox" id="show"> <span id="showLbl">показать значения</span></label></span>
 </header>
 <div class="wrap">
-  <div class="bar" id="bar"></div>
-  <div class="stage" id="stage"><div class="frame" id="frame"><img id="img" alt=""><div id="chips"></div></div></div>
-  <p class="note" id="note">Значения считает модель двойника; исходные цифры на скриншотах АСУТП нулевые — они перекрыты нашими чипами.</p>
+  <div class="stage" id="stage">
+    <div class="frame" id="frame">
+      <img id="img" alt="">
+      <div id="chips"></div>
+      <div class="deptbar" id="deptbar"></div>
+    </div>
+  </div>
 </div>
 
 <!-- модули двойника: порядок важен -->
@@ -62,27 +78,47 @@
 <script>
 'use strict';
 const TXT = {
-  ru: { h1: 'Мнемосхемы', sub: 'расчётные значения поверх экранов АСУТП', show: 'показать значения',
-        note: 'Значения считает модель двойника; исходные цифры на скриншотах АСУТП нулевые — они перекрыты нашими чипами.' },
-  uz: { h1: 'Mnemoyxemalar', sub: 'АSU TP ekranlari ustida hisobiy qiymatlar', show: 'qiymatlarni ko‘rsatish',
-        note: 'Qiymatlarni egizak modeli hisoblaydi; АSU TP skrinshotlaridagi asl raqamlar nol — ular bizning chiplar bilan yopilgan.' }
+  ru: { h1: 'Мнемосхемы', sub: 'расчётные значения на экранах АСУТП', show: 'показать значения',
+        note: 'Значения считает модель двойника. Исходные цифры на скриншотах АСУТП нулевые — их закрывают наши чипы.' },
+  uz: { h1: 'Mnemoyxemalar', sub: 'АSU TP ekranlarida hisobiy qiymatlar', show: 'qiymatlarni ko‘rsatish',
+        note: 'Qiymatlarni egizak modeli hisoblaydi. АSU TP skrinshotlaridagi asl raqamlar nol — ularni bizning chiplar yopadi.' }
 };
 let lang = 'ru';
 const L = () => TXT[lang] || TXT.ru;
 
 let SCREENS = [];
+let TABS = [];
 let cur = 0;
 let showValues = true;
 
-/** Значения из модели: ключ "melt.*" или "level:TAG". */
+// проектный расход серы — от него считаются скорости и проценты
+const NOMINAL_S = 20.48;
+const S_DENSITY = 1.792;   // т/м³ жидкой серы
+
+/** Значение для чипа. */
 function valueOf(key) {
-  const T = self.TwinModel, M = self.TwinMelt, V = self.TwinVessels;
-  const melt = M ? M.solve({ sulfur_t_h: 20.48, ashFeed: 120 }) : null;
+  const M = self.TwinMelt, V = self.TwinVessels;
+  const melt = M ? M.solve({ sulfur_t_h: NOMINAL_S, ashFeed: 120 }) : null;
+
   if (key.startsWith('level:')) {
     const tag = key.slice(6);
     const row = V ? V.list({}, lang).find((x) => x.tag === tag) : null;
     return row ? { v: row.level, bad: row.status !== 'normal' && row.status !== 'none' } : { v: null };
   }
+  if (key.startsWith('const:')) return { v: parseFloat(key.slice(6)) };
+  // Скорость двигателя — от расхода: доля загрузки агрегата от его проектной
+  // производительности. Ключ "speed:8" значит «8 т/ч по паспорту».
+  if (key === 'speed') return { v: 100 };
+  if (key.startsWith('speed:')) {
+    // "speed:8:4" — паспорт 8 т/ч на аппарат, аппаратов 4: расход делится между ними
+    const parts = key.slice(6).split(':');
+    const cap = parseFloat(parts[0]);
+    const n = parts[1] ? parseInt(parts[1], 10) : 1;
+    if (!(cap > 0) || !(n > 0)) return { v: null };
+    return { v: Math.min(120, ((NOMINAL_S / n) / cap) * 100) };
+  }
+  if (key === 'valve') return { v: 100 };
+  if (key === 'flow.m3') return { v: melt ? melt.sulfur_t_h / S_DENSITY : null };
   if (key === 'melt.sulfur') return { v: melt ? melt.sulfur_t_h : null };
   if (key === 'melt.tMelt') return { v: melt ? melt.tMelt : null };
   if (key === 'melt.steam08') return { v: melt ? melt.steam08_t_h : null };
@@ -91,52 +127,66 @@ function valueOf(key) {
 
 const fmt = (v) => v == null ? '—' : (Math.round(v * 10) / 10).toString().replace('.', ',');
 
-function paint() {
+function applyLang() {
   const t = L();
   document.getElementById('h1').textContent = t.h1;
   document.getElementById('sub').textContent = t.sub;
+  document.getElementById('showLbl').textContent = t.show;
   document.getElementById('note').textContent = t.note;
+}
 
-  const bar = document.getElementById('bar');
-  bar.innerHTML = SCREENS.map((s, i) =>
-    '<button type="button" data-i="' + i + '" aria-pressed="' + (i === cur) + '">'
-    + (s.title[lang] || s.title.ru) + '</button>').join('')
-    + '<label><input type="checkbox" id="show"' + (showValues ? ' checked' : '') + '>' + t.show + '</label>';
-  bar.querySelectorAll('button[data-i]').forEach((b) => {
-    b.onclick = () => { cur = +b.dataset.i; paint(); };
-  });
-  document.getElementById('show').onchange = (e) => {
-    showValues = e.target.checked;
-    document.getElementById('frame').classList.toggle('hidden', !showValues);
-  };
-
+function paint() {
+  applyLang();
+  if (new URLSearchParams(location.search).get('grid')) {
+    document.getElementById('frame').classList.add('grid');
+  }
   const s = SCREENS[cur];
   if (!s) return;
+
   document.getElementById('img').src = assetUrl(s.file);
   document.getElementById('frame').classList.toggle('hidden', !showValues);
 
   document.getElementById('chips').innerHTML = (s.chips || []).map((c) => {
     const r = valueOf(c.val);
     const cls = r.bad ? ' bad' : ' ok';
-    return '<div class="chip' + cls + '" style="left:' + c.x + '%;top:' + c.y + '%">'
-      + '<span class="v">' + fmt(r.v) + ' ' + (c.unit || '') + '</span>'
-      + '<span class="c">' + c.cap + '</span></div>';
+    const style = 'left:' + c.x + '%;top:' + c.y + '%'
+      + (c.w ? ';width:' + c.w + '%;height:' + c.h + '%' : '');
+    return '<div class="chip' + cls + '" style="' + style + '" title="' + c.cap + ' ' + c.val + '">'
+      + fmt(r.v) + ' ' + (c.unit || '') + '</div>';
   }).join('');
+
+  // нижняя панель: родные вкладки АСУТП, доступные — кликабельны
+  document.getElementById('deptbar').innerHTML = TABS.map((tb) => {
+    const i = SCREENS.findIndex((x) => x.id === tb.screen);
+    const here = i === cur;
+    return '<button type="button" data-i="' + i + '"' + (i < 0 ? ' disabled' : '')
+      + (here ? ' class="here"' : '') + '>' + tb.name + '</button>';
+  }).join('');
+  document.getElementById('deptbar').querySelectorAll('button[data-i]').forEach((b) => {
+    const i = +b.dataset.i;
+    if (i >= 0) b.onclick = () => { cur = i; paint(); };
+  });
 }
 
-// в офлайн-файле ресурсы лежат в base64 и отдаются через parent.__tmkAsset
 function assetUrl(p) {
   try { return self.A ? self.A(p) : p; } catch (e) { return p; }
 }
 
+document.getElementById('show').onchange = (e) => {
+  showValues = e.target.checked;
+  document.getElementById('frame').classList.toggle('hidden', !showValues);
+};
+
 fetch(assetUrl('mnemo/screens.json')).then((r) => r.json()).then((d) => {
   SCREENS = d.screens || [];
+  TABS = d.tabs || [];
+  const first = TABS.findIndex((x) => x.screen === SCREENS[0].id);
+  cur = 0;
   paint();
 }).catch(() => {
-  document.getElementById('stage').innerHTML = '<p class="note">Не удалось загрузить mnemo/screens.json</p>';
+  document.getElementById('stage').innerHTML = '<p style="padding:12px;color:#8fa3b6">Не удалось загрузить mnemo/screens.json</p>';
 });
 
-// язык приходит от оболочки
 window.addEventListener('message', (e) => {
   const d = e.data;
   if (d && d.__tmkLangChange) { lang = d.lang === 'uz' ? 'uz' : 'ru'; paint(); }
