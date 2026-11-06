@@ -12,6 +12,7 @@
     "geometry": "node tools/geometry/run.js",
     "geometry:baseline": "node tools/geometry/run.js --update-baseline",
     "audit": "node tools/audit-model.js",
+    "twin": "node twin/selftest.js",
     "flow-labels": "node tools/check-flow-labels.js"
   },
   "devDependencies": {
