@@ -162,6 +162,25 @@ const TABS = [
     if (!ok) failures.push(t.name + ': ' + t.what + ' = ' + value + ', ожидалось >= ' + t.min);
   }
 
+  // поиск по модели: вкладка 3D уже загружена, проверяем, что поле находит аппарат
+  const found = await page.evaluate(() => {
+    const f = document.getElementById('f-model');
+    const doc = f && f.contentDocument;
+    if (!doc) return -1;
+    const q = doc.getElementById('gq');
+    if (!q) return -2;
+    const fire = () => q.dispatchEvent(new f.contentWindow.Event('input', { bubbles: true }));
+    q.value = 'DM-11';
+    fire();
+    const n = doc.querySelectorAll('#gres button').length;
+    q.value = '';
+    fire();
+    return n;
+  });
+  const searchOk = found >= 1;
+  console.log('  ' + (searchOk ? '✔' : '✖') + ' ' + 'поиск'.padEnd(11) + ' результатов по «DM-11»: ' + found + ' (минимум 1)');
+  if (!searchOk) failures.push('поиск по модели не находит DM-11: ' + found);
+
   await browser.close();
   if (server) server.close();
 
