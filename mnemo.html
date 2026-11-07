@@ -173,6 +173,7 @@
 <script src="twin/vessels.js"></script>
 <script src="twin/heat.js"></script>
 <script src="twin/alarms.js"></script>
+<script src="twin/water.js"></script>
 <script src="twin/melt.js"></script>
 
 <script src="lang.js"></script>
@@ -234,6 +235,13 @@ function valueOf(key) {
   if (key === 'heat') return { v: HEAT ? HEAT.heatMw : null };
   if (key === 'feedwater') return { v: HEAT ? HEAT.feedwater_t_h : null };
   if (key === 'blowdown') return { v: HEAT ? HEAT.blowdown_t_h : null };
+  if (key === 'net') return { v: WATER ? WATER.netMw : null };
+  if (key === 'gross') return { v: WATER ? WATER.grossMw : null };
+  if (key === 'condduty') return { v: WATER ? WATER.condDutyMw : null };
+  if (key === 'circpower') return { v: WATER ? WATER.circPower_m3_h : null };
+  if (key === 'circacid') return { v: WATER ? WATER.circAcid_m3_h : null };
+  if (key === 'makeup') return { v: WATER ? WATER.makeup_t_h : null };
+  if (key === 'steamacid') return { v: WATER ? WATER.steamPerAcid : null };
   if (key === 'melt.tMelt') return { v: melt ? melt.tMelt : null };
   if (key === 'melt.steam08') return { v: melt ? melt.steam08_t_h : null };
   return { v: null };
@@ -247,6 +255,7 @@ const NOM = 20.48;
 
 let MODEL = null;      // расчёт модели, один на отрисовку
 let HEAT = null;       // тепловой блок
+let WATER = null;      // вода, циркуляция, генерация
 
 function fmt(v, d) {
   if (v == null || !isFinite(v)) return '—';
@@ -294,7 +303,8 @@ function paint() {
   try {
     MODEL = self.TwinModel ? self.TwinModel.solve({ load: CTRL.sulfur / NOM, air_excess: CTRL.air }) : null;
     HEAT = (self.TwinHeat && MODEL) ? self.TwinHeat.solve(MODEL) : null;
-  } catch (e) { MODEL = null; HEAT = null; }
+    WATER = (self.TwinWater && HEAT) ? self.TwinWater.solve(HEAT, MODEL) : null;
+  } catch (e) { MODEL = null; HEAT = null; WATER = null; }
   const t = L();
   document.getElementById('h1').textContent = t.h1;
   document.getElementById('sub').textContent = t.sub;
