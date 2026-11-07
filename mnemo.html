@@ -48,6 +48,12 @@
     font:600 11.5px/1 ui-monospace,Menlo,Consolas,monospace;color:#eaf4ff;white-space:nowrap;overflow:hidden}
   .chip.ok{color:#c8ffe9}
   .chip.bad{color:#ffb3b8;border-color:#7a2f36;background:#1a0b0e}
+  /* управления процессом: меняют расчёт, значения на схемах едут за ними */
+  .ctrls{display:flex;gap:14px;align-items:center;padding:6px 12px;border-bottom:1px solid var(--line);
+    background:var(--panel2);flex-wrap:wrap}
+  .ctrls .f{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--ink3)}
+  .ctrls input[type=range]{width:130px}
+  .ctrls output{font:600 12px ui-monospace,Menlo,Consolas,monospace;color:#dff1ff;min-width:44px;text-align:right}
   /* панель значений процесса: то, что считает наша модель, по этому экрану */
   .kpis{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:3px;
     background:rgba(6,12,18,.88);border:1px solid #24384a;border-radius:6px;padding:6px 8px;z-index:4;max-width:240px}
@@ -86,6 +92,10 @@
   <label><input type="checkbox" id="show"> <span id="showLbl">значения</span></label>
 </header>
 <div class="wrap">
+  <div class="ctrls" id="ctrls">
+    <span class="f"><label for="c-s">Подача серы</label><input type="range" id="c-s" min="5" max="32" step="0.5" value="20.48"><output id="o-s">20,5</output><span>т/ч</span></span>
+    <span class="f"><label for="c-a">Избыток воздуха</label><input type="range" id="c-a" min="70" max="130" step="1" value="100"><output id="o-a">100</output><span>%</span></span>
+  </div>
   <div class="stage" id="stage">
     <div class="panes n1" id="panes"></div>
     <div class="deptbar" id="deptbar"></div>
@@ -128,7 +138,7 @@ const S_DENSITY = 1.792;
 /** Значение для чипа. */
 function valueOf(key) {
   const M = self.TwinMelt, V = self.TwinVessels;
-  const melt = M ? M.solve({ sulfur_t_h: NOMINAL_S, ashFeed: 120 }) : null;
+  const melt = M ? M.solve({ sulfur_t_h: CTRL.sulfur, ashFeed: 120 }) : null;
 
   if (key.startsWith('level:')) {
     const tag = key.slice(6);
@@ -165,6 +175,9 @@ function valueOf(key) {
   if (key === 'melt.steam08') return { v: melt ? melt.steam08_t_h : null };
   return { v: null };
 }
+
+const CTRL = { sulfur: 20.48, air: 1.0 };
+const NOM = 20.48;
 
 let MODEL = null;      // расчёт модели, один на отрисовку
 let HEAT = null;       // тепловой блок
@@ -209,7 +222,7 @@ function paneHtml(screenIdx, paneIdx) {
 function paint() {
   // расчёт модели — один раз на отрисовку, из него берут значения все панели
   try {
-    MODEL = self.TwinModel ? self.TwinModel.solve({}) : null;
+    MODEL = self.TwinModel ? self.TwinModel.solve({ load: CTRL.sulfur / NOM, air_excess: CTRL.air }) : null;
     HEAT = (self.TwinHeat && MODEL) ? self.TwinHeat.solve(MODEL) : null;
   } catch (e) { MODEL = null; HEAT = null; }
   const t = L();
@@ -249,6 +262,24 @@ function paint() {
     if (i >= 0) b.onclick = () => { panes[active] = i; paint(); };
   });
 }
+
+function bindControls() {
+  const fs = document.getElementById('c-s');
+  const fa = document.getElementById('c-a');
+  fs.value = String(CTRL.sulfur);
+  document.getElementById('o-s').textContent = fmt(CTRL.sulfur);
+  fs.oninput = (e) => {
+    CTRL.sulfur = parseFloat(e.target.value);
+    document.getElementById('o-s').textContent = fmt(CTRL.sulfur);
+    paint();
+  };
+  fa.oninput = (e) => {
+    CTRL.air = parseFloat(e.target.value) / 100;
+    document.getElementById('o-a').textContent = String(Math.round(CTRL.air * 100));
+    paint();
+  };
+}
+bindControls();
 
 document.getElementById('show').onchange = (e) => {
   showValues = e.target.checked;
