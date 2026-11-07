@@ -45,6 +45,22 @@
   }
   #offline.show{display:block}
   body.fs-mode header,body.fs-mode nav.tabs{display:none}
+
+  @media (max-width: 700px){
+    /* на телефоне вкладки переносятся, а не прокручиваются: так видны все сразу */
+    nav.tabs{flex-wrap:wrap;overflow-x:visible;row-gap:0}
+    nav.tabs button{flex:0 0 auto;min-width:58px;padding:6px 3px 5px;font-size:10px;gap:2px}
+    nav.tabs button .lbl{font-size:9.5px;line-height:1.15}
+    nav.tabs .ic{font-size:15px}
+    header.top{padding:6px 10px}
+    header.top .brand{font-size:13px}
+  }
+  @media (max-height: 430px) and (orientation: landscape){
+    /* телефон в горизонтали: вкладки в одну строку, компактно */
+    nav.tabs{flex-wrap:nowrap;overflow-x:auto}
+    nav.tabs button{min-width:52px;padding:4px 2px}
+    nav.tabs .ic{font-size:14px}
+  }
 </style>
 </head>
 <body>
