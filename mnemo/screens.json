@@ -141,6 +141,28 @@
      "val": "melt.tMelt",
      "unit": "°C"
     }
+   ],
+   "spots": [
+    {
+     "id": "cv-a",
+     "x": 50.2,
+     "y": 72.8,
+     "w": 5.2,
+     "h": 2.4,
+     "tag": "CV-12101A",
+     "kind": "valve",
+     "link": "sulfur"
+    },
+    {
+     "id": "cv-b",
+     "x": 50.2,
+     "y": 75.0,
+     "w": 5.2,
+     "h": 2.4,
+     "tag": "CV-12101B",
+     "kind": "valve",
+     "link": "sulfur"
+    }
    ]
   },
   {
@@ -279,6 +301,48 @@
      "val": "ash",
      "unit": "ppm"
     }
+   ],
+   "spots": [
+    {
+     "id": "p1",
+     "x": 30.5,
+     "y": 79.0,
+     "w": 4.6,
+     "h": 2.2,
+     "tag": "P-11101A/B",
+     "kind": "pump",
+     "link": null
+    },
+    {
+     "id": "p2",
+     "x": 44.5,
+     "y": 79.0,
+     "w": 4.6,
+     "h": 2.2,
+     "tag": "P-11103A/B",
+     "kind": "pump",
+     "link": null
+    },
+    {
+     "id": "p3",
+     "x": 67.2,
+     "y": 79.0,
+     "w": 4.6,
+     "h": 2.2,
+     "tag": "P-11102A/B",
+     "kind": "pump",
+     "link": null
+    },
+    {
+     "id": "p4",
+     "x": 86.7,
+     "y": 79.0,
+     "w": 4.6,
+     "h": 2.2,
+     "tag": "P-11104A/B",
+     "kind": "pump",
+     "link": null
+    }
    ]
   },
   {
@@ -301,7 +365,8 @@
      "val": "conv",
      "unit": "%"
     }
-   ]
+   ],
+   "spots": []
   },
   {
    "id": "absorption",
@@ -333,7 +398,8 @@
      "val": "conc",
      "unit": "%"
     }
-   ]
+   ],
+   "spots": []
   },
   {
    "id": "scrubber",
@@ -355,7 +421,8 @@
      "val": "scrub",
      "unit": "%"
     }
-   ]
+   ],
+   "spots": []
   },
   {
    "id": "boiler",
@@ -382,7 +449,8 @@
      "val": "turbine",
      "unit": "МВт"
     }
-   ]
+   ],
+   "spots": []
   },
   {
    "id": "startboiler",
@@ -404,7 +472,8 @@
      "val": "heat",
      "unit": "МВт"
     }
-   ]
+   ],
+   "spots": []
   },
   {
    "id": "deaerator",
@@ -426,7 +495,8 @@
      "val": "blowdown",
      "unit": "т/ч"
     }
-   ]
+   ],
+   "spots": []
   },
   {
    "id": "steamturbine",
@@ -453,7 +523,8 @@
      "val": "turbine",
      "unit": "МВт"
     }
-   ]
+   ],
+   "spots": []
   },
   {
    "id": "oilsystem",
@@ -470,7 +541,8 @@
      "val": "turbine",
      "unit": "МВт"
     }
-   ]
+   ],
+   "spots": []
   },
   {
    "id": "sulfurtanks",
@@ -492,7 +564,8 @@
      "val": "melt.sulfur",
      "unit": "т/ч"
     }
-   ]
+   ],
+   "spots": []
   },
   {
    "id": "acidtank",
@@ -514,7 +587,8 @@
      "val": "acid",
      "unit": "т/ч"
     }
-   ]
+   ],
+   "spots": []
   }
  ],
  "tabs": [

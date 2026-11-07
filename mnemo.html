@@ -54,6 +54,29 @@
   .ctrls .f{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--ink3)}
   .ctrls input[type=range]{width:130px}
   .ctrls output{font:600 12px ui-monospace,Menlo,Consolas,monospace;color:#dff1ff;min-width:44px;text-align:right}
+  /* кликабельная арматура: невидимая рамка поверх значка */
+  .spot{position:absolute;transform:translate(-50%,-50%);border:1px dashed rgba(120,200,255,.35);
+    border-radius:3px;cursor:pointer;background:transparent;z-index:6}
+  .spot:hover{border-color:var(--accent);background:rgba(47,191,154,.12)}
+  .spot.pump{border-style:dotted}
+  .hidden .spot{display:none}
+  /* окно управления арматурой */
+  .win{position:absolute;left:10px;bottom:36px;width:250px;background:#0c141c;border:1px solid #2b4152;
+    border-radius:8px;box-shadow:0 8px 24px #000a;z-index:9;display:none}
+  .win.on{display:block}
+  .win .hd{display:flex;align-items:center;gap:8px;padding:7px 9px;border-bottom:1px solid #223243;
+    font-size:12.5px;color:#cfe6ff}
+  .win .hd b{font-weight:600}
+  .win .hd .x{margin-left:auto;cursor:pointer;color:#7f93a6;border:0;background:none;font-size:14px}
+  .win .bd{padding:9px}
+  .win .row{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#9fb3c6;margin:4px 0}
+  .win .row b{font-family:ui-monospace,Menlo,Consolas,monospace;color:#e6f4ff}
+  .win input[type=range]{width:100%;margin:6px 0}
+  .win .mode{display:flex;gap:6px;margin:6px 0}
+  .win .mode button{flex:1;border:1px solid #2b4152;background:transparent;color:#9fb3c6;
+    border-radius:6px;padding:4px 0;font-size:12px;cursor:pointer}
+  .win .mode button.on{background:var(--accent);border-color:var(--accent);color:#06130f;font-weight:600}
+  .win .note{font-size:11px;color:#6f8093;margin-top:6px}
   /* панель значений процесса: то, что считает наша модель, по этому экрану */
   .kpis{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:3px;
     background:rgba(6,12,18,.88);border:1px solid #24384a;border-radius:6px;padding:6px 8px;z-index:4;max-width:240px}
@@ -97,6 +120,16 @@
     <span class="f"><label for="c-a">Избыток воздуха</label><input type="range" id="c-a" min="70" max="130" step="1" value="100"><output id="o-a">100</output><span>%</span></span>
   </div>
   <div class="stage" id="stage">
+    <div class="win" id="win">
+      <div class="hd"><b id="wTitle">—</b><button class="x" id="wClose">✕</button></div>
+      <div class="bd">
+        <div class="mode"><button id="wA" class="on">A — авто</button><button id="wM">M — ручной</button></div>
+        <div class="row"><span>Положение</span><b><span id="wPos">0</span> %</b></div>
+        <input type="range" id="wSlider" min="0" max="100" step="1" value="0">
+        <div class="row"><span>Расход серы</span><b><span id="wFlow">—</span> т/ч</b></div>
+        <div class="note" id="wNote"></div>
+      </div>
+    </div>
     <div class="panes n1" id="panes"></div>
     <div class="deptbar" id="deptbar"></div>
   </div>
@@ -176,7 +209,9 @@ function valueOf(key) {
   return { v: null };
 }
 
-const CTRL = { sulfur: 20.48, air: 1.0 };
+const CTRL = { sulfur: 20.48, air: 1.0, valve: 64, valveAuto: true };
+const VALVE_MAX_T_H = 32;   // 100 % клапана = 32 т/ч серы
+let WIN = null;             // { tag, kind, link } открытого окна
 const NOM = 20.48;
 
 let MODEL = null;      // расчёт модели, один на отрисовку
@@ -211,6 +246,10 @@ function paneHtml(screenIdx, paneIdx) {
     + (layout > 1 ? tabs : '') + '</div>'
     + '<div class="box"><div class="shot"><img src="' + assetUrl(s.file) + '" alt="">'
     + '<div class="chips">' + (s.chips || []).map(chipHtml).join('') + '</div>'
+    + (s.spots || []).map((sp) => '<div class="spot' + (sp.kind === 'pump' ? ' pump' : '')
+      + '" data-sp="' + sp.id + '" data-tag="' + sp.tag + '" data-kind="' + sp.kind
+      + '" data-link="' + (sp.link || '') + '" title="' + sp.tag
+      + '" style="left:' + sp.x + '%;top:' + sp.y + '%;width:' + sp.w + '%;height:' + sp.h + '%"></div>').join('')
     + ((s.kpis && s.kpis.length) ? '<div class="kpis">' + s.kpis.map((k) => {
       const r = valueOf(k.val);
       return '<div class="r"><span>' + k.label + '</span><b' + (r.bad ? ' class="bad"' : '')
@@ -244,6 +283,14 @@ function paint() {
       paint();
     };
   });
+  // клик по арматуре открывает окно управления
+  box.querySelectorAll('.spot').forEach((el) => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      openWin({ tag: el.dataset.tag, kind: el.dataset.kind, link: el.dataset.link });
+    };
+  });
+
   // клик по панели делает её активной
   box.querySelectorAll('.pane').forEach((p) => {
     p.onclick = () => { active = +p.dataset.pane; paint(); };
@@ -262,6 +309,52 @@ function paint() {
     if (i >= 0) b.onclick = () => { panes[active] = i; paint(); };
   });
 }
+
+function openWin(sp) {
+  WIN = sp;
+  const win = document.getElementById('win');
+  win.classList.add('on');
+  document.getElementById('wTitle').textContent = sp.tag + (sp.kind === 'pump' ? ' · насос' : ' · клапан');
+  const linked = sp.link === 'sulfur';
+  document.getElementById('wNote').textContent = linked
+    ? 'Связан с расходом серы: положение меняет подачу и пересчитывает весь расчёт.'
+    : 'Модель этого аппарата пока не считает — окно показывает состояние.';
+  const slider = document.getElementById('wSlider');
+  slider.disabled = !linked;
+  if (linked) {
+    slider.value = String(CTRL.valve);
+    document.getElementById('wPos').textContent = String(Math.round(CTRL.valve));
+    document.getElementById('wFlow').textContent = fmt(CTRL.sulfur);
+  } else {
+    slider.value = '100';
+    document.getElementById('wPos').textContent = '100';
+    document.getElementById('wFlow').textContent = '—';
+  }
+  const setMode = (auto) => {
+    CTRL.valveAuto = auto;
+    document.getElementById('wA').classList.toggle('on', auto);
+    document.getElementById('wM').classList.toggle('on', !auto);
+    slider.disabled = auto || !linked;
+  };
+  setMode(linked ? CTRL.valveAuto : false);
+  document.getElementById('wA').onclick = () => setMode(true);
+  document.getElementById('wM').onclick = () => setMode(false);
+  slider.oninput = (e) => {
+    if (!linked) return;
+    CTRL.valve = parseFloat(e.target.value);
+    CTRL.sulfur = (CTRL.valve / 100) * VALVE_MAX_T_H;
+    document.getElementById('wPos').textContent = String(Math.round(CTRL.valve));
+    document.getElementById('wFlow').textContent = fmt(CTRL.sulfur);
+    const s = document.getElementById('c-s');
+    if (s) { s.value = String(CTRL.sulfur.toFixed(1)); document.getElementById('o-s').textContent = fmt(CTRL.sulfur); }
+    paint();
+  };
+}
+
+document.getElementById('wClose').onclick = () => {
+  document.getElementById('win').classList.remove('on');
+  WIN = null;
+};
 
 function bindControls() {
   const fs = document.getElementById('c-s');
