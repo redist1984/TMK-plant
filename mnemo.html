@@ -36,9 +36,8 @@
   .pane.active{border-color:var(--accent)}
   .pane .top{display:flex;gap:4px;align-items:center;padding:2px 4px;background:#0d151d;font-size:11px;color:var(--ink3)}
   .pane .top .nm{color:var(--ink2);margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pane .top button{background:transparent;border:0;color:var(--ink3);font:inherit;font-size:11px;
-    padding:1px 5px;border-radius:4px;cursor:pointer}
-  .pane .top button[aria-pressed="true"]{background:#1c2a38;color:#dff1ff}
+  .pane .top .pick{background:#16232f;color:#cfe6ff;border:1px solid #2b4152;border-radius:5px;
+    font:inherit;font-size:11px;padding:1px 4px;max-width:220px}
   .pane .box{position:relative;flex:1;min-height:0;overflow:hidden;display:flex;
     align-items:center;justify-content:center}
   /* Снимок вписывается целиком: высота задаёт ширину по пропорции 2:1,
@@ -351,14 +350,15 @@ function chipHtml(c) {
 function paneHtml(screenIdx, paneIdx) {
   const s = SCREENS[screenIdx];
   if (!s) return '';
-  const tabs = SCREENS.map((x, i) =>
-    '<button type="button" data-pane="' + paneIdx + '" data-scr="' + i + '"'
-    + (i === screenIdx ? ' aria-pressed="true"' : '') + '>' + (x.dept || x.id) + '</button>').join('');
+  const opts = SCREENS.map((x, i) =>
+    '<option value="' + i + '"' + (i === screenIdx ? ' selected' : '') + '>'
+    + (x.dept || x.id) + ' — ' + (x.title[lang] || x.title.ru) + '</option>').join('');
   return '<div class="pane' + (paneIdx === active ? ' active' : '') + (GRID ? ' grid' : '')
     + (showValues ? '' : ' hidden') + '" data-pane="' + paneIdx + '">'
     + '<div class="top"><span class="nm">' + (s.title[lang] || s.title.ru) + '</span>'
-    + (layout > 1 ? tabs : '') + '</div>'
-    + '<div class="box"><div class="shot"><img src="' + assetUrl(s.file) + '" alt="">'
+    + (layout > 1 ? '<select class="pick" data-pane="' + paneIdx + '">' + opts + '</select>' : '')
+    + '</div>'
+    + '<div class="box"><div class="shot" data-ar="' + (s.ar || 2) + '"><img src="' + assetUrl(s.file) + '" alt="">'
     + '<div class="chips">' + (s.chips || []).map(chipHtml).join('') + '</div>'
     + (s.spots || []).map((sp) => '<div class="spot' + (sp.kind === 'pump' ? ' pump' : '')
       + '" data-sp="' + sp.id + '" data-tag="' + sp.tag + '" data-kind="' + sp.kind
@@ -400,12 +400,13 @@ function paint() {
     paintAlarms();
   }
 
-  // выбор экрана внутри панели
-  box.querySelectorAll('button[data-scr]').forEach((b) => {
-    b.onclick = (e) => {
+  // выбор экрана внутри панели — выпадающий список
+  box.querySelectorAll('select.pick').forEach((sel) => {
+    sel.onclick = (e) => e.stopPropagation();
+    sel.onchange = (e) => {
       e.stopPropagation();
-      panes[+b.dataset.pane] = +b.dataset.scr;
-      active = +b.dataset.pane;
+      panes[+sel.dataset.pane] = +sel.value;
+      active = +sel.dataset.pane;
       paint();
     };
   });
@@ -455,7 +456,7 @@ function fitShots() {
     const w = box.clientWidth;
     const h = box.clientHeight;
     if (!w || !h) return;
-    const R = 2;
+    const R = parseFloat(shot.dataset.ar) || 2;
     const W = Math.min(w, h * R);
     const H = Math.round(W / R);
     shot.style.width = Math.round(W) + 'px';
