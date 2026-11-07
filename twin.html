@@ -80,6 +80,11 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 .ilki .eff{color:var(--ink2);margin-top:3px}
 .ilki .acts{display:flex;gap:6px;margin-top:5px}
 .ilki .acts button{font-size:11.5px;padding:3px 8px}
+.depts td{vertical-align:top}
+.depts td:first-child{white-space:nowrap;font-weight:600;color:var(--ink)}
+.depts td:nth-child(2){color:var(--ink3);font-size:12px}
+.depts td:last-child{white-space:nowrap;font-family:ui-monospace,Menlo,Consolas,monospace;text-align:right}
+.depts tr.none td:last-child{color:var(--ink3);font-family:inherit;font-weight:400}
 .ilki .cause{color:var(--ink3);margin-top:2px}
 /* плавление и уровень */
 .lv{display:flex;flex-direction:column;gap:4px;margin:8px 0;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2)}
@@ -159,6 +164,15 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
     </div>
 
     <div class="card" style="margin-top:12px">
+      <h2 id="deptTitle">По отделениям</h2>
+      <table class="depts">
+        <thead><tr><th id="deptName">Отделение</th><th id="deptWhat">Что считается</th><th id="deptVal">Результат</th></tr></thead>
+        <tbody id="deptBody"></tbody>
+      </table>
+      <p class="note" id="deptNote">Каждая строка — расчёт своего участка. Где модели нет, так и написано: выдуманных чисел не показываем.</p>
+    </div>
+
+    <div class="card" style="margin-top:12px">
       <h2 id="ilkTitle">Блокировки</h2>
       <div id="ilkCounts" class="ilkcounts"></div>
       <label class="ilktoggle"><input type="checkbox" id="ilkUse" checked> <span id="ilkUseLbl">учитывать блокировки в расчёте</span></label>
@@ -180,6 +194,7 @@ td.up{color:var(--ok)} td.down{color:var(--bad)}
 <script src="twin/logic.js"></script>
 <script src="twin/apply.js"></script>
 <script src="twin/heat.js"></script>
+<script src="twin/water.js"></script>
 <script src="twin/temps.js"></script>
 <script src="twin/melt.js"></script>
 <script src="twin/tank.js"></script>
@@ -231,6 +246,8 @@ const TXT = {
     ilkNone: 'Нет сработавших блокировок. Остальные ждут сигналов, которых модель пока не знает.',
     ilkReset: 'Сброс', ilkResetAll: 'Сбросить все сработавшие', ilkBypass: 'Отключить', ilkUnbypass: 'Включить', ilkSheet: 'лист',
     ilkNoSignal: 'нет сигнала', ilkYes: 'да', ilkNo: 'нет', ilkFromDcs: 'уставка из DCS',
+    deptTitle: 'По отделениям', deptName: 'Отделение', deptWhat: 'Что считается', deptVal: 'Результат',
+    deptNote: 'Каждая строка — расчёт своего участка. Где модели нет, так и написано: выдуманных чисел не показываем.',
     meltTitle: 'Плавление серы',
     meltNote: 'Уровень в чане фильтрации меняется во времени: приход от плавления минус расход на горелку. Уставки LL 500 / H 2200 мм — из таблицы DCS.',
     meltSulfur: 'Твёрдая сера', meltAsh: 'Зольность исходной серы, ppm',
@@ -292,6 +309,8 @@ const TXT = {
     ilkNone: 'Ishlagan blokirovkalar yo‘q. Qolganlari model hali bilmaydigan signallarni kutmoqda.',
     ilkReset: 'Qayta ishga tushirish', ilkResetAll: 'Barchasini qayta ishga tushirish', ilkBypass: 'O‘chirish', ilkUnbypass: 'Yoqish', ilkSheet: 'varaq',
     ilkNoSignal: 'signal yo‘q', ilkYes: 'ha', ilkNo: 'yo‘q', ilkFromDcs: 'ustavka DCS dan',
+    deptTitle: 'Bo‘linmalar bo‘yicha', deptName: 'Bo‘linma', deptWhat: 'Nima hisoblanadi', deptVal: 'Natija',
+    deptNote: 'Har bir satr — o‘z uchastkasining hisobi. Model yo‘q joyda shunday yozilgan.',
     meltTitle: 'Oltingugurtni eritish',
     meltNote: 'Filtr chanidagi sath vaqt bo‘yicha o‘zgaradi: eritishdan kelishi minus pechga sarfi. LL 500 / H 2200 mm ustavkalari DCS jadvalidan.',
     meltSulfur: 'Qattiq oltingugurt', meltAsh: 'Boshlang‘ich oltingugurt kuli, ppm',
@@ -509,6 +528,91 @@ function paintVessels(L) {
   });
 }
 
+
+
+/** Температура на выходе печи — из того же газового тракта, что и блок температур. */
+function furnaceT(model) {
+  try {
+    if (!window.TwinGasPath) return null;
+    const g = TwinGasPath.gasPath(model);
+    const p = (g.points || []).find((x) => x.computed && /печ/i.test(x.name));
+    return p ? p.t : null;
+  } catch (e) { return null; }
+}
+
+/** Расчёты по отделениям: одна строка — один участок завода. */
+function paintDepts(L, cur) {
+  const $b = document.getElementById('deptBody');
+  if (!$b) return;
+  document.getElementById('deptTitle').textContent = L.deptTitle;
+  document.getElementById('deptName').textContent = L.deptName;
+  document.getElementById('deptWhat').textContent = L.deptWhat;
+  document.getElementById('deptVal').textContent = L.deptVal;
+  document.getElementById('deptNote').textContent = L.deptNote;
+
+  const M = window.TwinMelt;
+  const W = window.TwinWater;
+  const H = window.TwinHeat;
+  const melt = M ? M.solve({ sulfur_t_h: MELT.sulfur, ashFeed: MELT.ash }) : null;
+  const heat = (H && !cur.error) ? H.solve(cur) : null;
+  const water = (W && heat) ? W.solve(heat, cur) : null;
+
+  const f = (v, d) => (v == null || !isFinite(v)) ? '—' : (Math.round(v * (10 ** (d || 0))) / (10 ** (d || 0))).toString().replace('.', ',');
+  const rows = [];
+
+  // 1. Склад серы
+  rows.push(['Склад серы', 'подача твёрдой серы, зольность', f(melt && melt.sulfur_t_h, 1) + ' т/ч · ' + f(MELT.ash, 0) + ' ppm']);
+
+  // 2. Плавление
+  rows.push(['Плавление', 'тепло, пар 0,8 МПа, расплав, зола',
+    f(melt && melt.heat.totalKw, 0) + ' кВт · ' + f(melt && melt.steam08_t_h, 2) + ' т/ч · ' + f(melt && melt.tMelt, 0) + ' °C']);
+
+  // 3. Сжигание и конверсия
+  const conv = cur.stagesConv || [];
+  rows.push(['Сжигание и конверсия', 'ступени, печь, общая конверсия',
+    conv.map((x) => f(x, 1)).join(' / ') + ' % · печь ' + furnaceT(cur) + ' °C']);
+
+  // 4. Сушка и абсорбция
+  rows.push(['Сушка и абсорбция', 'товарная кислота, концентрация',
+    f(cur.acid && cur.acid.product_t_h, 2) + ' т/ч · ' + f(cur.acid && cur.acid.conc, 1) + ' %']);
+
+  // 5. Очистка отходящих газов
+  rows.push(['Очистка отходящих газов', 'выброс SO2, конверсия',
+    f(cur.stack && cur.stack.so2_mg, 0) + ' мг/нм³ · ' + f(cur.conversion, 2) + ' %']);
+
+  // 6. Котёл-утилизатор
+  rows.push(['Котёл-утилизатор', 'пар 6,4 МПа, тепло реакций',
+    f(heat && heat.steam_t_h, 1) + ' т/ч · ' + f(heat && heat.heatMw, 1) + ' МВт']);
+
+  // 7. Турбина и генератор
+  rows.push(['Турбина и генератор', 'отбор, выработка, в сеть',
+    f(heat && heat.extraction_t_h, 1) + ' т/ч · ' + f(water && water.grossMw, 1) + ' → ' + f(water && water.netMw, 1) + ' МВт']);
+
+  // 8. Конденсатор и циркуляция
+  rows.push(['Конденсатор и циркуляция', 'тепло, оборотная вода',
+    f(water && water.condDutyMw, 1) + ' МВт · ' + f(water && water.circPower_m3_h, 0) + ' м³/ч']);
+
+  // 9. Водоподготовка
+  rows.push(['Водоподготовка', 'деаэрированная вода, подпитка',
+    f(heat && heat.feedwater_t_h, 1) + ' т/ч · подпитка ' + f(water && water.makeup_t_h, 1) + ' т/ч']);
+
+  // 10. Деаэратор — та же цифра, но отдельной строкой как в проекте
+  rows.push(['Деаэратор', 'продувка, потери',
+    f(heat && heat.blowdown_t_h, 2) + ' т/ч продувки']);
+
+  // 11. Пусковой котёл — не моделируется
+  rows.push(['Пусковой котёл', '10 т/ч пара 1,2 МПа (по проекту)', null, 'не моделируется']);
+
+  // 12. Компрессорная — не моделируется
+  rows.push(['Компрессорная', '15 Нм³/мин (по проекту)', null, 'не моделируется']);
+
+  $b.innerHTML = rows.map((r) => {
+    const none = r[2] == null;
+    return '<tr' + (none ? ' class="none"' : '') + '><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td>'
+      + '<td>' + esc(none ? (r[3] || '—') : r[2]) + '</td></tr>';
+  }).join('');
+}
+
 /** Плавление и уровень: тепло, пар, зола и что с уровнем за час. */
 function paintMelt(L, burn_t_h) {
   if (!window.TwinMelt) { $('levelBox').innerHTML = ''; return; }
@@ -690,6 +794,7 @@ function render() {
   paintTemps(L, cur);
   paintMelt(L, plain.sulfur_t_h || 0);
   paintVessels(L);
+  paintDepts(L, plain);
   if (cur.error) {
     $('alert').innerHTML = '<div class="alert bad">' + esc(cur.error) + '</div>';
   } else {
