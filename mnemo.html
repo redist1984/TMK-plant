@@ -192,6 +192,7 @@
     <button type="button" id="bSp5" aria-pressed="false">×5</button>
     <span class="clock" id="clock">00:00:00</span>
     <button type="button" id="bTrend">∿ тренд</button>
+    <button type="button" id="bFit">⤢ вписать</button>
   </span>
   <button type="button" id="bAlm" class="alarm">🔔 0</button>
   <button type="button" id="fs">⛶ полный экран</button>
@@ -325,6 +326,7 @@ const AL = self.TwinAlarms ? self.TwinAlarms.create() : null;
 let ENG = null;          // движок времени
 let MEM = null;          // память блокировок
 let lastPaint = 0;
+let FIT_MODE = 'contain';   // contain | width | cover   // contain — вписать целиком, cover — заполнить панель
 const NOM = 20.48;
 
 let MODEL = null;      // расчёт модели, один на отрисовку
@@ -456,7 +458,13 @@ function fitShots() {
     const h = box.clientHeight;
     if (!w || !h) return;
     const R = 2;
-    const W = Math.min(w, h * R);
+    // contain — схема целиком и максимально крупно;
+    // width   — по ширине панели (в короткой панели прокрутка по вертикали);
+    // cover   — залить панель целиком, края обрезаются.
+    let W;
+    if (FIT_MODE === 'cover') W = Math.max(w, h * R);
+    else if (FIT_MODE === 'width') W = w;
+    else W = Math.min(w, h * R);
     const H = Math.round(W / R);
     shot.style.width = Math.round(W) + 'px';
     shot.style.height = H + 'px';
@@ -532,6 +540,18 @@ function bindEngine() {
         b.setAttribute('aria-pressed', b === el ? 'true' : 'false'));
     };
   });
+  const bFit = document.getElementById('bFit');
+  const FIT_LABEL = { contain: '⤢ вписать', width: '↔ по ширине', cover: '⤡ заполнить' };
+  const FIT_ORDER = ['contain', 'width', 'cover'];
+  bFit.textContent = FIT_LABEL[FIT_MODE];
+  bFit.onclick = () => {
+    FIT_MODE = FIT_ORDER[(FIT_ORDER.indexOf(FIT_MODE) + 1) % FIT_ORDER.length];
+    bFit.textContent = FIT_LABEL[FIT_MODE];
+    document.querySelectorAll('#panes .box').forEach((b) => {
+      b.style.overflowY = FIT_MODE === 'width' ? 'auto' : 'hidden';
+    });
+    fitShots();
+  };
   document.getElementById('bTrend').onclick = () => {
     document.getElementById('trend').classList.toggle('on');
     drawTrend();
