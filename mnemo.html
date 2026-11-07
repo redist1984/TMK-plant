@@ -13,55 +13,76 @@
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
     font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-  header{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+  header{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
   header b{font-size:15px}
   header .sub{color:var(--ink3);font-size:12px}
-  header .right{margin-left:auto;display:flex;gap:8px;align-items:center;color:var(--ink2);font-size:12.5px}
-  .wrap{display:flex;flex-direction:column;height:calc(100% - 48px)}
-  .stage{position:relative;flex:1;overflow:auto;background:#05080b;padding-bottom:34px}
-  .frame{position:relative;margin:0 auto}
-  .frame img{display:block;width:100%;height:auto}
-  .hidden .chip{display:none}
+  header .sp{margin-left:auto}
+  header .grp{display:flex;gap:4px;align-items:center}
+  header button{background:transparent;border:1px solid var(--line);color:var(--ink2);
+    padding:5px 10px;border-radius:8px;font:inherit;font-size:12.5px;cursor:pointer}
+  header button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#06130f;font-weight:600}
+  header label{display:flex;gap:6px;align-items:center;color:var(--ink2);font-size:12.5px}
+  .wrap{display:flex;flex-direction:column;height:calc(100% - 46px)}
+  .stage{position:relative;flex:1;overflow:auto;background:#05080b;padding:4px 4px 32px}
+  .panes{display:grid;gap:5px;height:100%}
+  .panes.n1{grid-template-columns:1fr}
+  .panes.n2{grid-template-columns:1fr 1fr}
+  .panes.n4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+  .pane{position:relative;border:1px solid #16212c;border-radius:4px;overflow:hidden;background:#05080b;
+    display:flex;flex-direction:column;min-height:0}
+  .pane.active{border-color:var(--accent)}
+  .pane .top{display:flex;gap:4px;align-items:center;padding:2px 4px;background:#0d151d;font-size:11px;color:var(--ink3)}
+  .pane .top .nm{color:var(--ink2);margin-right:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pane .top button{background:transparent;border:0;color:var(--ink3);font:inherit;font-size:11px;
+    padding:1px 5px;border-radius:4px;cursor:pointer}
+  .pane .top button[aria-pressed="true"]{background:#1c2a38;color:#dff1ff}
+  .pane .box{position:relative;flex:1;min-height:0;overflow:auto}
+  /* обёртка ровно по размеру картинки: проценты чипов считаются от неё */
+  .pane .shot{position:relative;width:100%}
+  .pane img{display:block;width:100%;height:auto}
+  .pane .chips{position:absolute;inset:0}
 
-  /* чип ложится поверх поля значения в схеме и закрывает исходные нули */
+  /* чип ложится поверх поля значения и закрывает исходные нули */
   .chip{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;
     background:#060d13;border:1px solid #2f4356;border-radius:2px;padding:1px 2px;min-width:34px;
     font:600 11.5px/1 ui-monospace,Menlo,Consolas,monospace;color:#eaf4ff;white-space:nowrap;overflow:hidden}
   .chip.ok{color:#c8ffe9}
   .chip.bad{color:#ffb3b8;border-color:#7a2f36;background:#1a0b0e}
-  /* подпись тега видна только по наведению: на экране он и так подписан */
+  .hidden .chip{display:none}
 
-  /* нижняя панель как в АСУТП: вкладки отделений */
   .deptbar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:1px;
     background:#dfe3e8;padding:1px;height:28px;align-items:stretch;overflow-x:auto}
   .deptbar button{flex:1 0 auto;border:0;background:#eceff3;color:#2b3947;
-    font:400 11.5px/1 system-ui,sans-serif;padding:0 10px;cursor:pointer;white-space:nowrap;
-    border-right:1px solid #c9cfd6}
+    font:400 11.5px/1 system-ui,sans-serif;padding:0 10px;cursor:pointer;
+    white-space:nowrap;border-right:1px solid #c9cfd6}
   .deptbar button.here{background:#fff;color:#0b7a63;font-weight:700;box-shadow:inset 0 -2px 0 #0b7a63}
   .deptbar button[disabled]{color:#8d99a6;cursor:default}
-  header .hint{color:var(--ink3);font-size:11.5px}
-  /* режим разметки: ?grid=1 — сетка 5% для расстановки чипов */
-  .frame.grid::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
+  /* режим разметки: ?grid=1 */
+  .pane.grid .box::before{content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
     background:
       repeating-linear-gradient(to right, rgba(255,0,0,.55) 0 1px, transparent 1px 5%),
       repeating-linear-gradient(to bottom, rgba(255,0,0,.55) 0 1px, transparent 1px 5%),
       repeating-linear-gradient(to right, rgba(255,255,0,.9) 0 1px, transparent 1px 10%)}
+  :fullscreen .wrap{height:100vh}
 </style>
 </head>
 <body>
 <header>
   <b id="h1">Мнемосхемы</b>
   <span class="sub" id="sub">расчётные значения на экранах АСУТП</span>
-  <span class="hint" id="note"></span>
-  <span class="right"><label><input type="checkbox" id="show"> <span id="showLbl">показать значения</span></label></span>
+  <span class="sp"></span>
+  <span class="grp" id="layouts">
+    <button type="button" data-n="1" aria-pressed="true">1</button>
+    <button type="button" data-n="2" aria-pressed="false">2</button>
+    <button type="button" data-n="4" aria-pressed="false">4</button>
+  </span>
+  <button type="button" id="fs">⛶ полный экран</button>
+  <label><input type="checkbox" id="show"> <span id="showLbl">значения</span></label>
 </header>
 <div class="wrap">
   <div class="stage" id="stage">
-    <div class="frame" id="frame">
-      <img id="img" alt="">
-      <div id="chips"></div>
-      <div class="deptbar" id="deptbar"></div>
-    </div>
+    <div class="panes n1" id="panes"></div>
+    <div class="deptbar" id="deptbar"></div>
   </div>
 </div>
 
@@ -78,22 +99,24 @@
 <script>
 'use strict';
 const TXT = {
-  ru: { h1: 'Мнемосхемы', sub: 'расчётные значения на экранах АСУТП', show: 'показать значения',
-        note: 'Значения считает модель двойника. Исходные цифры на скриншотах АСУТП нулевые — их закрывают наши чипы.' },
-  uz: { h1: 'Mnemoyxemalar', sub: 'АSU TP ekranlarida hisobiy qiymatlar', show: 'qiymatlarni ko‘rsatish',
-        note: 'Qiymatlarni egizak modeli hisoblaydi. АSU TP skrinshotlaridagi asl raqamlar nol — ularni bizning chiplar yopadi.' }
+  ru: { h1: 'Мнемосхемы', sub: 'расчётные значения на экранах АСУТП', show: 'значения',
+        fs: '⛶ полный экран', fsOff: '⤡ свернуть', pick: 'Экран для панели' },
+  uz: { h1: 'Mnemoyxemalar', sub: 'АSU TP ekranlarida hisobiy qiymatlar', show: 'qiymatlar',
+        fs: '⛶ to‘liq ekran', fsOff: '⤡ kichraytirish', pick: 'Panel uchun ekran' }
 };
 let lang = 'ru';
 const L = () => TXT[lang] || TXT.ru;
 
 let SCREENS = [];
 let TABS = [];
-let cur = 0;
+let layout = 1;          // 1 | 2 | 4 панели
+let panes = [];          // индексы экранов в панелях
+let active = 0;          // активная панель
 let showValues = true;
+const GRID = new URLSearchParams(location.search).get('grid');
 
-// проектный расход серы — от него считаются скорости и проценты
 const NOMINAL_S = 20.48;
-const S_DENSITY = 1.792;   // т/м³ жидкой серы
+const S_DENSITY = 1.792;
 
 /** Значение для чипа. */
 function valueOf(key) {
@@ -106,11 +129,8 @@ function valueOf(key) {
     return row ? { v: row.level, bad: row.status !== 'normal' && row.status !== 'none' } : { v: null };
   }
   if (key.startsWith('const:')) return { v: parseFloat(key.slice(6)) };
-  // Скорость двигателя — от расхода: доля загрузки агрегата от его проектной
-  // производительности. Ключ "speed:8" значит «8 т/ч по паспорту».
   if (key === 'speed') return { v: 100 };
   if (key.startsWith('speed:')) {
-    // "speed:8:4" — паспорт 8 т/ч на аппарат, аппаратов 4: расход делится между ними
     const parts = key.slice(6).split(':');
     const cap = parseFloat(parts[0]);
     const n = parts[1] ? parseInt(parts[1], 10) : 1;
@@ -126,65 +146,111 @@ function valueOf(key) {
 }
 
 const fmt = (v) => v == null ? '—' : (Math.round(v * 10) / 10).toString().replace('.', ',');
+function assetUrl(p) { try { return self.A ? self.A(p) : p; } catch (e) { return p; } }
 
-function applyLang() {
+function chipHtml(c) {
+  const r = valueOf(c.val);
+  const cls = r.bad ? ' bad' : ' ok';
+  const style = 'left:' + c.x + '%;top:' + c.y + '%'
+    + (c.w ? ';width:' + c.w + '%;height:' + c.h + '%' : '');
+  return '<div class="chip' + cls + '" style="' + style + '" title="' + c.cap + '">'
+    + fmt(r.v) + ' ' + (c.unit || '') + '</div>';
+}
+
+/** Разметка одной панели: заголовок с выбором экрана, картинка, чипы. */
+function paneHtml(screenIdx, paneIdx) {
+  const s = SCREENS[screenIdx];
+  if (!s) return '';
+  const tabs = SCREENS.map((x, i) =>
+    '<button type="button" data-pane="' + paneIdx + '" data-scr="' + i + '"'
+    + (i === screenIdx ? ' aria-pressed="true"' : '') + '>' + (x.dept || x.id) + '</button>').join('');
+  return '<div class="pane' + (paneIdx === active ? ' active' : '') + (GRID ? ' grid' : '')
+    + (showValues ? '' : ' hidden') + '" data-pane="' + paneIdx + '">'
+    + '<div class="top"><span class="nm">' + (s.title[lang] || s.title.ru) + '</span>'
+    + (layout > 1 ? tabs : '') + '</div>'
+    + '<div class="box"><div class="shot"><img src="' + assetUrl(s.file) + '" alt="">'
+    + '<div class="chips">' + (s.chips || []).map(chipHtml).join('') + '</div></div></div></div>';
+}
+
+function paint() {
   const t = L();
   document.getElementById('h1').textContent = t.h1;
   document.getElementById('sub').textContent = t.sub;
   document.getElementById('showLbl').textContent = t.show;
-  document.getElementById('note').textContent = t.note;
-}
+  document.getElementById('fs').textContent = document.fullscreenElement ? t.fsOff : t.fs;
 
-function paint() {
-  applyLang();
-  if (new URLSearchParams(location.search).get('grid')) {
-    document.getElementById('frame').classList.add('grid');
-  }
-  const s = SCREENS[cur];
-  if (!s) return;
+  const box = document.getElementById('panes');
+  box.className = 'panes n' + layout;
+  box.innerHTML = panes.map((si, pi) => paneHtml(si, pi)).join('');
 
-  document.getElementById('img').src = assetUrl(s.file);
-  document.getElementById('frame').classList.toggle('hidden', !showValues);
+  // выбор экрана внутри панели
+  box.querySelectorAll('button[data-scr]').forEach((b) => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      panes[+b.dataset.pane] = +b.dataset.scr;
+      active = +b.dataset.pane;
+      paint();
+    };
+  });
+  // клик по панели делает её активной
+  box.querySelectorAll('.pane').forEach((p) => {
+    p.onclick = () => { active = +p.dataset.pane; paint(); };
+  });
 
-  document.getElementById('chips').innerHTML = (s.chips || []).map((c) => {
-    const r = valueOf(c.val);
-    const cls = r.bad ? ' bad' : ' ok';
-    const style = 'left:' + c.x + '%;top:' + c.y + '%'
-      + (c.w ? ';width:' + c.w + '%;height:' + c.h + '%' : '');
-    return '<div class="chip' + cls + '" style="' + style + '" title="' + c.cap + ' ' + c.val + '">'
-      + fmt(r.v) + ' ' + (c.unit || '') + '</div>';
-  }).join('');
-
-  // нижняя панель: родные вкладки АСУТП, доступные — кликабельны
+  // нижняя панель отделений управляет активной панелью
+  const curScreen = panes[active];
   document.getElementById('deptbar').innerHTML = TABS.map((tb) => {
     const i = SCREENS.findIndex((x) => x.id === tb.screen);
-    const here = i === cur;
+    const here = i === curScreen;
     return '<button type="button" data-i="' + i + '"' + (i < 0 ? ' disabled' : '')
       + (here ? ' class="here"' : '') + '>' + tb.name + '</button>';
   }).join('');
   document.getElementById('deptbar').querySelectorAll('button[data-i]').forEach((b) => {
     const i = +b.dataset.i;
-    if (i >= 0) b.onclick = () => { cur = i; paint(); };
+    if (i >= 0) b.onclick = () => { panes[active] = i; paint(); };
   });
-}
-
-function assetUrl(p) {
-  try { return self.A ? self.A(p) : p; } catch (e) { return p; }
 }
 
 document.getElementById('show').onchange = (e) => {
   showValues = e.target.checked;
-  document.getElementById('frame').classList.toggle('hidden', !showValues);
+  paint();
 };
+
+// 1 / 2 / 4 панели
+document.getElementById('layouts').querySelectorAll('button').forEach((b) => {
+  b.onclick = () => {
+    layout = +b.dataset.n;
+    document.querySelectorAll('#layouts button').forEach((x) =>
+      x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+    if (panes.length < layout) {
+      for (let i = panes.length; i < layout; i++) panes.push(i % Math.max(1, SCREENS.length));
+    }
+    active = Math.min(active, layout - 1);
+    paint();
+  };
+});
+
+// полный экран
+document.getElementById('fs').onclick = async () => {
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
+  } catch (e) {
+    // в iframe без allowfullscreen полноэкранный режим запрещён — просим оболочку
+    try { parent.postMessage({ __tmkFullscreen: true, on: !document.fullscreenElement }, '*'); } catch (e2) {}
+  }
+  setTimeout(paint, 120);
+};
+document.addEventListener('fullscreenchange', () => paint());
 
 fetch(assetUrl('mnemo/screens.json')).then((r) => r.json()).then((d) => {
   SCREENS = d.screens || [];
   TABS = d.tabs || [];
-  const first = TABS.findIndex((x) => x.screen === SCREENS[0].id);
-  cur = 0;
+  panes = [0];
   paint();
 }).catch(() => {
-  document.getElementById('stage').innerHTML = '<p style="padding:12px;color:#8fa3b6">Не удалось загрузить mnemo/screens.json</p>';
+  document.getElementById('stage').innerHTML =
+    '<p style="padding:12px;color:#8fa3b6">Не удалось загрузить mnemo/screens.json</p>';
 });
 
 window.addEventListener('message', (e) => {
