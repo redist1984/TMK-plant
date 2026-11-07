@@ -39,11 +39,13 @@
   .pane .top button{background:transparent;border:0;color:var(--ink3);font:inherit;font-size:11px;
     padding:1px 5px;border-radius:4px;cursor:pointer}
   .pane .top button[aria-pressed="true"]{background:#1c2a38;color:#dff1ff}
-  .pane .box{position:relative;flex:1;min-height:0;overflow:auto;display:flex;
+  .pane .box{position:relative;flex:1;min-height:0;overflow:hidden;display:flex;
     align-items:center;justify-content:center}
-  /* обёртка ровно по размеру картинки: проценты чипов считаются от неё */
-  .pane .shot{position:relative;width:100%}
-  .pane img{display:block;width:100%;height:auto}
+  /* Снимок вписывается целиком: высота задаёт ширину по пропорции 2:1,
+     поэтому картинка видна полностью и без прокрутки в любой панели.
+     Обёртка совпадает с картинкой, проценты чипов считаются от неё. */
+  .pane .shot{position:relative;flex:0 0 auto}
+  .pane img{display:block;width:100%;height:100%}
   .pane .chips{position:absolute;inset:0}
 
   /* чип ложится поверх поля значения и закрывает исходные нули */
@@ -168,7 +170,8 @@
     .pane .kpis .r{font-size:10px}
   }
   @media (orientation: portrait) and (max-width: 820px) {
-    .pane .box{overflow:auto}
+    /* снимок всё равно вписывается целиком — прокрутка не нужна */
+    .pane .box{overflow:hidden}
   }
 </style>
 </head>
@@ -384,7 +387,12 @@ function paint() {
 
   const box = document.getElementById('panes');
   box.className = 'panes n' + layout;
-  box.innerHTML = panes.map((si, pi) => paneHtml(si, pi)).join('');
+  panes.length = Math.min(panes.length, layout);   // при возврате 4 → 1 лишние панели убираем
+  while (panes.length < layout) panes.push(panes.length % Math.max(1, SCREENS.length));
+  active = Math.min(active, panes.length - 1);
+  box.innerHTML = panes.slice(0, layout).map((si, pi) => paneHtml(si, pi)).join('');
+
+  fitShots();
 
   // тревоги считаем по текущему расчёту и уровням
   if (AL && MODEL) {
@@ -434,6 +442,34 @@ const TREND_ON = new Set(['кислота', 'конверсия', 'SO₂']);
 const TREND_COLORS = {
   'кислота': '#59d0a8', 'конверсия': '#7fb2ff', 'SO₂': '#e8a13a', 'уровень': '#c9a2ff',
 };
+
+/** Вписать каждую мнемосхему в её панель целиком, без прокрутки.
+ *  Пропорция снимков 2:1 — считаем размер сами, чтобы картинка и слой
+ *  чипов совпадали пиксель в пиксель. */
+function fitShots() {
+  const panes = document.querySelectorAll('#panes .pane');
+  panes.forEach((p) => {
+    const box = p.querySelector('.box');
+    const shot = p.querySelector('.shot');
+    if (!box || !shot) return;
+    const w = box.clientWidth;
+    const h = box.clientHeight;
+    if (!w || !h) return;
+    const R = 2;
+    const W = Math.min(w, h * R);
+    const H = Math.round(W / R);
+    shot.style.width = Math.round(W) + 'px';
+    shot.style.height = H + 'px';
+  });
+}
+
+let fitTimer = 0;
+function scheduleFit() {
+  clearTimeout(fitTimer);
+  fitTimer = setTimeout(fitShots, 60);
+}
+window.addEventListener('resize', scheduleFit);
+window.addEventListener('orientationchange', scheduleFit);
 
 function fmtClock(sec) {
   const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), x = Math.floor(sec % 60);
@@ -713,6 +749,10 @@ fetch(assetUrl('mnemo/screens.json')).then((r) => r.json()).then((d) => {
   paint();
   bindEngine();
   startEngine();
+  try {
+    const ro = new ResizeObserver(() => scheduleFit());
+    ro.observe(document.getElementById('panes'));
+  } catch (e) {}
 }).catch(() => {
   document.getElementById('stage').innerHTML =
     '<p style="padding:12px;color:#8fa3b6">Не удалось загрузить mnemo/screens.json</p>';
