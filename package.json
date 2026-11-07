@@ -12,16 +12,6 @@
     "geometry": "node tools/geometry/run.js",
     "geometry:baseline": "node tools/geometry/run.js --update-baseline",
     "audit": "node tools/audit-model.js",
-    "twin": "node twin/selftest.js",
-    "twin:ilk": "node twin/interlocks.selftest.js",
-    "twin:heat": "node twin/heat.selftest.js",
-    "twin:temps": "node twin/temps.selftest.js",
-    "twin:melt": "node twin/melt.selftest.js",
-    "twin:vessels": "node twin/vessels.selftest.js",
-    "twin:alarms": "node twin/alarms.selftest.js",
-    "twin:water": "node twin/water.selftest.js",
-    "twin:engine": "node twin/engine.selftest.js",
-    "twin:gen": "node twin/gen-interlocks.js",
     "flow-labels": "node tools/check-flow-labels.js"
   },
   "devDependencies": {

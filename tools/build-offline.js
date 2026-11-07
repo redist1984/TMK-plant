@@ -41,10 +41,10 @@ const OUT = path.resolve(arg('--out', P('dist-offline')));
 const NAME = arg('--name', 'TMK-plant-offline.html');
 const WITH_PDF = flag('--with-pdf');
 
-const PAGES = ['model', 'flow', 'pfd', 'interlocks', 'analyses', 'kip', 'docs', 'mnemo', 'twin', 'settings', 'help'];
+const PAGES = ['model', 'flow', 'pfd', 'interlocks', 'analyses', 'kip', 'docs', 'settings', 'help'];
 const IDS = {
   model: 'f-model', flow: 'f-flow', pfd: 'f-pfd', interlocks: 'f-ilk', analyses: 'f-anl',
-  kip: 'f-kip', docs: 'f-docs', mnemo: 'f-mnemo', twin: 'f-twin', settings: 'f-settings', help: 'f-help',
+  kip: 'f-kip', docs: 'f-docs', settings: 'f-settings', help: 'f-help',
 };
 
 // --- шрифты -> data URI ------------------------------------------------
@@ -106,7 +106,7 @@ async function optimizeJpeg(buf) {
 }
 
 async function collectAssets() {
-  for (const dir of ['sec_img', 'pfd/scan', 'mnemo']) {
+  for (const dir of ['sec_img', 'pfd/scan']) {
     const abs = P(dir);
     if (!fs.existsSync(abs)) continue;
     for (const f of fs.readdirSync(abs).sort()) {
@@ -117,10 +117,6 @@ async function collectAssets() {
       if (!isPng) data = await optimizeJpeg(data);
       assets.set(rel, { mime: isPng ? 'image/png' : 'image/jpeg', data });
     }
-  }
-  // горячие точки мнемосхем: небольшой JSON, нужен офлайн
-  if (fs.existsSync(P('mnemo/screens.json'))) {
-    assets.set('mnemo/screens.json', { mime: 'application/json', data: read('mnemo/screens.json', null) });
   }
   if (WITH_PDF) {
     for (const f of fs.readdirSync(P('docs_pdf')).sort()) {
