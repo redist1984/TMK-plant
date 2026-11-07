@@ -2,11 +2,11 @@
  "screens": [
   {
    "id": "sklad",
-   "file": "mnemo/01-sklad.jpg",
+   "file": "mnemo/sklad.jpg",
    "dept": "Склад серы",
    "title": {
-    "ru": "Склад серы и система подачи серы",
-    "uz": "Oltingugurt ombori va berish tizimi"
+    "ru": "Склад серы и подача",
+    "uz": "Склад серы и подача"
    },
    "chips": [
     {
@@ -129,15 +129,27 @@
      "unit": "т/ч",
      "cap": "VE-12101AB"
     }
+   ],
+   "kpis": [
+    {
+     "label": "Подача серы",
+     "val": "melt.sulfur",
+     "unit": "т/ч"
+    },
+    {
+     "label": "Температура расплава",
+     "val": "melt.tMelt",
+     "unit": "°C"
+    }
    ]
   },
   {
    "id": "plavlenie",
-   "file": "mnemo/02-plavlenie.jpg",
+   "file": "mnemo/plavlenie.jpg",
    "dept": "СПС",
    "title": {
-    "ru": "Система плавления серы",
-    "uz": "Oltingugurt eritish tizimi"
+    "ru": "Плавление серы",
+    "uz": "Плавление серы"
    },
    "chips": [
     {
@@ -250,6 +262,258 @@
      "unit": "т/ч",
      "cap": "FR-11102"
     }
+   ],
+   "kpis": [
+    {
+     "label": "Температура расплава",
+     "val": "melt.tMelt",
+     "unit": "°C"
+    },
+    {
+     "label": "Пар 0,8 МПа",
+     "val": "melt.steam08",
+     "unit": "т/ч"
+    },
+    {
+     "label": "Зола после 2-й ст.",
+     "val": "ash",
+     "unit": "ppm"
+    }
+   ]
+  },
+  {
+   "id": "gasclean",
+   "file": "mnemo/gasclean.jpg",
+   "dept": "СПОГС",
+   "title": {
+    "ru": "Очистка отходящих газов",
+    "uz": "Очистка отходящих газов"
+   },
+   "chips": [],
+   "kpis": [
+    {
+     "label": "SO₂ в трубе",
+     "val": "so2",
+     "unit": "мг/нм³"
+    },
+    {
+     "label": "Конверсия общая",
+     "val": "conv",
+     "unit": "%"
+    }
+   ]
+  },
+  {
+   "id": "absorption",
+   "file": "mnemo/absorption.jpg",
+   "dept": "ОА",
+   "title": {
+    "ru": "Сухая абсорбция",
+    "uz": "Сухая абсорбция"
+   },
+   "chips": [],
+   "kpis": [
+    {
+     "label": "Товарная кислота",
+     "val": "acid",
+     "unit": "т/ч"
+    },
+    {
+     "label": "Конверсия общая",
+     "val": "conv",
+     "unit": "%"
+    },
+    {
+     "label": "SO₂ в трубе",
+     "val": "so2",
+     "unit": "мг/нм³"
+    },
+    {
+     "label": "Концентрация",
+     "val": "conc",
+     "unit": "%"
+    }
+   ]
+  },
+  {
+   "id": "scrubber",
+   "file": "mnemo/scrubber.jpg",
+   "dept": "СПОГС",
+   "title": {
+    "ru": "Промывка выхлопных газов",
+    "uz": "Промывка выхлопных газов"
+   },
+   "chips": [],
+   "kpis": [
+    {
+     "label": "SO₂ в трубе",
+     "val": "so2",
+     "unit": "мг/нм³"
+    },
+    {
+     "label": "Щёлочная промывка",
+     "val": "scrub",
+     "unit": "%"
+    }
+   ]
+  },
+  {
+   "id": "boiler",
+   "file": "mnemo/boiler.jpg",
+   "dept": "Котел-утилизатор",
+   "title": {
+    "ru": "Пароводяная система",
+    "uz": "Пароводяная система"
+   },
+   "chips": [],
+   "kpis": [
+    {
+     "label": "Пар 6,4 МПа",
+     "val": "steam",
+     "unit": "т/ч"
+    },
+    {
+     "label": "Отбор 0,8 МПа",
+     "val": "extract",
+     "unit": "т/ч"
+    },
+    {
+     "label": "Мощность турбины",
+     "val": "turbine",
+     "unit": "МВт"
+    }
+   ]
+  },
+  {
+   "id": "startboiler",
+   "file": "mnemo/startboiler.jpg",
+   "dept": "НТР",
+   "title": {
+    "ru": "Пусковой котёл",
+    "uz": "Пусковой котёл"
+   },
+   "chips": [],
+   "kpis": [
+    {
+     "label": "Пар 6,4 МПа",
+     "val": "steam",
+     "unit": "т/ч"
+    },
+    {
+     "label": "Тепло реакций",
+     "val": "heat",
+     "unit": "МВт"
+    }
+   ]
+  },
+  {
+   "id": "deaerator",
+   "file": "mnemo/deaerator.jpg",
+   "dept": "ДВ",
+   "title": {
+    "ru": "Деаэрированная вода",
+    "uz": "Деаэрированная вода"
+   },
+   "chips": [],
+   "kpis": [
+    {
+     "label": "Питательная вода",
+     "val": "feedwater",
+     "unit": "т/ч"
+    },
+    {
+     "label": "Продувка",
+     "val": "blowdown",
+     "unit": "т/ч"
+    }
+   ]
+  },
+  {
+   "id": "steamturbine",
+   "file": "mnemo/steamturbine.jpg",
+   "dept": "СПТ",
+   "title": {
+    "ru": "Паропроводы турбины",
+    "uz": "Паропроводы турбины"
+   },
+   "chips": [],
+   "kpis": [
+    {
+     "label": "Пар 6,4 МПа",
+     "val": "steam",
+     "unit": "т/ч"
+    },
+    {
+     "label": "Отбор 0,8 МПа",
+     "val": "extract",
+     "unit": "т/ч"
+    },
+    {
+     "label": "Мощность турбины",
+     "val": "turbine",
+     "unit": "МВт"
+    }
+   ]
+  },
+  {
+   "id": "oilsystem",
+   "file": "mnemo/oilsystem.jpg",
+   "dept": "СМТ",
+   "title": {
+    "ru": "Масляная система турбины",
+    "uz": "Масляная система турбины"
+   },
+   "chips": [],
+   "kpis": [
+    {
+     "label": "Мощность турбины",
+     "val": "turbine",
+     "unit": "МВт"
+    }
+   ]
+  },
+  {
+   "id": "sulfurtanks",
+   "file": "mnemo/sulfurtanks.jpg",
+   "dept": "Резервуарный",
+   "title": {
+    "ru": "Резервуары жидкой серы",
+    "uz": "Резервуары жидкой серы"
+   },
+   "chips": [],
+   "kpis": [
+    {
+     "label": "Уровень резервуара",
+     "val": "level:LT-12202",
+     "unit": "мм"
+    },
+    {
+     "label": "Подача серы",
+     "val": "melt.sulfur",
+     "unit": "т/ч"
+    }
+   ]
+  },
+  {
+   "id": "acidtank",
+   "file": "mnemo/acidtank.jpg",
+   "dept": "РПТК",
+   "title": {
+    "ru": "Зона резервуара кислоты",
+    "uz": "Зона резервуара кислоты"
+   },
+   "chips": [],
+   "kpis": [
+    {
+     "label": "Уровень кислоты",
+     "val": "level:LT-11302",
+     "unit": "мм"
+    },
+    {
+     "label": "Товарная кислота",
+     "val": "acid",
+     "unit": "т/ч"
+    }
    ]
   }
  ],
@@ -260,7 +524,7 @@
   },
   {
    "name": "Резервуарный",
-   "screen": null
+   "screen": "sulfurtanks"
   },
   {
    "name": "СПС",
@@ -268,27 +532,27 @@
   },
   {
    "name": "СПОГС",
-   "screen": null
+   "screen": "scrubber"
   },
   {
    "name": "ССК",
-   "screen": null
+   "screen": "gasclean"
   },
   {
    "name": "Котел-утилизатор",
-   "screen": null
+   "screen": "boiler"
   },
   {
    "name": "ДВ",
-   "screen": null
+   "screen": "deaerator"
   },
   {
    "name": "НТР",
-   "screen": null
+   "screen": "startboiler"
   },
   {
    "name": "ОА",
-   "screen": null
+   "screen": "absorption"
   },
   {
    "name": "СГП",
@@ -296,11 +560,11 @@
   },
   {
    "name": "СМТ",
-   "screen": null
+   "screen": "oilsystem"
   },
   {
    "name": "РПТК",
-   "screen": null
+   "screen": "acidtank"
   }
  ]
 }

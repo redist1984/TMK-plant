@@ -1,4 +1,4 @@
-const CACHE = 'tmk-plant-v152';
+const CACHE = 'tmk-plant-v154';
 const ASSETS = [
   "logo.png",
   "twin.html",
@@ -16,8 +16,18 @@ const ASSETS = [
   "twin/melt.js",
   "mnemo.html",
   "mnemo/screens.json",
-  "mnemo/01-sklad.jpg",
-  "mnemo/02-plavlenie.jpg",
+  "mnemo/sklad.jpg",
+  "mnemo/plavlenie.jpg",
+  "mnemo/gasclean.jpg",
+  "mnemo/absorption.jpg",
+  "mnemo/scrubber.jpg",
+  "mnemo/boiler.jpg",
+  "mnemo/startboiler.jpg",
+  "mnemo/deaerator.jpg",
+  "mnemo/steamturbine.jpg",
+  "mnemo/oilsystem.jpg",
+  "mnemo/sulfurtanks.jpg",
+  "mnemo/acidtank.jpg",
   "twin/tank.js",
   "twin/vessels.js",
   "fonts/fonts.css",
